@@ -40,6 +40,7 @@
   let yawVelocity = 0, pitchVelocity = 0, inertiaId = 0, inertiaActive = false;
   let motionAttached = false, calibration = null;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
+  let suppressPlanetOpenUntil = 0;
 
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const normAngle = (a) => ((a + 540) % 360) - 180;
@@ -52,6 +53,42 @@
     span.style.animationTimingFunction = 'linear';
     span.style.animationIterationCount = 'infinite';
     if ([1,3,6,8].includes(i)) span.style.animationDirection = 'reverse';
+
+    const host = wrap.querySelector('.service-host')?.textContent?.trim();
+    const name = wrap.querySelector('.service-name')?.textContent?.trim() || 'Starry App';
+    if (host) {
+      wrap.dataset.url = `https://${host}/`;
+      wrap.setAttribute('role', 'link');
+      wrap.setAttribute('tabindex', '0');
+      wrap.setAttribute('aria-label', `${name}，在新視窗開啟 ${host}`);
+      wrap.style.cursor = 'pointer';
+    }
+  });
+
+  function openPlanetApp(wrap, e) {
+    if (!wrap?.dataset?.url || performance.now() < suppressPlanetOpenUntil) return;
+    const r = wrap.getBoundingClientRect();
+    const x = e?.clientX || r.left + r.width / 2;
+    const y = e?.clientY || r.top + r.height / 2;
+    clickFx(x, y);
+    window.open(wrap.dataset.url, '_blank', 'noopener,noreferrer');
+  }
+
+  planets.forEach((wrap) => {
+    wrap.addEventListener('click', (e) => {
+      if (performance.now() < suppressPlanetOpenUntil) {
+        e.preventDefault();
+        return;
+      }
+      e.stopPropagation();
+      openPlanetApp(wrap, e);
+    });
+    wrap.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openPlanetApp(wrap, e);
+      }
+    });
   });
 
   const immersiveToggle = document.createElement('button');
@@ -120,6 +157,7 @@
       el.style.right = 'auto';
       el.style.bottom = 'auto';
       el.style.opacity = `${clamp((centerBoost-.5)*2.2,.22,1)}`;
+      el.style.pointerEvents = 'auto';
       el.style.zIndex = `${Math.round(centerBoost*10)}`;
       el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%) scale(${scale})`;
     });
@@ -388,7 +426,12 @@
     dragging=false;
     try{document.body.releasePointerCapture(pointerId)}catch{}
     pointerId=null;
-    if(totalMove<12) clickFx(e.clientX,e.clientY); else runInertia();
+    if(totalMove<12) {
+      clickFx(e.clientX,e.clientY);
+    } else {
+      suppressPlanetOpenUntil = performance.now() + 350;
+      runInertia();
+    }
   }
 
   addEventListener('pointerdown',startDrag,{passive:true});
