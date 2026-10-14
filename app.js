@@ -574,7 +574,10 @@
     }
   });
 
-  document.addEventListener('pointerdown', startAudioFromGesture, { once: true, passive: true });
+  document.addEventListener('pointerdown', (event) => {
+    if (event.target === immersiveToggle || immersiveToggle.contains(event.target)) return;
+    startAudioFromGesture();
+  }, { once: true, passive: true });
 
   if ('DeviceOrientationEvent' in window &&
       typeof window.DeviceOrientationEvent.requestPermission !== 'function') {
