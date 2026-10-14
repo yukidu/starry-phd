@@ -10,6 +10,47 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+    html, body {
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+    button { touch-action: manipulation; }
+    .nav-data { display: none !important; }
+    .free-look-hint {
+      position: fixed;
+      z-index: 17;
+      left: 50%;
+      top: max(18px, env(safe-area-inset-top));
+      transform: translateX(-50%);
+      padding: 7px 12px;
+      border: 1px solid rgba(145, 220, 255, .16);
+      border-radius: 999px;
+      background: rgba(4, 10, 24, .34);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: rgba(204, 236, 255, .58);
+      font-size: 10px;
+      letter-spacing: .12em;
+      pointer-events: none;
+      transition: opacity .6s ease, transform .6s ease;
+      animation: hintFloat 2.4s ease-in-out infinite;
+    }
+    .free-look-hint.hidden {
+      opacity: 0;
+      transform: translate(-50%, -8px);
+    }
+    body.free-look-dragging { cursor: grabbing; }
+    @keyframes hintFloat {
+      50% { transform: translateX(-50%) translateY(3px); }
+    }
+    @media (max-width: 760px) {
+      .free-look-hint {
+        top: max(58px, calc(env(safe-area-inset-top) + 46px));
+        font-size: 9px;
+      }
+    }
+  </style>
 </head>
 <body>
   <canvas id="starfield" aria-hidden="true"></canvas>
@@ -31,18 +72,12 @@
     </div>
   </div>
 
-  <div class="cockpit" aria-hidden="true">
-    <div class="cockpit-top"></div>
-    <div class="cockpit-left"></div>
-    <div class="cockpit-right"></div>
-    <div class="cockpit-bottom">
-      <div class="console-line"></div>
-      <div class="console-glow"></div>
-    </div>
-    <div class="hud hud-left"><span>STARRY NAV</span><b id="velocity">08.6c</b></div>
-    <div class="hud hud-right"><span>SECTOR</span><b id="sector">ORION-09</b></div>
-    <div class="reticle"><i></i><i></i><i></i><i></i></div>
+  <div class="nav-data" aria-hidden="true">
+    <span id="velocity">08.6c</span>
+    <span id="sector">ORION-09</span>
   </div>
+
+  <div class="free-look-hint" id="freeLookHint">↔ 滑動探索宇宙</div>
 
   <main class="hero">
     <div class="brand-mark" aria-label="Starry.phd">
@@ -74,10 +109,126 @@
       <p class="modal-label">TRANSMISSION RECEIVED</p>
       <h2 id="portalMessage">量子航道準備中</h2>
       <p class="modal-sub">訊號正在穿越未知維度，敬請期待。</p>
-      <button id="closeModal" type="button">返回星艦</button>
+      <button id="closeModal" type="button">返回宇宙</button>
     </div>
   </div>
 
   <script src="./app.js"></script>
+  <script>
+    (() => {
+      const universe = document.querySelector('.universe');
+      const starfield = document.getElementById('starfield');
+      const nebulaA = document.querySelector('.nebula-a');
+      const nebulaB = document.querySelector('.nebula-b');
+      const meteorLayer = document.getElementById('meteorLayer');
+      const hint = document.getElementById('freeLookHint');
+
+      let dragging = false;
+      let pointerId = null;
+      let lastX = 0;
+      let lastY = 0;
+      let panX = 0;
+      let panY = 0;
+      let velocityX = 0;
+      let velocityY = 0;
+      let inertiaFrame = 0;
+
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+      function limits() {
+        return {
+          x: Math.min(window.innerWidth * 0.24, 190),
+          y: Math.min(window.innerHeight * 0.18, 120)
+        };
+      }
+
+      function applyFreeLook() {
+        const limit = limits();
+        panX = clamp(panX, -limit.x, limit.x);
+        panY = clamp(panY, -limit.y, limit.y);
+
+        const nx = limit.x ? panX / limit.x : 0;
+        const ny = limit.y ? panY / limit.y : 0;
+
+        if (universe) {
+          universe.style.translate = `${panX}px ${panY}px`;
+          universe.style.perspectiveOrigin = `${50 - nx * 13}% ${50 - ny * 10}%`;
+        }
+        if (starfield) starfield.style.translate = `${panX * 0.13}px ${panY * 0.09}px`;
+        if (nebulaA) nebulaA.style.transform = `translate3d(${panX * 0.2}px, ${panY * 0.14}px, 0)`;
+        if (nebulaB) nebulaB.style.transform = `translate3d(${panX * 0.11}px, ${panY * 0.08}px, 0)`;
+        if (meteorLayer) meteorLayer.style.transform = `translate3d(${panX * 0.08}px, ${panY * 0.06}px, 0)`;
+      }
+
+      function stopInertia() {
+        if (inertiaFrame) cancelAnimationFrame(inertiaFrame);
+        inertiaFrame = 0;
+      }
+
+      function runInertia() {
+        if (dragging) return;
+        velocityX *= 0.91;
+        velocityY *= 0.91;
+        panX += velocityX;
+        panY += velocityY;
+        applyFreeLook();
+
+        if (Math.abs(velocityX) > 0.08 || Math.abs(velocityY) > 0.08) {
+          inertiaFrame = requestAnimationFrame(runInertia);
+        } else {
+          inertiaFrame = 0;
+        }
+      }
+
+      function isInteractive(target) {
+        return target instanceof Element && !!target.closest('button, .portal-modal, a, input, textarea, select');
+      }
+
+      window.addEventListener('pointerdown', (event) => {
+        if (isInteractive(event.target)) return;
+        stopInertia();
+        dragging = true;
+        pointerId = event.pointerId;
+        lastX = event.clientX;
+        lastY = event.clientY;
+        velocityX = 0;
+        velocityY = 0;
+        document.body.classList.add('free-look-dragging');
+        hint?.classList.add('hidden');
+        try { document.body.setPointerCapture(pointerId); } catch (_) {}
+      }, { passive: true });
+
+      window.addEventListener('pointermove', (event) => {
+        if (!dragging || event.pointerId !== pointerId) return;
+        event.preventDefault();
+        const dx = event.clientX - lastX;
+        const dy = event.clientY - lastY;
+        lastX = event.clientX;
+        lastY = event.clientY;
+
+        panX += dx * 0.92;
+        panY += dy * 0.78;
+        velocityX = dx * 0.72;
+        velocityY = dy * 0.6;
+        applyFreeLook();
+      }, { passive: false });
+
+      function endDrag(event) {
+        if (!dragging || event.pointerId !== pointerId) return;
+        dragging = false;
+        document.body.classList.remove('free-look-dragging');
+        try { document.body.releasePointerCapture(pointerId); } catch (_) {}
+        pointerId = null;
+        runInertia();
+      }
+
+      window.addEventListener('pointerup', endDrag, { passive: true });
+      window.addEventListener('pointercancel', endDrag, { passive: true });
+      window.addEventListener('resize', applyFreeLook, { passive: true });
+
+      applyFreeLook();
+      window.setTimeout(() => hint?.classList.add('hidden'), 5200);
+    })();
+  </script>
 </body>
 </html>
