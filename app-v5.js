@@ -23,16 +23,18 @@
   const sectors = ['ORION-09','LYRA-27','NOVA-16','VEGA-81','ASTRA-03','KEPLER-22'];
   const planetMap = [
     { yaw: 0, pitch: -8, size: .88 },
-    { yaw: 38, pitch: 12, size: .98 },
-    { yaw: 82, pitch: -2, size: 1.08 },
-    { yaw: 126, pitch: 18, size: .92 },
-    { yaw: 172, pitch: -11, size: 1.28 },
-    { yaw: 216, pitch: 7, size: 1.2 },
-    { yaw: 258, pitch: -18, size: .96 },
-    { yaw: 304, pitch: 13, size: 1.02 },
-    { yaw: 340, pitch: 25, size: .8 }
+    { yaw: 34, pitch: 12, size: .98 },
+    { yaw: 68, pitch: -2, size: 1.08 },
+    { yaw: 105, pitch: 18, size: .92 },
+    { yaw: 142, pitch: -11, size: 1.28 },
+    { yaw: 181, pitch: 7, size: 1.2 },
+    { yaw: 218, pitch: -18, size: .96 },
+    { yaw: 252, pitch: 13, size: 1.02 },
+    { yaw: 288, pitch: 25, size: .8 },
+    { yaw: 326, pitch: -7, size: 1.08 },
+    { yaw: 348, pitch: 19, size: .9 }
   ];
-  const spinDurations = [9,14,18,12,11,16,13,15,10];
+  const spinDurations = [9,14,18,12,11,16,13,15,10,22,17];
 
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
   let cameraYaw = 0, cameraPitch = 0, autoYaw = 0, autoPitch = 0, tiltYaw = 0, tiltPitch = 0;
@@ -48,14 +50,15 @@
 
   planets.forEach((wrap, i) => {
     const span = wrap.querySelector('.planet > span');
-    if (!span) return;
-    span.style.animationDuration = `${spinDurations[i]}s`;
-    span.style.animationTimingFunction = 'linear';
-    span.style.animationIterationCount = 'infinite';
-    if ([1,3,6,8].includes(i)) span.style.animationDirection = 'reverse';
+    if (span) {
+      span.style.animationDuration = `${spinDurations[i] || 14}s`;
+      span.style.animationTimingFunction = 'linear';
+      span.style.animationIterationCount = 'infinite';
+      if ([1,3,6,8,10].includes(i)) span.style.animationDirection = 'reverse';
+    }
 
     const host = wrap.querySelector('.service-host')?.textContent?.trim();
-    const name = wrap.querySelector('.service-name')?.textContent?.trim() || 'Starry App';
+    const name = wrap.querySelector('.service-name')?.textContent?.trim() || wrap.querySelector('.celestial-name')?.textContent?.trim() || 'Starry App';
     if (host) {
       wrap.dataset.url = `https://${host}/`;
       wrap.setAttribute('role', 'link');
@@ -75,6 +78,7 @@
   }
 
   planets.forEach((wrap) => {
+    if (!wrap.dataset.url) return;
     wrap.addEventListener('click', (e) => {
       if (performance.now() < suppressPlanetOpenUntil) {
         e.preventDefault();
@@ -139,10 +143,11 @@
     const fovX = 112, fovY = 82;
     const yaw = viewYaw(), pitch = viewPitch();
     planets.forEach((el, i) => {
-      const p = planetMap[i];
+      const p = planetMap[i] || planetMap[0];
       const dyaw = normAngle(p.yaw - yaw);
       const dpitch = p.pitch - pitch;
       const visible = Math.abs(dyaw) < fovX * .62 && Math.abs(dpitch) < fovY * .68;
+      const visual = el.querySelector('.planet');
       if (!visible) {
         el.style.opacity = '0';
         el.style.pointerEvents = 'none';
@@ -157,9 +162,10 @@
       el.style.right = 'auto';
       el.style.bottom = 'auto';
       el.style.opacity = `${clamp((centerBoost-.5)*2.2,.22,1)}`;
-      el.style.pointerEvents = 'auto';
+      el.style.pointerEvents = el.dataset.url ? 'auto' : 'none';
       el.style.zIndex = `${Math.round(centerBoost*10)}`;
-      el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%) scale(${scale})`;
+      el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+      if (visual) visual.style.transform = `scale(${scale})`;
     });
     if (nebulaA) nebulaA.style.transform = `translate3d(${Math.sin(rad(yaw))*-82}px,${pitch*-1.25}px,0) scale(1.1)`;
     if (nebulaB) nebulaB.style.transform = `translate3d(${Math.sin(rad(yaw+90))*68}px,${pitch*.95}px,0) scale(1.08)`;
@@ -203,15 +209,61 @@
     requestAnimationFrame(drawStarfield);
   }
 
-  function spawnMeteor() {
+  function spawnImpact(x, y, intensity=1) {
+    const burst = document.createElement('span');
+    burst.className = 'impact-burst';
+    burst.style.setProperty('--impact-x', `${x}px`);
+    burst.style.setProperty('--impact-y', `${y}px`);
+    burst.style.transform = `translate(-50%,-50%) scale(${intensity})`;
+    for (let i=0;i<14;i++) {
+      const p=document.createElement('i');
+      p.className='impact-particle';
+      p.style.setProperty('--a', `${i*25.7 + Math.random()*10 - 5}deg`);
+      burst.appendChild(p);
+    }
+    meteorLayer.appendChild(burst);
+    setTimeout(()=>burst.remove(),1000);
+  }
+
+  function spawnMeteor(kind='small') {
     if (reduceMotion || document.hidden) return;
-    const m=document.createElement('span');
-    m.className='meteor';
-    m.style.left=`${58+Math.random()*42}%`;
-    m.style.top=`${Math.random()*42}%`;
-    m.style.animationDuration=`${.8+Math.random()*.8}s`;
-    meteorLayer.appendChild(m);
-    m.addEventListener('animationend',()=>m.remove(),{once:true});
+    const giant = kind === 'giant';
+    const rock = document.createElement('span');
+    rock.className = `space-rock ${giant ? 'giant' : 'small'}`;
+    const size = giant ? 110 + Math.random()*150 : 4 + Math.random()*12;
+    const tail = giant ? 260 + Math.random()*260 : 90 + Math.random()*130;
+    const fromLeft = Math.random() < .5;
+    const startX = fromLeft ? -size*1.6 : width + size*1.6;
+    const startY = height * (.08 + Math.random()*.72);
+    const willImpact = Math.random() < (giant ? .72 : .3);
+    const endX = willImpact ? width*(.16 + Math.random()*.68) : (fromLeft ? width + size*2 : -size*2);
+    const endY = willImpact ? height*(.16 + Math.random()*.62) : clamp(startY + (Math.random()-.5)*height*.75, -80, height+80);
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const angle = Math.atan2(dy, dx);
+    const duration = giant ? 2300 + Math.random()*1800 : 650 + Math.random()*900;
+
+    rock.style.left = `${startX}px`;
+    rock.style.top = `${startY}px`;
+    rock.style.setProperty('--rock-size', `${size}px`);
+    rock.style.setProperty('--tail-size', `${tail}px`);
+    rock.style.setProperty('--tail-thickness', `${giant ? 10 + Math.random()*12 : 1 + Math.random()*2}px`);
+    rock.style.setProperty('--tail-angle', `${angle}rad`);
+    meteorLayer.appendChild(rock);
+
+    const anim = rock.animate([
+      { transform:'translate(-50%,-50%) translate3d(0,0,0) scale(.55)', opacity:0 },
+      { opacity:1, offset:.12 },
+      { transform:`translate(-50%,-50%) translate3d(${dx}px,${dy}px,0) scale(${giant ? 1.08 : 1})`, opacity:willImpact ? 1 : 0 }
+    ], { duration, easing: giant ? 'cubic-bezier(.16,.7,.25,1)' : 'linear', fill:'forwards' });
+
+    anim.onfinish = () => {
+      if (willImpact) {
+        spawnImpact(endX, endY, giant ? 1.35 : .72);
+        if (giant) navigator.vibrate?.([18,20,28]);
+      }
+      rock.remove();
+    };
   }
 
   function openPortal(button) {
@@ -501,7 +553,9 @@
   requestAnimationFrame(drawStarfield);
   setTimeout(()=>hint?.classList.add('hidden'),6500);
   if(!reduceMotion){
-    setInterval(spawnMeteor,1700);
+    setInterval(()=>spawnMeteor('small'),900);
+    setTimeout(()=>spawnMeteor('giant'),1700);
+    setInterval(()=>spawnMeteor('giant'),6200);
     setInterval(()=>sector.textContent=sectors[Math.floor(Math.random()*sectors.length)],7200);
   }
 })();
