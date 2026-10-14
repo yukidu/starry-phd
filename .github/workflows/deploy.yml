@@ -18,7 +18,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p dist
-          cp index.html styles.css app.js dist/
+          cp index.html styles.css app.js app-v5.js dist/
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
