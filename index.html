@@ -4,52 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#03030b" />
-  <meta name="description" content="Starry.phd — 穿梭繁星、行星與未知文明的入口。" />
+  <meta name="description" content="Starry.phd — 360°穿梭繁星、行星與未知文明。" />
   <title>Starry.phd｜繁星宇宙</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
   <style>
-    html, body {
-      touch-action: none;
-      overscroll-behavior: none;
-    }
-    button { touch-action: manipulation; }
-    .nav-data { display: none !important; }
-    .free-look-hint {
-      position: fixed;
-      z-index: 17;
-      left: 50%;
-      top: max(18px, env(safe-area-inset-top));
-      transform: translateX(-50%);
-      padding: 7px 12px;
-      border: 1px solid rgba(145, 220, 255, .16);
-      border-radius: 999px;
-      background: rgba(4, 10, 24, .34);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: rgba(204, 236, 255, .58);
-      font-size: 10px;
-      letter-spacing: .12em;
-      pointer-events: none;
-      transition: opacity .6s ease, transform .6s ease;
-      animation: hintFloat 2.4s ease-in-out infinite;
-    }
-    .free-look-hint.hidden {
-      opacity: 0;
-      transform: translate(-50%, -8px);
-    }
-    body.free-look-dragging { cursor: grabbing; }
-    @keyframes hintFloat {
-      50% { transform: translateX(-50%) translateY(3px); }
-    }
-    @media (max-width: 760px) {
-      .free-look-hint {
-        top: max(58px, calc(env(safe-area-inset-top) + 46px));
-        font-size: 9px;
-      }
-    }
+    html,body{touch-action:none;overscroll-behavior:none}
+    button{touch-action:manipulation}
+    .cockpit,.cockpit-top,.cockpit-left,.cockpit-right,.cockpit-bottom,.reticle,.hud{display:none!important}
+    .nav-data{display:none!important}
+    .planet-wrap{animation:none!important;will-change:transform,opacity;transition:opacity .18s linear;transform-origin:center}
+    .universe{overflow:visible!important;perspective:none!important}
+    .free-look-hint{position:fixed;z-index:18;left:50%;top:max(18px,env(safe-area-inset-top));transform:translateX(-50%);padding:7px 12px;border:1px solid rgba(145,220,255,.16);border-radius:999px;background:rgba(4,10,24,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:rgba(214,241,255,.7);font-size:10px;letter-spacing:.12em;pointer-events:none;transition:opacity .6s ease,transform .6s ease;animation:hintFloat 2.4s ease-in-out infinite}
+    .free-look-hint.hidden{opacity:0;transform:translate(-50%,-8px)}
+    @keyframes hintFloat{50%{transform:translateX(-50%) translateY(3px)}}
+    .store-zone{position:fixed!important;left:50%!important;bottom:max(14px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:24!important;width:min(560px,calc(100vw - 28px))!important;margin:0!important;display:flex!important;flex-direction:row!important;justify-content:center!important;gap:10px!important;animation:none!important;pointer-events:auto!important}
+    .store-zone .portal-btn{flex:1 1 0!important;min-width:0!important;height:58px!important}
+    .status-pill{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 68px)!important}
+    .hero{padding-bottom:max(138px,18vh)!important}
+    #immersiveToggle{position:fixed;z-index:26;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:38px;padding:0 13px;border:1px solid rgba(160,223,255,.22);border-radius:999px;color:rgba(229,247,255,.86);background:rgba(5,11,28,.38);box-shadow:0 8px 30px rgba(0,0,0,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 10px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
+    #immersiveToggle.active{border-color:rgba(125,249,255,.55);color:#eaffff;box-shadow:0 0 18px rgba(75,175,255,.18)}
+    .click-burst{position:fixed;z-index:60;left:0;top:0;width:16px;height:16px;pointer-events:none;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(164,244,255,.95);box-shadow:0 0 16px rgba(125,249,255,.95),0 0 42px rgba(143,94,255,.5);animation:burstRing .62s cubic-bezier(.16,1,.3,1) forwards}
+    .click-burst::before,.click-burst::after{content:"";position:absolute;inset:50% auto auto 50%;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 13px #7df9ff;transform:translate(-50%,-50%);animation:burstCore .62s ease-out forwards}
+    .click-burst::after{width:34px;height:1px;border-radius:0;background:linear-gradient(90deg,transparent,#fff,transparent);box-shadow:0 0 14px #a67cff;animation:burstCross .62s ease-out forwards}
+    .click-spark{position:absolute;left:50%;top:50%;width:3px;height:12px;border-radius:99px;background:linear-gradient(#fff,#7df9ff,transparent);transform-origin:50% 0;filter:drop-shadow(0 0 5px #7df9ff);animation:sparkFly .62s ease-out forwards}
+    @keyframes burstRing{0%{opacity:1;transform:translate(-50%,-50%) scale(.25)}100%{opacity:0;transform:translate(-50%,-50%) scale(5.2)}}
+    @keyframes burstCore{to{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+    @keyframes burstCross{to{opacity:0;transform:translate(-50%,-50%) rotate(180deg) scaleX(3)}}
+    @keyframes sparkFly{0%{opacity:1;transform:rotate(var(--a)) translateY(-4px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--a)) translateY(-58px) scaleY(1.2)}}
+    @media(max-width:760px){.free-look-hint{top:max(58px,calc(env(safe-area-inset-top) + 46px));font-size:9px}.store-zone{width:calc(100vw - 18px)!important;gap:7px!important;bottom:max(9px,env(safe-area-inset-bottom))!important}.store-zone .portal-btn{height:54px!important;padding:0 10px!important;gap:8px!important;border-radius:14px!important}.store-zone .portal-icon{width:30px!important;height:30px!important;flex-basis:30px!important}.store-zone .portal-copy small{display:none!important}.store-zone .portal-copy strong{font-size:11px!important;white-space:nowrap}.status-pill{bottom:calc(max(9px,env(safe-area-inset-bottom)) + 62px)!important;max-width:74vw!important}#immersiveToggle{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));min-height:34px;padding:0 10px;font-size:9px}.hero{padding-bottom:max(124px,17vh)!important}}
   </style>
 </head>
 <body>
@@ -72,12 +57,8 @@
     </div>
   </div>
 
-  <div class="nav-data" aria-hidden="true">
-    <span id="velocity">08.6c</span>
-    <span id="sector">ORION-09</span>
-  </div>
-
-  <div class="free-look-hint" id="freeLookHint">↔ 滑動探索宇宙</div>
+  <div class="nav-data" aria-hidden="true"><span id="velocity">08.6c</span><span id="sector">ORION-09</span></div>
+  <div class="free-look-hint" id="freeLookHint">↔ 拖曳 360° 探索九大行星</div>
 
   <main class="hero">
     <div class="brand-mark" aria-label="Starry.phd">
@@ -85,150 +66,18 @@
       <h1>STARRY<span>.PHD</span></h1>
       <p>穿越繁星，前往未知的下一個世界。</p>
     </div>
-
     <section class="store-zone" aria-label="應用商店入口">
-      <button class="portal-btn" type="button" data-store="Google Play">
-        <span class="portal-icon play-icon" aria-hidden="true">▶</span>
-        <span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span>
-        <span class="portal-shimmer"></span>
-      </button>
-
-      <button class="portal-btn" type="button" data-store="App Store">
-        <span class="portal-icon apple-icon" aria-hidden="true">◈</span>
-        <span class="portal-copy"><small>DISCOVER ON</small><strong>App Store</strong></span>
-        <span class="portal-shimmer"></span>
-      </button>
+      <button class="portal-btn" type="button" data-store="Google Play"><span class="portal-icon play-icon" aria-hidden="true">▶</span><span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span><span class="portal-shimmer"></span></button>
+      <button class="portal-btn" type="button" data-store="App Store"><span class="portal-icon apple-icon" aria-hidden="true">◈</span><span class="portal-copy"><small>DISCOVER ON</small><strong>App Store</strong></span><span class="portal-shimmer"></span></button>
     </section>
   </main>
 
-  <div class="status-pill" aria-live="polite"><span class="status-dot"></span> 深空導航系統連線中</div>
+  <div class="status-pill" aria-live="polite"><span class="status-dot"></span> 360° 星際導航啟動</div>
 
   <div class="portal-modal" id="portalModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="portal-card">
-      <div class="portal-core"><span></span><span></span><span></span></div>
-      <p class="modal-label">TRANSMISSION RECEIVED</p>
-      <h2 id="portalMessage">量子航道準備中</h2>
-      <p class="modal-sub">訊號正在穿越未知維度，敬請期待。</p>
-      <button id="closeModal" type="button">返回宇宙</button>
-    </div>
+    <div class="portal-card"><div class="portal-core"><span></span><span></span><span></span></div><p class="modal-label">TRANSMISSION RECEIVED</p><h2 id="portalMessage">量子航道準備中</h2><p class="modal-sub">訊號正在穿越未知維度，敬請期待。</p><button id="closeModal" type="button">返回宇宙</button></div>
   </div>
 
   <script src="./app.js"></script>
-  <script>
-    (() => {
-      const universe = document.querySelector('.universe');
-      const starfield = document.getElementById('starfield');
-      const nebulaA = document.querySelector('.nebula-a');
-      const nebulaB = document.querySelector('.nebula-b');
-      const meteorLayer = document.getElementById('meteorLayer');
-      const hint = document.getElementById('freeLookHint');
-
-      let dragging = false;
-      let pointerId = null;
-      let lastX = 0;
-      let lastY = 0;
-      let panX = 0;
-      let panY = 0;
-      let velocityX = 0;
-      let velocityY = 0;
-      let inertiaFrame = 0;
-
-      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-      function limits() {
-        return {
-          x: Math.min(window.innerWidth * 0.24, 190),
-          y: Math.min(window.innerHeight * 0.18, 120)
-        };
-      }
-
-      function applyFreeLook() {
-        const limit = limits();
-        panX = clamp(panX, -limit.x, limit.x);
-        panY = clamp(panY, -limit.y, limit.y);
-
-        const nx = limit.x ? panX / limit.x : 0;
-        const ny = limit.y ? panY / limit.y : 0;
-
-        if (universe) {
-          universe.style.translate = `${panX}px ${panY}px`;
-          universe.style.perspectiveOrigin = `${50 - nx * 13}% ${50 - ny * 10}%`;
-        }
-        if (starfield) starfield.style.translate = `${panX * 0.13}px ${panY * 0.09}px`;
-        if (nebulaA) nebulaA.style.transform = `translate3d(${panX * 0.2}px, ${panY * 0.14}px, 0)`;
-        if (nebulaB) nebulaB.style.transform = `translate3d(${panX * 0.11}px, ${panY * 0.08}px, 0)`;
-        if (meteorLayer) meteorLayer.style.transform = `translate3d(${panX * 0.08}px, ${panY * 0.06}px, 0)`;
-      }
-
-      function stopInertia() {
-        if (inertiaFrame) cancelAnimationFrame(inertiaFrame);
-        inertiaFrame = 0;
-      }
-
-      function runInertia() {
-        if (dragging) return;
-        velocityX *= 0.91;
-        velocityY *= 0.91;
-        panX += velocityX;
-        panY += velocityY;
-        applyFreeLook();
-
-        if (Math.abs(velocityX) > 0.08 || Math.abs(velocityY) > 0.08) {
-          inertiaFrame = requestAnimationFrame(runInertia);
-        } else {
-          inertiaFrame = 0;
-        }
-      }
-
-      function isInteractive(target) {
-        return target instanceof Element && !!target.closest('button, .portal-modal, a, input, textarea, select');
-      }
-
-      window.addEventListener('pointerdown', (event) => {
-        if (isInteractive(event.target)) return;
-        stopInertia();
-        dragging = true;
-        pointerId = event.pointerId;
-        lastX = event.clientX;
-        lastY = event.clientY;
-        velocityX = 0;
-        velocityY = 0;
-        document.body.classList.add('free-look-dragging');
-        hint?.classList.add('hidden');
-        try { document.body.setPointerCapture(pointerId); } catch (_) {}
-      }, { passive: true });
-
-      window.addEventListener('pointermove', (event) => {
-        if (!dragging || event.pointerId !== pointerId) return;
-        event.preventDefault();
-        const dx = event.clientX - lastX;
-        const dy = event.clientY - lastY;
-        lastX = event.clientX;
-        lastY = event.clientY;
-
-        panX += dx * 0.92;
-        panY += dy * 0.78;
-        velocityX = dx * 0.72;
-        velocityY = dy * 0.6;
-        applyFreeLook();
-      }, { passive: false });
-
-      function endDrag(event) {
-        if (!dragging || event.pointerId !== pointerId) return;
-        dragging = false;
-        document.body.classList.remove('free-look-dragging');
-        try { document.body.releasePointerCapture(pointerId); } catch (_) {}
-        pointerId = null;
-        runInertia();
-      }
-
-      window.addEventListener('pointerup', endDrag, { passive: true });
-      window.addEventListener('pointercancel', endDrag, { passive: true });
-      window.addEventListener('resize', applyFreeLook, { passive: true });
-
-      applyFreeLook();
-      window.setTimeout(() => hint?.classList.add('hidden'), 5200);
-    })();
-  </script>
 </body>
 </html>
