@@ -22,6 +22,9 @@
     @keyframes hintFloat{50%{transform:translateX(-50%) translateY(3px)}}
     .store-zone{position:fixed!important;left:50%!important;bottom:max(14px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:24!important;width:min(560px,calc(100vw - 28px))!important;margin:0!important;display:flex!important;flex-direction:row!important;justify-content:center!important;gap:10px!important;animation:none!important;pointer-events:auto!important}
     .store-zone .portal-btn{flex:1 1 0!important;min-width:0!important;height:58px!important}
+    .store-zone .portal-icon{display:grid!important;place-items:center!important;padding:0!important;overflow:visible!important}
+    .store-zone .portal-icon.play-icon,.store-zone .portal-icon.apple-icon{background:none!important;border:none!important;box-shadow:none!important;color:inherit!important}
+    .store-zone .portal-icon svg{display:block;width:100%;height:100%;overflow:visible}
     .status-pill{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 68px)!important}
     .hero{padding-bottom:max(138px,18vh)!important}
     #immersiveToggle{position:fixed;z-index:26;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:38px;padding:0 13px;border:1px solid rgba(160,223,255,.22);border-radius:999px;color:rgba(229,247,255,.86);background:rgba(5,11,28,.38);box-shadow:0 8px 30px rgba(0,0,0,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 10px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
@@ -66,8 +69,34 @@
       <h1>STARRY<span>.PHD</span></h1>
     </div>
     <section class="store-zone" aria-label="應用商店入口">
-      <button class="portal-btn" type="button" data-store="Google Play"><span class="portal-icon play-icon" aria-hidden="true">▶</span><span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span><span class="portal-shimmer"></span></button>
-      <button class="portal-btn" type="button" data-store="App Store"><span class="portal-icon apple-icon" aria-hidden="true">◈</span><span class="portal-copy"><small>DISCOVER ON</small><strong>App Store</strong></span><span class="portal-shimmer"></span></button>
+      <button class="portal-btn" type="button" data-store="Google Play">
+        <span class="portal-icon play-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img" aria-label="Google Play">
+            <path fill="#34A853" d="M7.4 5.2c-.65.72-1.04 1.84-1.04 3.25v31.1c0 1.41.39 2.53 1.04 3.25L26.1 24 7.4 5.2Z"/>
+            <path fill="#FBBC04" d="m26.1 24-18.7 18.8c1.02 1.12 2.67 1.25 4.53.2l21.9-12.48L26.1 24Z"/>
+            <path fill="#EA4335" d="m33.83 17.47-21.9-12.48C10.07 3.94 8.42 4.07 7.4 5.2L26.1 24l7.73-6.53Z"/>
+            <path fill="#4285F4" d="m41.2 21.66-7.37-4.19L26.1 24l7.73 6.52 7.37-4.19c2.53-1.44 2.53-3.23 0-4.67Z"/>
+          </svg>
+        </span>
+        <span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span>
+        <span class="portal-shimmer"></span>
+      </button>
+      <button class="portal-btn" type="button" data-store="App Store">
+        <span class="portal-icon apple-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" role="img" aria-label="App Store">
+            <defs>
+              <linearGradient id="appStoreBlue" x1="8" y1="5" x2="40" y2="43" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#17A9F5"/>
+                <stop offset="1" stop-color="#0677E9"/>
+              </linearGradient>
+            </defs>
+            <rect x="3" y="3" width="42" height="42" rx="10" fill="url(#appStoreBlue)"/>
+            <path d="M17 33.5h-4.2M35.2 33.5H23M17.7 28.7 28.3 10.4M30.3 28.7 20.2 11.2M14.4 26.8h19.2" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="portal-copy"><small>DISCOVER ON</small><strong>App Store</strong></span>
+        <span class="portal-shimmer"></span>
+      </button>
     </section>
   </main>
 
