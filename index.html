@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#03030b" />
+  <meta name="description" content="Starry.phd — 穿梭繁星、行星與未知文明的入口。" />
+  <title>Starry.phd｜繁星宇宙</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="nebula nebula-a" aria-hidden="true"></div>
+  <div class="nebula nebula-b" aria-hidden="true"></div>
+  <div class="meteor-layer" id="meteorLayer" aria-hidden="true"></div>
+
+  <div class="universe" aria-hidden="true">
+    <div class="planet-lane" id="planetLane">
+      <div class="planet-wrap p1"><div class="planet mercury"><span></span></div><em>水星</em></div>
+      <div class="planet-wrap p2"><div class="planet venus"><span></span></div><em>金星</em></div>
+      <div class="planet-wrap p3"><div class="planet earth"><span></span></div><em>地球</em></div>
+      <div class="planet-wrap p4"><div class="planet mars"><span></span></div><em>火星</em></div>
+      <div class="planet-wrap p5"><div class="planet jupiter"><span></span></div><em>木星</em></div>
+      <div class="planet-wrap p6"><div class="planet saturn"><span></span><i class="ring"></i></div><em>土星</em></div>
+      <div class="planet-wrap p7"><div class="planet uranus"><span></span></div><em>天王星</em></div>
+      <div class="planet-wrap p8"><div class="planet neptune"><span></span></div><em>海王星</em></div>
+      <div class="planet-wrap p9"><div class="planet pluto"><span></span></div><em>冥王星</em></div>
+    </div>
+  </div>
+
+  <div class="cockpit" aria-hidden="true">
+    <div class="cockpit-top"></div>
+    <div class="cockpit-left"></div>
+    <div class="cockpit-right"></div>
+    <div class="cockpit-bottom">
+      <div class="console-line"></div>
+      <div class="console-glow"></div>
+    </div>
+    <div class="hud hud-left"><span>STARRY NAV</span><b id="velocity">08.6c</b></div>
+    <div class="hud hud-right"><span>SECTOR</span><b id="sector">ORION-09</b></div>
+    <div class="reticle"><i></i><i></i><i></i><i></i></div>
+  </div>
+
+  <main class="hero">
+    <div class="brand-mark" aria-label="Starry.phd">
+      <span class="brand-kicker">ENTER THE STARRY UNIVERSE</span>
+      <h1>STARRY<span>.PHD</span></h1>
+      <p>穿越繁星，前往未知的下一個世界。</p>
+    </div>
+
+    <section class="store-zone" aria-label="應用商店入口">
+      <button class="portal-btn" type="button" data-store="Google Play">
+        <span class="portal-icon play-icon" aria-hidden="true">▶</span>
+        <span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span>
+        <span class="portal-shimmer"></span>
+      </button>
+
+      <button class="portal-btn" type="button" data-store="App Store">
+        <span class="portal-icon apple-icon" aria-hidden="true">◈</span>
+        <span class="portal-copy"><small>DISCOVER ON</small><strong>App Store</strong></span>
+        <span class="portal-shimmer"></span>
+      </button>
+    </section>
+  </main>
+
+  <div class="status-pill" aria-live="polite"><span class="status-dot"></span> 深空導航系統連線中</div>
+
+  <div class="portal-modal" id="portalModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="portal-card">
+      <div class="portal-core"><span></span><span></span><span></span></div>
+      <p class="modal-label">TRANSMISSION RECEIVED</p>
+      <h2 id="portalMessage">量子航道準備中</h2>
+      <p class="modal-sub">訊號正在穿越未知維度，敬請期待。</p>
+      <button id="closeModal" type="button">返回星艦</button>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
