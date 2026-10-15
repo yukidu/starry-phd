@@ -18,16 +18,18 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p dist
-          cp index.html styles.css app.js app-v5.js dist/
-          cat meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js >> dist/app-v5.js
+          cp index.html styles.css app.js app-v5.js manifest.webmanifest sw.js icon-192.svg icon-512.svg dist/
+          cat meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js pwa-v25.js >> dist/app-v5.js
 
-      - name: Verify battery game bundle
+      - name: Verify bundle
         run: |
           grep -F "starry:meteor-blasted" dist/app-v5.js
           grep -F "https://id.starry.phd/api/starry-game/battery" dist/app-v5.js
-          grep -F "floater.textContent = '+0.01 🔋'" dist/app-v5.js
-          grep -F "title.textContent = '🔋 電池'" dist/app-v5.js
+          grep -F "https://id.starry.phd/starry-main-login" dist/app-v5.js
+          grep -F "data-starry-quality" dist/app-v5.js
+          grep -F "navigator.serviceWorker.register('/sw.js'" dist/app-v5.js
           grep -F "繁星生態系 Starry.phd" dist/app-v5.js
+          grep -F '"display": "standalone"' dist/manifest.webmanifest
           ! grep -F "點擊隕石爆破 +0.01" dist/app-v5.js
           ! grep -F "STARRY 電池" dist/app-v5.js
 
@@ -43,26 +45,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in 1 2 3 4 5 6; do
+          verified=0
+          for attempt in 1 2 3 4 5 6 7 8; do
             if curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/?verify=${GITHUB_SHA}" -o /tmp/starry.html \
-              && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/app-v5.js?verify=${GITHUB_SHA}" -o /tmp/starry-app.js; then
+              && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/app-v5.js?verify=${GITHUB_SHA}" -o /tmp/starry-app.js \
+              && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/manifest.webmanifest?verify=${GITHUB_SHA}" -o /tmp/starry-manifest.json \
+              && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/sw.js?verify=${GITHUB_SHA}" -o /tmp/starry-sw.js \
+              && grep -F "https://id.starry.phd/starry-main-login" /tmp/starry-app.js >/dev/null \
+              && grep -F "data-starry-quality" /tmp/starry-app.js >/dev/null \
+              && grep -F "navigator.serviceWorker.register('/sw.js'" /tmp/starry-app.js >/dev/null \
+              && grep -F '"display": "standalone"' /tmp/starry-manifest.json >/dev/null; then
+              verified=1
               break
-            fi
-            if [ "$attempt" = "6" ]; then
-              echo "Production website could not be verified"
-              exit 1
             fi
             sleep 5
           done
+          test "$verified" = "1"
           grep -F "app-v5.js" /tmp/starry.html
           grep -F "starry:meteor-blasted" /tmp/starry-app.js
           grep -F "https://id.starry.phd/api/starry-game/battery" /tmp/starry-app.js
-          grep -F "floater.textContent = '+0.01 🔋'" /tmp/starry-app.js
-          grep -F "title.textContent = '🔋 電池'" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
+          grep -F "starry-shell-v25" /tmp/starry-sw.js
           ! grep -F "點擊隕石爆破 +0.01" /tmp/starry-app.js
           ! grep -F "STARRY 電池" /tmp/starry-app.js
 
           status="$(curl -sS --connect-timeout 10 --max-time 20 -o /tmp/battery-api.json -w '%{http_code}' "https://id.starry.phd/api/starry-game/battery")"
           test "$status" = "401"
           grep -F '"authenticated":false' /tmp/battery-api.json
+
+          curl -fsS --connect-timeout 10 --max-time 20 "https://id.starry.phd/starry-main-login" -o /tmp/starry-login.html
+          grep -F "登入 Starry ID" /tmp/starry-login.html
+          grep -F "appId: 'starryphd'" /tmp/starry-login.html
