@@ -23,6 +23,7 @@ jobs:
 
       - name: Verify bundle
         run: |
+          node --check dist/app-v5.js
           grep -F "starry:meteor-blasted" dist/app-v5.js
           grep -F "https://id.starry.phd/api/starry-game/battery" dist/app-v5.js
           grep -F "https://id.starry.phd/api/google-sync" dist/app-v5.js
