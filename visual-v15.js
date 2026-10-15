@@ -1,7 +1,9 @@
 (() => {
+  // v29：第一、第二大效能負擔降到約 30%：高速星流數量／強度 30%，銀河只保留約三成層次。
+  const STARRY_VISUAL_LOAD_V29 = 'star-galaxy-30pct';
   const style = document.createElement('style');
   style.textContent = `
-    #starboost{position:fixed;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+    #starboost{position:fixed;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;opacity:.38}
 
     .earth>span::before{
       inset:0!important;width:auto!important;height:auto!important;left:0!important;top:0!important;
@@ -32,28 +34,22 @@
     }
 
     .milky-way .galaxy-stars{position:absolute;inset:18% -7%;pointer-events:none;mix-blend-mode:screen;transform:translateZ(0)}
-    .milky-way .galaxy-stars-a{opacity:.92;background:radial-gradient(circle,rgba(255,255,255,1) 0 1.15px,transparent 1.9px) 9px 18px/83px 71px,radial-gradient(circle,rgba(232,242,255,.94) 0 .9px,transparent 1.65px) 37px 11px/121px 97px,radial-gradient(circle,rgba(255,255,255,.88) 0 1px,transparent 1.8px) 3px 41px/149px 119px;filter:drop-shadow(0 0 5px rgba(220,238,255,.95));animation:galaxyTwinkleA 2.4s ease-in-out infinite alternate}
-    .milky-way .galaxy-stars-b{opacity:.64;background:radial-gradient(circle,rgba(255,255,255,.92) 0 .72px,transparent 1.35px) 24px 8px/61px 53px,radial-gradient(circle,rgba(196,220,255,.82) 0 .62px,transparent 1.25px) 12px 29px/103px 87px,radial-gradient(circle,rgba(255,247,255,.78) 0 .75px,transparent 1.4px) 53px 44px/137px 101px;filter:drop-shadow(0 0 2px rgba(191,217,255,.72));animation:galaxyTwinkleB 4.1s ease-in-out infinite alternate-reverse}
-    .milky-way .galaxy-stars-c{opacity:.4;background:radial-gradient(circle,rgba(255,255,255,.8) 0 .48px,transparent 1px) 5px 17px/43px 39px,radial-gradient(circle,rgba(183,207,255,.7) 0 .42px,transparent .95px) 31px 5px/71px 63px,radial-gradient(circle,rgba(255,255,255,.62) 0 .4px,transparent .9px) 19px 33px/89px 77px;filter:blur(.1px);animation:galaxyTwinkleC 6.8s ease-in-out infinite alternate}
-    @keyframes galaxyTwinkleA{0%{opacity:.48;filter:drop-shadow(0 0 2px rgba(220,238,255,.5))}45%{opacity:1;filter:drop-shadow(0 0 7px rgba(237,247,255,1))}100%{opacity:.68;filter:drop-shadow(0 0 4px rgba(195,221,255,.75))}}
-    @keyframes galaxyTwinkleB{0%{opacity:.34;transform:translate3d(-.4%,.2%,0)}55%{opacity:.78}100%{opacity:.5;transform:translate3d(.6%,-.35%,0)}}
-    @keyframes galaxyTwinkleC{0%{opacity:.2}35%{opacity:.52}72%{opacity:.31}100%{opacity:.6}}
+    .milky-way .galaxy-stars-a{opacity:.32;background:radial-gradient(circle,rgba(255,255,255,.92) 0 .9px,transparent 1.55px) 9px 18px/121px 103px,radial-gradient(circle,rgba(220,235,255,.82) 0 .72px,transparent 1.35px) 37px 11px/173px 139px;filter:drop-shadow(0 0 1.5px rgba(220,238,255,.48));animation:galaxyTwinkleA 6.8s ease-in-out infinite alternate}
+    .milky-way .galaxy-stars-b,.milky-way .galaxy-stars-c{display:none!important}
+    @keyframes galaxyTwinkleA{0%{opacity:.22;filter:drop-shadow(0 0 1px rgba(220,238,255,.28))}50%{opacity:.38;filter:drop-shadow(0 0 2px rgba(237,247,255,.52))}100%{opacity:.27;filter:drop-shadow(0 0 1px rgba(195,221,255,.34))}}
 
-    /* M1 智慧手機效能模式：保留效果，只降低最昂貴的發光與模糊運算。 */
-    html[data-starry-quality="medium"] .milky-way .galaxy-stars-a,
-    html[data-starry-quality="medium"] .milky-way .galaxy-stars-b{filter:drop-shadow(0 0 2px rgba(210,232,255,.55))}
+    /* M1 智慧手機效能模式：在 30% 基準上再依實際手機流暢度自動調整。 */
+    html[data-starry-quality="medium"] .milky-way .galaxy-stars-a{filter:drop-shadow(0 0 1px rgba(210,232,255,.35))}
     html[data-starry-quality="medium"] .planet-wrap em.service-label{backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important}
     html[data-starry-quality="low"] .milky-way{filter:none!important}
-    html[data-starry-quality="low"] .milky-way .galaxy-stars-a,
-    html[data-starry-quality="low"] .milky-way .galaxy-stars-b,
-    html[data-starry-quality="low"] .milky-way .galaxy-stars-c{filter:none!important;animation-duration:9s!important}
+    html[data-starry-quality="low"] .milky-way .galaxy-stars-a{filter:none!important;animation-duration:10s!important;opacity:.22!important}
     html[data-starry-quality="low"] .planet-wrap em.service-label{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   `;
   document.head.appendChild(style);
 
   const galaxy = document.querySelector('.milky-way');
   if (galaxy && !galaxy.querySelector('.galaxy-stars')) {
-    ['a','b','c'].forEach((layer) => {
+    ['a'].forEach((layer) => {
       const stars = document.createElement('span');
       stars.className = `galaxy-stars galaxy-stars-${layer}`;
       galaxy.appendChild(stars);
@@ -66,6 +62,7 @@
   const canvas = document.createElement('canvas');
   canvas.id = 'starboost';
   canvas.setAttribute('aria-hidden', 'true');
+  canvas.dataset.visualLoad = STARRY_VISUAL_LOAD_V29;
   baseCanvas.insertAdjacentElement('afterend', canvas);
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return;
@@ -92,10 +89,10 @@
   let lastQualityChange = 0;
 
   function qualityConfig() {
-    if (!mobile) return { count: Math.max(520, Math.min(1050, Math.floor(width * height / 1500))), dpr: 2, skip: 0 };
-    if (quality === 'high') return { count: 330, dpr: 1.5, skip: 0 };
-    if (quality === 'medium') return { count: 220, dpr: 1.3, skip: 0 };
-    return { count: reduceMotion ? 80 : 130, dpr: 1, skip: 1 };
+    if (!mobile) return { count: Math.max(156, Math.min(315, Math.floor(width * height / 5000))), dpr: 1.5, skip: 0 };
+    if (quality === 'high') return { count: 99, dpr: 1.3, skip: 0 };
+    if (quality === 'medium') return { count: 66, dpr: 1.15, skip: 0 };
+    return { count: reduceMotion ? 24 : 39, dpr: 1, skip: 1 };
   }
 
   function updateQualityMarker() {
@@ -106,7 +103,7 @@
     const angle = Math.random() * Math.PI * 2;
     const radius = Math.pow(Math.random(), .64) * Math.max(width, height) * .94;
     const z = far ? width * (.72 + Math.random() * .28) : 14 + Math.random() * Math.max(width, 420);
-    return { x:Math.cos(angle)*radius, y:Math.sin(angle)*radius, z, pz:z+2, speed:3.2+Math.random()*5.4, alpha:.28+Math.random()*.72, size:.32+Math.random()*1.05, cool:Math.random()>.78 };
+    return { x:Math.cos(angle)*radius, y:Math.sin(angle)*radius, z, pz:z+2, speed:.95+Math.random()*1.65, alpha:.18+Math.random()*.34, size:.28+Math.random()*.72, cool:Math.random()>.78 };
   }
 
   function resetStar(star) { Object.assign(star, makeStar(true)); }
@@ -122,7 +119,7 @@
     canvas.style.height = `${height}px`;
     ctx.setTransform(dpr,0,0,dpr,0,0);
     const areaScale = mobile ? Math.max(.8, Math.min(1.2, (width * height) / (390 * 844))) : 1;
-    const target = mobile ? Math.max(70, Math.round(cfg.count * areaScale)) : cfg.count;
+    const target = mobile ? Math.max(22, Math.round(cfg.count * areaScale)) : cfg.count;
     if (stars.length > target) stars.length = target;
     while (stars.length < target) stars.push(makeStar());
   }
@@ -191,13 +188,13 @@
       const py = (star.y / star.pz) * projection + cy;
       if (sx < -140 || sx > width+140 || sy < -140 || sy > height+140) { resetStar(star); continue; }
       const near = Math.max(0,1-star.z/Math.max(width,420));
-      const glow = Math.min(.96,star.alpha*(.35+near*.85));
+      const glow = Math.min(.5,star.alpha*(.3+near));
       ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(sx,sy);
       ctx.strokeStyle = star.cool ? `rgba(186,220,255,${glow})` : `rgba(255,255,255,${glow})`;
-      ctx.lineWidth = Math.max(.28,star.size*(.38+near*1.3)); ctx.stroke();
-      if (near>.72 && star.alpha>.72) {
-        ctx.beginPath(); ctx.arc(sx,sy,Math.max(.35,star.size*.55),0,Math.PI*2);
-        ctx.fillStyle=`rgba(255,255,255,${Math.min(.9,glow)})`; ctx.fill();
+      ctx.lineWidth = Math.max(.22,star.size*(.3+near*.72)); ctx.stroke();
+      if (near>.78 && star.alpha>.42) {
+        ctx.beginPath(); ctx.arc(sx,sy,Math.max(.28,star.size*.4),0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,255,255,${Math.min(.48,glow)})`; ctx.fill();
       }
     }
   }
