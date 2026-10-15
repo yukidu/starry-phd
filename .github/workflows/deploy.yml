@@ -25,7 +25,10 @@ jobs:
         run: |
           grep -F "starry:meteor-blasted" dist/app-v5.js
           grep -F "https://id.starry.phd/api/starry-game/battery" dist/app-v5.js
-          grep -F "點擊隕石爆破 +0.01" dist/app-v5.js
+          grep -F "floater.textContent = '+0.01 🔋'" dist/app-v5.js
+          grep -F "title.textContent = '🔋 電池'" dist/app-v5.js
+          ! grep -F "點擊隕石爆破 +0.01" dist/app-v5.js
+          ! grep -F "STARRY 電池" dist/app-v5.js
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
@@ -53,6 +56,10 @@ jobs:
           grep -F "app-v5.js" /tmp/starry.html
           grep -F "starry:meteor-blasted" /tmp/starry-app.js
           grep -F "https://id.starry.phd/api/starry-game/battery" /tmp/starry-app.js
+          grep -F "floater.textContent = '+0.01 🔋'" /tmp/starry-app.js
+          grep -F "title.textContent = '🔋 電池'" /tmp/starry-app.js
+          ! grep -F "點擊隕石爆破 +0.01" /tmp/starry-app.js
+          ! grep -F "STARRY 電池" /tmp/starry-app.js
 
           status="$(curl -sS --connect-timeout 10 --max-time 20 -o /tmp/battery-api.json -w '%{http_code}' "https://id.starry.phd/api/starry-game/battery")"
           test "$status" = "401"
