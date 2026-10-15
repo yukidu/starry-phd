@@ -2,15 +2,17 @@
   const API = 'https://id.starry.phd/api/starry-game/battery';
   let currentBalance = null;
 
+  // 舊的 360° 探索提示框完全移除。
   document.getElementById('freeLookHint')?.remove();
 
   const style = document.createElement('style');
   style.textContent = `
+    .free-look-hint{display:none!important}
     #starryBatteryCenter{
       position:fixed;
       z-index:25;
       left:50%;
-      top:max(166px,calc(env(safe-area-inset-top) + 154px));
+      bottom:calc(max(26px,calc(env(safe-area-inset-bottom) + 12px)) + 68px);
       transform:translateX(-50%);
       min-width:132px;
       padding:7px 11px 7px;
@@ -72,7 +74,7 @@
     }
     @media(max-width:760px){
       #starryBatteryCenter{
-        top:max(150px,calc(env(safe-area-inset-top) + 138px));
+        bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px);
         min-width:122px;
         padding:6px 9px;
         border-radius:11px;
