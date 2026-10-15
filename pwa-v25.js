@@ -23,8 +23,8 @@
   }
 
   ensureLink('manifest', '/manifest.webmanifest');
-  ensureLink('icon', '/icon-192.svg', { type:'image/svg+xml' });
-  ensureLink('apple-touch-icon', '/icon-192.svg');
+  ensureLink('icon', '/icon-192.png', { type:'image/png', sizes:'192x192' });
+  ensureLink('apple-touch-icon', '/icon-192.png', { sizes:'192x192' });
   ensureMeta('mobile-web-app-capable', 'yes');
   ensureMeta('apple-mobile-web-app-capable', 'yes');
   ensureMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
