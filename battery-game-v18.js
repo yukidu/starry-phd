@@ -15,8 +15,8 @@
       flex-wrap:wrap;
       align-items:baseline;
       justify-content:center;
-      gap:2px 6px;
-      margin:8px auto 0;
+      gap:4px 10px;
+      margin:10px auto 0;
       padding:0;
       border:0;
       border-radius:0;
@@ -27,30 +27,30 @@
       text-align:center;
       pointer-events:none;
       color:#f4fcff;
-      text-shadow:0 0 10px rgba(125,249,255,.24);
+      text-shadow:0 0 12px rgba(125,249,255,.28);
       user-select:none;
     }
     #starryBatteryCenter .battery-title{
       display:inline;
       margin:0;
-      color:rgba(179,229,255,.72);
-      font:600 9px/1.15 "Noto Sans TC",system-ui,sans-serif;
-      letter-spacing:.08em;
+      color:rgba(179,229,255,.82);
+      font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;
+      letter-spacing:.06em;
     }
     #starryBatteryCenter .battery-value{
       display:inline;
-      font:700 18px/1.12 "Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+      font:800 clamp(26px,2.7vw,34px)/1.08 "Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
       font-variant-numeric:tabular-nums;
       font-feature-settings:"zero" 0;
-      letter-spacing:.02em;
+      letter-spacing:.01em;
     }
     #starryBatteryCenter .battery-hint{
       display:block;
       flex-basis:100%;
-      margin-top:1px;
-      color:rgba(212,240,255,.58);
-      font:500 8px/1.18 "Noto Sans TC",system-ui,sans-serif;
-      letter-spacing:.02em;
+      margin-top:3px;
+      color:rgba(212,240,255,.76);
+      font:600 clamp(13px,1.3vw,16px)/1.22 "Noto Sans TC",system-ui,sans-serif;
+      letter-spacing:.015em;
     }
     #starryBatteryCenter.rewarded{
       animation:batteryRewardGlow .58s ease-out;
@@ -75,10 +75,10 @@
       100%{opacity:0;transform:translate(-50%,-170%) scale(.96)}
     }
     @media(max-width:760px){
-      #starryBatteryCenter{margin-top:6px;gap:1px 5px}
-      #starryBatteryCenter .battery-value{font-size:16px}
-      #starryBatteryCenter .battery-title{font-size:8px}
-      #starryBatteryCenter .battery-hint{font-size:7px}
+      #starryBatteryCenter{margin-top:8px;gap:3px 8px}
+      #starryBatteryCenter .battery-value{font-size:26px}
+      #starryBatteryCenter .battery-title{font-size:14px}
+      #starryBatteryCenter .battery-hint{font-size:13px}
     }
   `;
   document.head.appendChild(style);
