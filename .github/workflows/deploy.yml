@@ -23,15 +23,23 @@ jobs:
 
       - name: Verify bundle
         run: |
+          node --check dist/app-v5.js
           grep -F "starry:meteor-blasted" dist/app-v5.js
           grep -F "https://id.starry.phd/api/starry-game/battery" dist/app-v5.js
+          grep -F "https://id.starry.phd/api/google-sync" dist/app-v5.js
           grep -F "https://id.starry.phd/starry-main-login" dist/app-v5.js
+          grep -F "use_fedcm_for_prompt" dist/app-v5.js
+          grep -F "starry-login-sheet" dist/app-v5.js
+          grep -F -- "--rock-poly" dist/app-v5.js
+          grep -F "#immersiveToggle{display:none!important}" dist/app-v5.js
+          grep -F "reward.toFixed(2)" dist/app-v5.js
           grep -F "data-starry-quality" dist/app-v5.js
           grep -F "navigator.serviceWorker.register('/sw.js'" dist/app-v5.js
           grep -F "繁星生態系 Starry.phd" dist/app-v5.js
           grep -F '"display": "standalone"' dist/manifest.webmanifest
           grep -F '"src": "/icon-192.png"' dist/manifest.webmanifest
           grep -F '"src": "/icon-512.png"' dist/manifest.webmanifest
+          ! grep -F "starry-login-frame" dist/app-v5.js
           ! grep -F "點擊隕石爆破 +0.01" dist/app-v5.js
           ! grep -F "STARRY 電池" dist/app-v5.js
 
@@ -55,7 +63,11 @@ jobs:
               && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/sw.js?verify=${GITHUB_SHA}" -o /tmp/starry-sw.js \
               && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/icon-192.png?verify=${GITHUB_SHA}" -o /tmp/starry-icon-192.png \
               && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/icon-512.png?verify=${GITHUB_SHA}" -o /tmp/starry-icon-512.png \
-              && grep -F "https://id.starry.phd/starry-main-login" /tmp/starry-app.js >/dev/null \
+              && grep -F "https://id.starry.phd/api/google-sync" /tmp/starry-app.js >/dev/null \
+              && grep -F "use_fedcm_for_prompt" /tmp/starry-app.js >/dev/null \
+              && grep -F "starry-login-sheet" /tmp/starry-app.js >/dev/null \
+              && grep -F -- "--rock-poly" /tmp/starry-app.js >/dev/null \
+              && grep -F "#immersiveToggle{display:none!important}" /tmp/starry-app.js >/dev/null \
               && grep -F "data-starry-quality" /tmp/starry-app.js >/dev/null \
               && grep -F "navigator.serviceWorker.register('/sw.js'" /tmp/starry-app.js >/dev/null \
               && grep -F '"display": "standalone"' /tmp/starry-manifest.json >/dev/null \
@@ -70,10 +82,12 @@ jobs:
           grep -F "app-v5.js" /tmp/starry.html
           grep -F "starry:meteor-blasted" /tmp/starry-app.js
           grep -F "https://id.starry.phd/api/starry-game/battery" /tmp/starry-app.js
+          grep -F "reward.toFixed(2)" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
           grep -F "starry-shell-v25" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
+          ! grep -F "starry-login-frame" /tmp/starry-app.js
           ! grep -F "點擊隕石爆破 +0.01" /tmp/starry-app.js
           ! grep -F "STARRY 電池" /tmp/starry-app.js
 
@@ -84,3 +98,12 @@ jobs:
           curl -fsS --connect-timeout 10 --max-time 20 "https://id.starry.phd/starry-main-login" -o /tmp/starry-login.html
           grep -F "登入 Starry ID" /tmp/starry-login.html
           grep -F "appId: 'starryphd'" /tmp/starry-login.html
+
+          curl -sS --connect-timeout 10 --max-time 20 -D /tmp/google-sync-headers.txt -o /tmp/google-sync-options.txt \
+            -X OPTIONS \
+            -H "Origin: https://starry.phd" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type" \
+            "https://id.starry.phd/api/google-sync"
+          grep -Fi "access-control-allow-origin: https://starry.phd" /tmp/google-sync-headers.txt
+          grep -Fi "access-control-allow-credentials: true" /tmp/google-sync-headers.txt
