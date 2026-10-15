@@ -1,4 +1,6 @@
 (() => {
+  // Web First：目前走共用 Starry ID Web API；未來 Capacitor / Android / iOS
+  // 仍沿用同一會員、API 與中央電池資料，不把平台邏輯綁死在本頁。
   const API = 'https://id.starry.phd/api/starry-game/battery';
   let currentBalance = null;
 
@@ -12,7 +14,6 @@
       position:relative;
       z-index:25;
       display:inline-flex;
-      flex-wrap:wrap;
       align-items:baseline;
       justify-content:center;
       gap:4px 10px;
@@ -44,14 +45,6 @@
       font-feature-settings:"zero" 0;
       letter-spacing:.01em;
     }
-    #starryBatteryCenter .battery-hint{
-      display:block;
-      flex-basis:100%;
-      margin-top:3px;
-      color:rgba(212,240,255,.76);
-      font:600 clamp(13px,1.3vw,16px)/1.22 "Noto Sans TC",system-ui,sans-serif;
-      letter-spacing:.015em;
-    }
     #starryBatteryCenter.rewarded{
       animation:batteryRewardGlow .58s ease-out;
     }
@@ -61,24 +54,23 @@
       transform:translate(-50%,-50%);
       pointer-events:none;
       color:#fff4a9;
-      font:800 17px/1 "Noto Sans TC",system-ui,sans-serif;
+      font:800 18px/1 "Noto Sans TC",system-ui,sans-serif;
       text-shadow:0 0 8px #ffcf54,0 0 22px rgba(255,148,39,.9);
-      animation:batteryRewardFloat .9s cubic-bezier(.16,.9,.25,1) forwards;
+      animation:batteryRewardFloat .78s cubic-bezier(.16,.9,.25,1) forwards;
     }
     @keyframes batteryRewardGlow{
       0%,100%{filter:none}
       35%{filter:drop-shadow(0 0 12px rgba(255,220,86,.9))}
     }
     @keyframes batteryRewardFloat{
-      0%{opacity:0;transform:translate(-50%,-30%) scale(.72)}
-      18%{opacity:1;transform:translate(-50%,-70%) scale(1.12)}
-      100%{opacity:0;transform:translate(-50%,-170%) scale(.96)}
+      0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+      22%{opacity:1;transform:translate(-50%,-72%) scale(1.1)}
+      100%{opacity:0;transform:translate(-50%,-155%) scale(.96)}
     }
     @media(max-width:760px){
       #starryBatteryCenter{margin-top:8px;gap:3px 8px}
       #starryBatteryCenter .battery-value{font-size:26px}
       #starryBatteryCenter .battery-title{font-size:14px}
-      #starryBatteryCenter .battery-hint{font-size:13px}
     }
   `;
   document.head.appendChild(style);
@@ -88,14 +80,11 @@
   badge.setAttribute('aria-live', 'polite');
   const title = document.createElement('span');
   title.className = 'battery-title';
-  title.textContent = '🔋 STARRY 電池';
+  title.textContent = '🔋 電池';
   const value = document.createElement('strong');
   value.className = 'battery-value';
   value.textContent = '--';
-  const hint = document.createElement('span');
-  hint.className = 'battery-hint';
-  hint.textContent = '讀取中央會員電池…';
-  badge.append(title, value, hint);
+  badge.append(title, value);
 
   const mainTitle = document.querySelector('.brand-mark h1');
   if (mainTitle) mainTitle.insertAdjacentElement('afterend', badge);
@@ -106,17 +95,11 @@
     if (!Number.isFinite(number)) return;
     currentBalance = number;
     value.textContent = `${number.toFixed(2)} 顆`;
-    hint.textContent = '點擊隕石爆破 +0.01';
   }
 
   function displayLoggedOut() {
     currentBalance = null;
-    value.textContent = '--';
-    hint.textContent = '登入 Starry ID 後可累積電池';
-  }
-
-  function displayError(message = '電池暫時無法讀取') {
-    hint.textContent = message;
+    value.textContent = '請登入';
   }
 
   async function api(method = 'GET', body) {
@@ -143,7 +126,6 @@
       displayBalance(data.balance);
     } catch (error) {
       console.warn('Starry battery balance:', error);
-      displayError();
     }
   }
 
@@ -158,17 +140,22 @@
     const floater = document.createElement('span');
     floater.className = 'battery-reward-float';
     floater.textContent = '+0.01 🔋';
-    floater.style.left = `${x}px`;
-    floater.style.top = `${y}px`;
+
+    // 獎勵文字立即出現在點擊爆破位置的旁邊，並避免超出畫面。
+    const rewardX = Math.min(Math.max(Number(x || 0) + 42, 56), Math.max(56, window.innerWidth - 56));
+    const rewardY = Math.min(Math.max(Number(y || 0) - 18, 30), Math.max(30, window.innerHeight - 30));
+    floater.style.left = `${rewardX}px`;
+    floater.style.top = `${rewardY}px`;
     document.body.appendChild(floater);
-    setTimeout(() => floater.remove(), 1000);
+    setTimeout(() => floater.remove(), 850);
+
     badge.classList.remove('rewarded');
     void badge.offsetWidth;
     badge.classList.add('rewarded');
     setTimeout(() => badge.classList.remove('rewarded'), 650);
   }
 
-  async function rewardMeteor(rock, x, y) {
+  async function rewardMeteor(rock) {
     if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
     rock.dataset.batteryRewardSent = '1';
     const id = targetId(rock);
@@ -181,24 +168,25 @@
       }
       if (response.status === 429) {
         if (Number.isFinite(Number(data.balance))) displayBalance(data.balance);
-        displayError('點太快，這顆不計入獎勵');
-        setTimeout(() => currentBalance !== null && displayBalance(currentBalance), 1200);
         return;
       }
       if (!response.ok || !data.success) throw new Error(data?.error || '獎勵寫入失敗');
       displayBalance(data.balance);
-      if (Number(data.added) === 0.01) showReward(Number(x || 0), Number(y || 0));
     } catch (error) {
       console.warn('Starry battery reward:', error);
-      displayError('爆破成功，但電池寫入失敗');
-      setTimeout(() => currentBalance !== null && displayBalance(currentBalance), 1500);
     }
   }
 
   window.addEventListener('starry:meteor-blasted', (event) => {
     const detail = event instanceof CustomEvent ? event.detail : null;
     if (!(detail?.rock instanceof HTMLElement)) return;
-    void rewardMeteor(detail.rock, detail.x, detail.y);
+
+    // 爆破事件發生當下立即顯示，不等待中央資料庫回應。
+    if (currentBalance !== null && detail.rock.dataset.batteryRewardVisualShown !== '1') {
+      detail.rock.dataset.batteryRewardVisualShown = '1';
+      showReward(detail.x, detail.y);
+    }
+    void rewardMeteor(detail.rock);
   });
 
   void loadBalance();
