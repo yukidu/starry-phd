@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html styles.css app.js app-v5.js dist/
-          cat meteor-v14.js visual-v15.js >> dist/app-v5.js
+          cat meteor-v14.js visual-v15.js interaction-v16.js >> dist/app-v5.js
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
