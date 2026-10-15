@@ -18,6 +18,11 @@
     .planet-wrap{animation:none!important;will-change:transform,opacity;transition:opacity .18s linear;transform-origin:center;gap:5px!important}
     .planet-wrap .planet{will-change:transform;transition:transform .12s linear}
     .universe{overflow:visible!important;perspective:none!important}
+    .milky-way{position:fixed;inset:-34%;z-index:1;pointer-events:none;opacity:.7;transform:rotate(-18deg) scale(1.14);mix-blend-mode:screen;filter:blur(.45px);background:radial-gradient(ellipse at 49% 52%,rgba(255,255,255,.2) 0 1%,rgba(179,211,255,.16) 2% 5%,transparent 14%),linear-gradient(90deg,transparent 14%,rgba(84,103,190,.05) 24%,rgba(169,194,255,.12) 35%,rgba(248,238,255,.28) 49%,rgba(120,154,255,.12) 63%,rgba(83,78,167,.06) 75%,transparent 87%);animation:galaxyFlow 46s linear infinite}
+    .milky-way::before{content:"";position:absolute;inset:25% -5%;background:radial-gradient(circle at 6% 52%,rgba(255,255,255,.9) 0 1px,transparent 1.7px),radial-gradient(circle at 19% 47%,rgba(193,221,255,.75) 0 1px,transparent 1.6px),radial-gradient(circle at 34% 55%,rgba(255,224,253,.7) 0 1.1px,transparent 1.8px),radial-gradient(circle at 51% 44%,rgba(255,255,255,.95) 0 1px,transparent 1.9px),radial-gradient(circle at 68% 53%,rgba(181,211,255,.78) 0 1px,transparent 1.7px),radial-gradient(circle at 82% 46%,rgba(255,236,255,.72) 0 1px,transparent 1.6px),radial-gradient(circle at 94% 56%,rgba(255,255,255,.82) 0 1px,transparent 1.8px);background-size:11% 26%,13% 22%,17% 28%,19% 25%,14% 24%,12% 27%,15% 23%;opacity:.78;filter:drop-shadow(0 0 4px rgba(173,206,255,.52));animation:galaxySparkle 8s ease-in-out infinite alternate}
+    .milky-way::after{content:"";position:absolute;inset:36% -3%;background:linear-gradient(90deg,transparent,rgba(85,114,228,.12) 16%,rgba(196,214,255,.2) 36%,rgba(255,236,255,.34) 50%,rgba(157,188,255,.18) 66%,rgba(74,90,201,.08) 84%,transparent);filter:blur(18px);opacity:.88}
+    @keyframes galaxyFlow{to{transform:rotate(342deg) scale(1.14)}}
+    @keyframes galaxySparkle{to{opacity:.46;transform:translate3d(2.5%,1.5%,0) scale(1.03)}}
     .free-look-hint{position:fixed;z-index:18;left:50%;top:max(166px,calc(env(safe-area-inset-top) + 154px));transform:translateX(-50%);padding:7px 12px;border:1px solid rgba(145,220,255,.16);border-radius:999px;background:rgba(4,10,24,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:rgba(214,241,255,.7);font-size:10px;letter-spacing:.12em;pointer-events:none;transition:opacity .6s ease,transform .6s ease;animation:hintFloat 2.4s ease-in-out infinite}
     .free-look-hint.hidden{opacity:0;transform:translate(-50%,-8px)}
     @keyframes hintFloat{50%{transform:translateX(-50%) translateY(3px)}}
@@ -29,10 +34,14 @@
     .status-pill{bottom:calc(max(26px,calc(env(safe-area-inset-bottom) + 12px)) + 68px)!important}
     .hero{padding-bottom:max(150px,19vh)!important}
     .brand-mark{position:fixed!important;z-index:20!important;left:50%!important;top:max(70px,calc(env(safe-area-inset-top) + 58px))!important;transform:translateX(-50%)!important;margin:0!important;width:min(94vw,920px)!important;text-align:center!important;animation:none!important;pointer-events:none!important}
-    .planet-wrap em.service-label{display:block!important;min-width:126px!important;margin-top:4px!important;padding:7px 9px 8px!important;border:1px solid rgba(125,249,255,.22)!important;border-radius:10px!important;background:rgba(3,9,24,.54)!important;box-shadow:0 0 18px rgba(72,153,255,.1)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;text-align:center!important;letter-spacing:0!important;text-transform:none!important;white-space:nowrap!important;transform:none!important}
+    .planet-wrap em.service-label{position:relative!important;z-index:7!important;display:block!important;min-width:126px!important;margin-top:4px!important;padding:7px 9px 8px!important;border:1px solid rgba(125,249,255,.22)!important;border-radius:10px!important;background:rgba(3,9,24,.82)!important;box-shadow:0 0 18px rgba(72,153,255,.1)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;text-align:center!important;letter-spacing:0!important;text-transform:none!important;white-space:nowrap!important;transform:none!important}
+    .p5 em.service-label{margin-top:30px!important}
+    .p6 em.service-label{margin-top:24px!important}
     .service-name{display:block;color:rgba(240,249,255,.97);font:700 15px/1.25 "Noto Sans TC",system-ui,sans-serif!important;text-shadow:0 0 10px rgba(125,249,255,.32)}
     .service-host{display:block;margin-top:4px;color:rgba(147,222,255,.72);font:600 10px/1 "Orbitron",sans-serif!important;letter-spacing:.08em;text-transform:lowercase}
-    .celestial-name{order:-1;display:block;margin:0 0 1px;padding:2px 5px;color:rgba(221,239,255,.46);font:500 9px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-shadow:0 0 7px rgba(125,249,255,.25);white-space:nowrap;pointer-events:none}
+    .celestial-name{order:-1;position:relative;z-index:8;display:block;margin:0 0 1px;padding:2px 5px;color:rgba(221,239,255,.46);font:500 9px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-shadow:0 0 7px rgba(125,249,255,.25);white-space:nowrap;pointer-events:none}
+    .earth-moon-companion{position:absolute;z-index:4;left:calc(50% + 66px);top:18px;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;filter:drop-shadow(0 0 12px rgba(205,222,255,.18))}
+    .earth-moon-companion .celestial-name{order:0;margin-bottom:2px;font-size:8px;color:rgba(225,238,255,.42)}
     .moon{width:38px!important;height:38px!important;background:radial-gradient(circle at 34% 28%,#f3f2e9,#aeb0ae 52%,#4d5155 100%)!important}
     .moon>span::before{width:9px;height:9px;left:8px;top:11px;background:#74797c;box-shadow:13px -5px 0 -2px #85898a,11px 13px 0 -2px #666b6e,-2px 15px 0 -3px #929596}
     #immersiveToggle{position:fixed;z-index:26;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:38px;padding:0 13px;border:1px solid rgba(160,223,255,.22);border-radius:999px;color:rgba(229,247,255,.86);background:rgba(5,11,28,.38);box-shadow:0 8px 30px rgba(0,0,0,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 10px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
@@ -49,11 +58,12 @@
     @keyframes burstCore{to{opacity:0;transform:translate(-50%,-50%) scale(3)}}
     @keyframes burstCross{to{opacity:0;transform:translate(-50%,-50%) rotate(180deg) scaleX(3)}}
     @keyframes sparkFly{0%{opacity:1;transform:rotate(var(--a)) translateY(-4px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--a)) translateY(-58px) scaleY(1.2)}}
-    @media(max-width:760px){.free-look-hint{top:max(150px,calc(env(safe-area-inset-top) + 138px));font-size:9px}.store-zone{width:calc(100vw - 18px)!important;gap:7px!important;bottom:max(18px,calc(env(safe-area-inset-bottom) + 9px))!important}.store-zone .portal-btn{height:54px!important;padding:0 10px!important;gap:8px!important;border-radius:14px!important}.store-zone .portal-icon{width:30px!important;height:30px!important;flex-basis:30px!important}.store-zone .portal-copy small{display:none!important}.store-zone .portal-copy strong{font-size:11px!important;white-space:nowrap}.status-pill{bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px)!important;max-width:74vw!important}#immersiveToggle{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));min-height:34px;padding:0 10px;font-size:9px}.hero{padding-bottom:max(136px,18vh)!important}.brand-mark{top:max(58px,calc(env(safe-area-inset-top) + 48px))!important;width:92vw!important}.planet-wrap em.service-label{min-width:126px!important;padding:7px 9px 8px!important}.service-name{font-size:15px!important}.service-host{font-size:10px!important}.celestial-name{font-size:9px!important}}
+    @media(max-width:760px){.free-look-hint{top:max(150px,calc(env(safe-area-inset-top) + 138px));font-size:9px}.store-zone{width:calc(100vw - 18px)!important;gap:7px!important;bottom:max(18px,calc(env(safe-area-inset-bottom) + 9px))!important}.store-zone .portal-btn{height:54px!important;padding:0 10px!important;gap:8px!important;border-radius:14px!important}.store-zone .portal-icon{width:30px!important;height:30px!important;flex-basis:30px!important}.store-zone .portal-copy small{display:none!important}.store-zone .portal-copy strong{font-size:11px!important;white-space:nowrap}.status-pill{bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px)!important;max-width:74vw!important}#immersiveToggle{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));min-height:34px;padding:0 10px;font-size:9px}.hero{padding-bottom:max(136px,18vh)!important}.brand-mark{top:max(58px,calc(env(safe-area-inset-top) + 48px))!important;width:92vw!important}.planet-wrap em.service-label{min-width:126px!important;padding:7px 9px 8px!important}.p5 em.service-label{margin-top:27px!important}.p6 em.service-label{margin-top:22px!important}.service-name{font-size:15px!important}.service-host{font-size:10px!important}.celestial-name{font-size:9px!important}.earth-moon-companion{left:calc(50% + 53px);top:17px}.earth-moon-companion .celestial-name{font-size:8px!important}.moon{width:32px!important;height:32px!important}}
   </style>
 </head>
 <body>
   <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="milky-way" aria-hidden="true"></div>
   <div class="nebula nebula-a" aria-hidden="true"></div>
   <div class="nebula nebula-b" aria-hidden="true"></div>
   <div class="meteor-layer" id="meteorLayer" aria-hidden="true"></div>
@@ -62,14 +72,13 @@
     <div class="planet-lane" id="planetLane">
       <div class="planet-wrap p1"><span class="celestial-name">水星</span><div class="planet mercury"><span></span></div><em class="service-label"><b class="service-name">繁星主站</b><small class="service-host">starry.phd</small></em></div>
       <div class="planet-wrap p2"><span class="celestial-name">金星</span><div class="planet venus"><span></span></div><em class="service-label"><b class="service-name">Starry ID 中央會員</b><small class="service-host">id.starry.phd</small></em></div>
-      <div class="planet-wrap p3"><span class="celestial-name">地球</span><div class="planet earth"><span></span></div><em class="service-label"><b class="service-name">繁星回聲</b><small class="service-host">echo.starry.phd</small></em></div>
+      <div class="planet-wrap p3"><span class="celestial-name">地球</span><div class="planet earth"><span></span></div><div class="earth-moon-companion"><span class="celestial-name">月亮</span><div class="planet moon"><span></span></div></div><em class="service-label"><b class="service-name">繁星回聲</b><small class="service-host">echo.starry.phd</small></em></div>
       <div class="planet-wrap p4"><span class="celestial-name">火星</span><div class="planet mars"><span></span></div><em class="service-label"><b class="service-name">繁星下載</b><small class="service-host">download.starry.phd</small></em></div>
       <div class="planet-wrap p5"><span class="celestial-name">木星</span><div class="planet jupiter"><span></span></div><em class="service-label"><b class="service-name">繁星任意門</b><small class="service-host">go.starry.phd</small></em></div>
       <div class="planet-wrap p6"><span class="celestial-name">土星</span><div class="planet saturn"><span></span><i class="ring"></i></div><em class="service-label"><b class="service-name">繁星膠囊</b><small class="service-host">box.starry.phd</small></em></div>
       <div class="planet-wrap p7"><span class="celestial-name">天王星</span><div class="planet uranus"><span></span></div></div>
       <div class="planet-wrap p8"><span class="celestial-name">海王星</span><div class="planet neptune"><span></span></div><em class="service-label"><b class="service-name">影片同步</b><small class="service-host">sync.starry.phd</small></em></div>
       <div class="planet-wrap p9"><span class="celestial-name">冥王星</span><div class="planet pluto"><span></span></div><em class="service-label"><b class="service-name">繁星語錄</b><small class="service-host">quotes.starry.phd</small></em></div>
-      <div class="planet-wrap p11"><span class="celestial-name">月亮</span><div class="planet moon"><span></span></div></div>
     </div>
   </div>
 
@@ -113,5 +122,15 @@
     <div class="portal-card"><div class="portal-core"><span></span><span></span><span></span></div><p class="modal-label">TRANSMISSION RECEIVED</p><h2 id="portalMessage">量子航道準備中</h2><p class="modal-sub">訊號正在穿越未知維度，敬請期待。</p><button id="closeModal" type="button">返回宇宙</button></div>
   </div>
   <script src="./app-v5.js"></script>
+  <script>
+    (()=>{
+      const startMusicNow=()=>{
+        const btn=document.getElementById('immersiveToggle');
+        if(btn&&btn.getAttribute('aria-pressed')!=='true')btn.click();
+      };
+      startMusicNow();
+      addEventListener('pageshow',startMusicNow,{once:true});
+    })();
+  </script>
 </body>
 </html>
