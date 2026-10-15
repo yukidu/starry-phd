@@ -9,19 +9,21 @@
   style.textContent = `
     .free-look-hint{display:none!important}
     #starryBatteryCenter{
-      position:fixed;
+      position:relative;
       z-index:25;
-      left:50%;
-      bottom:calc(max(26px,calc(env(safe-area-inset-bottom) + 12px)) + 68px);
-      transform:translateX(-50%);
-      min-width:132px;
-      padding:7px 11px 7px;
-      border:1px solid rgba(125,249,255,.24);
-      border-radius:12px;
-      background:rgba(3,9,24,.5);
-      box-shadow:0 0 18px rgba(68,169,255,.14),inset 0 0 14px rgba(125,249,255,.03);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
+      display:inline-flex;
+      flex-wrap:wrap;
+      align-items:baseline;
+      justify-content:center;
+      gap:2px 6px;
+      margin:8px auto 0;
+      padding:0;
+      border:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
       text-align:center;
       pointer-events:none;
       color:#f4fcff;
@@ -29,14 +31,14 @@
       user-select:none;
     }
     #starryBatteryCenter .battery-title{
-      display:block;
-      margin-bottom:2px;
-      color:rgba(179,229,255,.7);
-      font:600 8px/1.15 "Noto Sans TC",system-ui,sans-serif;
-      letter-spacing:.09em;
+      display:inline;
+      margin:0;
+      color:rgba(179,229,255,.72);
+      font:600 9px/1.15 "Noto Sans TC",system-ui,sans-serif;
+      letter-spacing:.08em;
     }
     #starryBatteryCenter .battery-value{
-      display:block;
+      display:inline;
       font:700 18px/1.12 "Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
       font-variant-numeric:tabular-nums;
       font-feature-settings:"zero" 0;
@@ -44,8 +46,9 @@
     }
     #starryBatteryCenter .battery-hint{
       display:block;
-      margin-top:3px;
-      color:rgba(212,240,255,.62);
+      flex-basis:100%;
+      margin-top:1px;
+      color:rgba(212,240,255,.58);
       font:500 8px/1.18 "Noto Sans TC",system-ui,sans-serif;
       letter-spacing:.02em;
     }
@@ -63,9 +66,8 @@
       animation:batteryRewardFloat .9s cubic-bezier(.16,.9,.25,1) forwards;
     }
     @keyframes batteryRewardGlow{
-      0%{box-shadow:0 0 18px rgba(68,169,255,.14)}
-      35%{box-shadow:0 0 30px rgba(255,220,86,.9),0 0 62px rgba(255,133,35,.34)}
-      100%{box-shadow:0 0 18px rgba(68,169,255,.14)}
+      0%,100%{filter:none}
+      35%{filter:drop-shadow(0 0 12px rgba(255,220,86,.9))}
     }
     @keyframes batteryRewardFloat{
       0%{opacity:0;transform:translate(-50%,-30%) scale(.72)}
@@ -73,14 +75,9 @@
       100%{opacity:0;transform:translate(-50%,-170%) scale(.96)}
     }
     @media(max-width:760px){
-      #starryBatteryCenter{
-        bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px);
-        min-width:122px;
-        padding:6px 9px;
-        border-radius:11px;
-      }
+      #starryBatteryCenter{margin-top:6px;gap:1px 5px}
       #starryBatteryCenter .battery-value{font-size:16px}
-      #starryBatteryCenter .battery-title{font-size:7px}
+      #starryBatteryCenter .battery-title{font-size:8px}
       #starryBatteryCenter .battery-hint{font-size:7px}
     }
   `;
@@ -99,7 +96,10 @@
   hint.className = 'battery-hint';
   hint.textContent = '讀取中央會員電池…';
   badge.append(title, value, hint);
-  document.body.appendChild(badge);
+
+  const mainTitle = document.querySelector('.brand-mark h1');
+  if (mainTitle) mainTitle.insertAdjacentElement('afterend', badge);
+  else document.body.appendChild(badge);
 
   function displayBalance(balance) {
     const number = Number(balance);
