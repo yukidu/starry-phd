@@ -174,6 +174,10 @@
     createExplosion(x, y);
     playExplosionSound();
     navigator.vibrate?.([18, 22, 30]);
+
+    window.dispatchEvent(new CustomEvent('starry:meteor-blasted', {
+      detail: { rock, x, y }
+    }));
   }
 
   function enhanceMeteor(rock) {
