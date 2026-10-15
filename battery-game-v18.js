@@ -157,12 +157,10 @@
     setTimeout(() => badge.classList.remove('rewarded'), 650);
   }
 
-  async function rewardMeteor(rock, event) {
-    if (rock.dataset.batteryRewardSent === '1') return;
+  async function rewardMeteor(rock, x, y) {
+    if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
     rock.dataset.batteryRewardSent = '1';
     const id = targetId(rock);
-    const x = Number(event.clientX || 0);
-    const y = Number(event.clientY || 0);
 
     try {
       const { response, data } = await api('POST', { targetId: id });
@@ -178,7 +176,7 @@
       }
       if (!response.ok || !data.success) throw new Error(data?.error || '獎勵寫入失敗');
       displayBalance(data.balance);
-      if (Number(data.added) === 0.01) showReward(x, y);
+      if (Number(data.added) === 0.01) showReward(Number(x || 0), Number(y || 0));
     } catch (error) {
       console.warn('Starry battery reward:', error);
       displayError('爆破成功，但電池寫入失敗');
@@ -186,11 +184,11 @@
     }
   }
 
-  document.addEventListener('pointerdown', (event) => {
-    const target = event.target instanceof Element ? event.target.closest('.space-rock.small[data-interactive-meteor="1"]') : null;
-    if (!(target instanceof HTMLElement)) return;
-    void rewardMeteor(target, event);
-  }, true);
+  window.addEventListener('starry:meteor-blasted', (event) => {
+    const detail = event instanceof CustomEvent ? event.detail : null;
+    if (!(detail?.rock instanceof HTMLElement)) return;
+    void rewardMeteor(detail.rock, detail.x, detail.y);
+  });
 
   void loadBalance();
   addEventListener('pageshow', () => void loadBalance());
