@@ -1,7 +1,7 @@
 (() => {
-  // v33-card-only-navigation
-  // 只有星球下方服務卡片可開啟 App；點星球本體、星球名稱或卡片外空白都不跳轉。
-  let press = null;
+  // v35-card-click-navigation
+  // 只有星球下方服務卡片可開啟 App；電腦與手機都使用真正 click 事件開啟，避免桌機 pointerup 被瀏覽器攔截。
+  let touchPress = null;
 
   function getCardTarget(target) {
     if (!(target instanceof Element)) return null;
@@ -35,52 +35,40 @@
     });
   });
 
+  // 手機拖曳 360° 視野時不要誤開服務卡；桌機滑鼠不套用此門檻。
   document.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'touch') return;
     const target = getCardTarget(event.target);
-    if (!target || (event.button != null && event.button !== 0)) {
-      press = null;
+    if (!target) {
+      touchPress = null;
       return;
     }
-
-    press = {
-      card: target.card,
+    touchPress = {
       label: target.label,
       pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
-      lastX: event.clientX,
-      lastY: event.clientY,
-      travel: 0
+      dragged: false
     };
   }, true);
 
   document.addEventListener('pointermove', (event) => {
-    if (!press || event.pointerId !== press.pointerId) return;
-    press.travel += Math.abs(event.clientX - press.lastX) + Math.abs(event.clientY - press.lastY);
-    press.lastX = event.clientX;
-    press.lastY = event.clientY;
+    if (!touchPress || event.pointerId !== touchPress.pointerId) return;
+    const travel = Math.abs(event.clientX - touchPress.x) + Math.abs(event.clientY - touchPress.y);
+    if (travel > 14) touchPress.dragged = true;
   }, true);
 
   document.addEventListener('pointerup', (event) => {
-    if (!press || event.pointerId !== press.pointerId) return;
-
-    const current = press;
-    press = null;
-
-    if (current.travel > 12) return;
-    if (!(event.target instanceof Element) || !current.label.contains(event.target)) return;
-    const url = current.card?.dataset?.url;
-    if (!url) return;
-
-    current.card.dataset.v33OpenedAt = String(performance.now());
-    window.open(url, '_blank', 'noopener,noreferrer');
+    if (!touchPress || event.pointerId !== touchPress.pointerId) return;
+    if (touchPress.dragged) touchPress.label.dataset.v35DraggedAt = String(performance.now());
+    touchPress = null;
   }, true);
 
   document.addEventListener('pointercancel', () => {
-    press = null;
+    touchPress = null;
   }, true);
 
-  // 攔截原始 planet-wrap 點擊：卡片外一律不導頁；卡片已在 pointerup 開啟時阻止重複開分頁。
+  // v35：改用 click 開啟，桌機 Chrome/Safari 都能被視為真正使用者點擊，不再被 popup blocker 擋掉。
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
     const card = event.target.closest('.planet-wrap[data-url]');
@@ -88,12 +76,25 @@
 
     const label = event.target.closest('.service-label');
     const isServiceCard = !!label && label.closest('.planet-wrap[data-url]') === card;
-    const openedAt = Number(card.dataset.v33OpenedAt || 0);
 
-    if (!isServiceCard || performance.now() - openedAt < 800) {
+    // 星球本體、名稱與卡片外區域一律不導頁。
+    if (!isServiceCard) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      return;
     }
+
+    const draggedAt = Number(label.dataset.v35DraggedAt || 0);
+    if (performance.now() - draggedAt < 650) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+
+    const url = card.dataset.url;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }, true);
 
   // Tablet / large-screen readability: make service-card text substantially larger.
@@ -102,8 +103,8 @@
     .planet-wrap[data-url] { cursor: default !important; }
     .planet-wrap[data-url] em.service-label { cursor: pointer !important; }
 
-    .starry-account-hitbox{position:absolute;z-index:6;margin:0;padding:0;border:0;border-radius:10px;background:transparent;cursor:pointer;touch-action:manipulation}
-    .starry-account-hitbox:focus-visible{outline:2px solid #7df9ff;outline-offset:3px}
+    #starryBatteryCenter .battery-value.account-ready{pointer-events:auto!important;cursor:pointer!important}
+    #starryBatteryCenter .battery-value.account-ready:focus-visible{outline:2px solid #7df9ff;outline-offset:5px}
     .starry-account-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:flex-end;justify-content:center;padding:max(14px,env(safe-area-inset-bottom)) 12px;background:rgba(0,3,13,.56);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease}
     .starry-account-backdrop.open{opacity:1;visibility:visible}
     .starry-account-sheet{position:relative;width:min(430px,100%);padding:22px 16px 16px;border:1px solid rgba(105,232,255,.38);border-radius:22px;background:linear-gradient(160deg,rgba(5,17,39,.99),rgba(5,8,24,.99) 58%,rgba(25,8,46,.98));box-shadow:0 -18px 70px rgba(0,0,0,.52),0 0 42px rgba(66,187,255,.16);color:#effcff;text-align:center}
@@ -165,7 +166,7 @@
   `;
   document.head.appendChild(style);
 
-  // v34：登入後，點電池數量可登出或切換 Google 登入帳號。
+  // v35-account-menu-direct：登入後直接讓「電池數量按鈕」可點，不再用透明覆蓋層攔截。
   const STARRY_LOGOUT_URL = 'https://id.starry.phd/api/logout';
   const SWITCH_ACCOUNT_KEY = 'starry:switch-account-after-logout';
 
@@ -175,13 +176,6 @@
     if (!(badge instanceof HTMLElement) || !(value instanceof HTMLButtonElement)) return;
     if (badge.dataset.accountActionsReady === '1') return;
     badge.dataset.accountActionsReady = '1';
-
-    const hitbox = document.createElement('button');
-    hitbox.type = 'button';
-    hitbox.className = 'starry-account-hitbox';
-    hitbox.hidden = true;
-    hitbox.setAttribute('aria-label', '管理登入帳號');
-    badge.appendChild(hitbox);
 
     const overlay = document.createElement('div');
     overlay.className = 'starry-account-backdrop';
@@ -194,6 +188,11 @@
     const logoutButton = overlay.querySelector('[data-account-action="logout"]');
     const status = overlay.querySelector('.starry-account-status');
     const actionButtons = [switchButton, logoutButton].filter((button) => button instanceof HTMLButtonElement);
+
+    const isLoggedIn = () => {
+      const text = String(value.textContent || '').trim();
+      return !value.classList.contains('login-ready') && text !== '--' && text !== '請先登入';
+    };
 
     const close = () => {
       overlay.classList.remove('open');
@@ -210,29 +209,29 @@
       if (switchButton instanceof HTMLButtonElement) switchButton.focus({ preventScroll: true });
     };
 
-    const syncHitbox = () => {
-      const text = String(value.textContent || '').trim();
-      const loggedIn = !value.classList.contains('login-ready') && text !== '--' && text !== '請先登入';
-      hitbox.hidden = !loggedIn;
-      if (!loggedIn) return;
-      const badgeRect = badge.getBoundingClientRect();
-      const valueRect = value.getBoundingClientRect();
-      hitbox.style.left = `${valueRect.left - badgeRect.left}px`;
-      hitbox.style.top = `${valueRect.top - badgeRect.top}px`;
-      hitbox.style.width = `${valueRect.width}px`;
-      hitbox.style.height = `${valueRect.height}px`;
+    const syncAccountState = () => {
+      if (isLoggedIn()) {
+        if (value.disabled) value.disabled = false;
+        value.classList.add('account-ready');
+        value.title = '帳號選項';
+      } else {
+        value.classList.remove('account-ready');
+        value.removeAttribute('title');
+      }
     };
 
-    const valueObserver = new MutationObserver(syncHitbox);
+    const valueObserver = new MutationObserver(syncAccountState);
     valueObserver.observe(value, { attributes: true, childList: true, characterData: true, subtree: true });
-    addEventListener('resize', syncHitbox, { passive: true });
-    requestAnimationFrame(syncHitbox);
+    requestAnimationFrame(syncAccountState);
 
-    hitbox.addEventListener('click', (event) => {
+    // capture=true：登入狀態先攔截，避免和原本「未登入 → 開登入視窗」的 click 邏輯互相干擾。
+    value.addEventListener('click', (event) => {
+      if (!isLoggedIn()) return;
       event.preventDefault();
-      event.stopPropagation();
+      event.stopImmediatePropagation();
       open();
-    });
+    }, true);
+
     closeButton?.addEventListener('click', close);
     overlay.addEventListener('pointerdown', (event) => { if (event.target === overlay) close(); });
     addEventListener('keydown', (event) => { if (event.key === 'Escape' && overlay.classList.contains('open')) close(); });
