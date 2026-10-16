@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "繁星生態系 Starry.phd",
-  "short_name": "繁星 Starry",
-  "description": "Starry.phd 繁星生態系入口",
+  "name": "繁星艦長",
+  "short_name": "繁星艦長",
+  "description": "繁星艦長 Starry.phd",
   "lang": "zh-Hant",
   "start_url": "/?source=pwa",
   "scope": "/",
