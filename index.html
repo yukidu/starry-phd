@@ -20,7 +20,7 @@
     .universe{overflow:visible!important;perspective:none!important}
     .milky-way{position:fixed;inset:-34%;z-index:1;pointer-events:none;opacity:.7;transform:rotate(-18deg) scale(1.14);mix-blend-mode:screen;filter:blur(.45px);background:radial-gradient(ellipse at 49% 52%,rgba(255,255,255,.2) 0 1%,rgba(179,211,255,.16) 2% 5%,transparent 14%),linear-gradient(90deg,transparent 14%,rgba(84,103,190,.05) 24%,rgba(169,194,255,.12) 35%,rgba(248,238,255,.28) 49%,rgba(120,154,255,.12) 63%,rgba(83,78,167,.06) 75%,transparent 87%);animation:galaxyFlow 46s linear infinite}
     .milky-way::before{content:"";position:absolute;inset:25% -5%;background:radial-gradient(circle at 6% 52%,rgba(255,255,255,.9) 0 1px,transparent 1.7px),radial-gradient(circle at 19% 47%,rgba(193,221,255,.75) 0 1px,transparent 1.6px),radial-gradient(circle at 34% 55%,rgba(255,224,253,.7) 0 1.1px,transparent 1.8px),radial-gradient(circle at 51% 44%,rgba(255,255,255,.95) 0 1px,transparent 1.9px),radial-gradient(circle at 68% 53%,rgba(181,211,255,.78) 0 1px,transparent 1.7px),radial-gradient(circle at 82% 46%,rgba(255,236,255,.72) 0 1px,transparent 1.6px),radial-gradient(circle at 94% 56%,rgba(255,255,255,.82) 0 1px,transparent 1.8px);background-size:11% 26%,13% 22%,17% 28%,19% 25%,14% 24%,12% 27%,15% 23%;opacity:.78;filter:drop-shadow(0 0 4px rgba(173,206,255,.52));animation:galaxySparkle 8s ease-in-out infinite alternate}
-    .milky-way::after{content:"";position:absolute;inset:36% -3%;background:linear-gradient(90deg,transparent,rgba(85,114,228,.12) 16%,rgba(196,214,255,.2) 36%,rgba(255,236,255,.34) 50%,rgba(157,188,255,.18) 66%,rgba(74,90,201,.08) 84%,transparent);filter:blur(18px);opacity:.88}
+    .milky-way::after{content:"";position:absolute;inset:36% -3%;background:linear-gradient(90deg,transparent,rgba(85,114,228,.12) 16%,rgba(196,214,255,.2) 36%,rgba(255,236,255,.34) 50%,rgba(157,188,255,.18) 66%,rgba(74,90,201,.08) 84%,transparent 87%);filter:blur(18px);opacity:.88}
     @keyframes galaxyFlow{to{transform:rotate(342deg) scale(1.14)}}
     @keyframes galaxySparkle{to{opacity:.46;transform:translate3d(2.5%,1.5%,0) scale(1.03)}}
     .free-look-hint{position:fixed;z-index:18;left:50%;top:max(166px,calc(env(safe-area-inset-top) + 154px));transform:translateX(-50%);padding:7px 12px;border:1px solid rgba(145,220,255,.16);border-radius:999px;background:rgba(4,10,24,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:rgba(214,241,255,.7);font-size:10px;letter-spacing:.12em;pointer-events:none;transition:opacity .6s ease,transform .6s ease;animation:hintFloat 2.4s ease-in-out infinite}
@@ -70,15 +70,15 @@
 
   <div class="universe">
     <div class="planet-lane" id="planetLane">
-      <div class="planet-wrap p1"><span class="celestial-name">水星</span><div class="planet mercury"><span></span></div><em class="service-label"><b class="service-name">繁星主站</b><small class="service-host">starry.phd</small></em></div>
-      <div class="planet-wrap p2"><span class="celestial-name">金星</span><div class="planet venus"><span></span></div><em class="service-label"><b class="service-name">Starry ID 中央會員</b><small class="service-host">id.starry.phd</small></em></div>
+      <div class="planet-wrap p1"><span class="celestial-name">水星</span><div class="planet mercury"><span></span></div><em class="service-label"><b class="service-name">繁星艦長</b><small class="service-host">starry.phd</small></em></div>
+      <div class="planet-wrap p2"><span class="celestial-name">金星</span><div class="planet venus"><span></span></div><em class="service-label"><b class="service-name">繁星通行證</b><small class="service-host">id.starry.phd</small></em></div>
       <div class="planet-wrap p3"><span class="celestial-name">地球</span><div class="planet earth"><span></span></div><div class="earth-moon-companion"><span class="celestial-name">月亮</span><div class="planet moon"><span></span></div></div><em class="service-label"><b class="service-name">繁星回聲</b><small class="service-host">echo.starry.phd</small></em></div>
-      <div class="planet-wrap p4"><span class="celestial-name">火星</span><div class="planet mars"><span></span></div><em class="service-label"><b class="service-name">繁星下載</b><small class="service-host">download.starry.phd</small></em></div>
+      <div class="planet-wrap p4"><span class="celestial-name">火星</span><div class="planet mars"><span></span></div><em class="service-label"><b class="service-name">繁星捕手</b><small class="service-host">download.starry.phd</small></em></div>
       <div class="planet-wrap p5"><span class="celestial-name">木星</span><div class="planet jupiter"><span></span></div><em class="service-label"><b class="service-name">繁星任意門</b><small class="service-host">go.starry.phd</small></em></div>
-      <div class="planet-wrap p6"><span class="celestial-name">土星</span><div class="planet saturn"><span></span><i class="ring"></i></div><em class="service-label"><b class="service-name">繁星膠囊</b><small class="service-host">box.starry.phd</small></em></div>
-      <div class="planet-wrap p7"><span class="celestial-name">天王星</span><div class="planet uranus"><span></span></div></div>
-      <div class="planet-wrap p8"><span class="celestial-name">海王星</span><div class="planet neptune"><span></span></div><em class="service-label"><b class="service-name">影片同步</b><small class="service-host">sync.starry.phd</small></em></div>
-      <div class="planet-wrap p9"><span class="celestial-name">冥王星</span><div class="planet pluto"><span></span></div><em class="service-label"><b class="service-name">繁星語錄</b><small class="service-host">quotes.starry.phd</small></em></div>
+      <div class="planet-wrap p6"><span class="celestial-name">土星</span><div class="planet saturn"><span></span><i class="ring"></i></div><em class="service-label"><b class="service-name">繁星視界</b><small class="service-host">eye.starry.phd</small></em></div>
+      <div class="planet-wrap p7"><span class="celestial-name">天王星</span><div class="planet uranus"><span></span></div><em class="service-label"><b class="service-name">繁星副官</b><small class="service-host">ai.starry.phd</small></em></div>
+      <div class="planet-wrap p8"><span class="celestial-name">海王星</span><div class="planet neptune"><span></span></div><em class="service-label"><b class="service-name">繁星共振</b><small class="service-host">sync.starry.phd</small></em></div>
+      <div class="planet-wrap p9"><span class="celestial-name">冥王星</span><div class="planet pluto"><span></span></div><em class="service-label"><b class="service-name">繁星心鏡</b><small class="service-host">mirror.starry.phd</small></em></div>
     </div>
   </div>
 
@@ -97,7 +97,7 @@
             <path fill="#34A853" d="M7.4 5.2c-.65.72-1.04 1.84-1.04 3.25v31.1c0 1.41.39 2.53 1.04 3.25L26.1 24 7.4 5.2Z"/>
             <path fill="#FBBC04" d="m26.1 24-18.7 18.8c1.02 1.12 2.67 1.25 4.53.2l21.9-12.48L26.1 24Z"/>
             <path fill="#EA4335" d="m33.83 17.47-21.9-12.48C10.07 3.94 8.42 4.07 7.4 5.2L26.1 24l7.73-6.53Z"/>
-            <path fill="#4285F4" d="m41.2 21.66-7.37-4.19L26.1 24l7.73 6.52 7.37-4.19c2.53-1.44 2.53-3.23 0-4.67Z"/>
+            <path fill="#4285F4" d="m41.2 21.66-7.37-4.19L26.1 24l7.73-6.53Z"/>
           </svg>
         </span>
         <span class="portal-copy"><small>EXPLORE ON</small><strong>Google Play</strong></span>
