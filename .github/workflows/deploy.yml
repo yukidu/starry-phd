@@ -39,8 +39,9 @@ jobs:
           grep -F ".status-pill{display:none!important}" dist/app-v5.js
           grep -F "v28DensityChecked" dist/app-v5.js
           grep -F 'font-feature-settings:"zero" 0' dist/app-v5.js
-          grep -F ".click-burst,.click-burst *{display:none!important}" dist/app-v5.js
-          grep -F "keepLatest('.meteor-hit-explosion'" dist/app-v5.js
+          grep -F ".click-burst{contain:layout paint style}" dist/app-v5.js
+          grep -F "limitEffects('.click-burst', 2)" dist/app-v5.js
+          grep -F "limitEffects('.meteor-hit-explosion', 1)" dist/app-v5.js
           ! grep -F "rewardInstantPulse" dist/app-v5.js
           grep -F "data-starry-quality" dist/app-v5.js
           grep -F "navigator.serviceWorker.register('/sw.js'" dist/app-v5.js
@@ -82,8 +83,9 @@ jobs:
               && grep -F ".status-pill{display:none!important}" /tmp/starry-app.js >/dev/null \
               && grep -F "v28DensityChecked" /tmp/starry-app.js >/dev/null \
               && grep -F 'font-feature-settings:"zero" 0' /tmp/starry-app.js >/dev/null \
-              && grep -F ".click-burst,.click-burst *{display:none!important}" /tmp/starry-app.js >/dev/null \
-              && grep -F "keepLatest('.meteor-hit-explosion'" /tmp/starry-app.js >/dev/null \
+              && grep -F ".click-burst{contain:layout paint style}" /tmp/starry-app.js >/dev/null \
+              && grep -F "limitEffects('.click-burst', 2)" /tmp/starry-app.js >/dev/null \
+              && grep -F "limitEffects('.meteor-hit-explosion', 1)" /tmp/starry-app.js >/dev/null \
               && ! grep -F "rewardInstantPulse" /tmp/starry-app.js >/dev/null \
               && grep -F "data-starry-quality" /tmp/starry-app.js >/dev/null \
               && grep -F "navigator.serviceWorker.register('/sw.js'" /tmp/starry-app.js >/dev/null \
@@ -104,8 +106,9 @@ jobs:
           grep -F "獎勵 +" /tmp/starry-app.js
           grep -F "v28DensityChecked" /tmp/starry-app.js
           grep -F 'font-feature-settings:"zero" 0' /tmp/starry-app.js
-          grep -F ".click-burst,.click-burst *{display:none!important}" /tmp/starry-app.js
-          grep -F "keepLatest('.meteor-hit-explosion'" /tmp/starry-app.js
+          grep -F ".click-burst{contain:layout paint style}" /tmp/starry-app.js
+          grep -F "limitEffects('.click-burst', 2)" /tmp/starry-app.js
+          grep -F "limitEffects('.meteor-hit-explosion', 1)" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
           grep -F "starry-shell-v25" /tmp/starry-sw.js
