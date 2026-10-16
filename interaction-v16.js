@@ -102,6 +102,23 @@
     .planet-wrap[data-url] { cursor: default !important; }
     .planet-wrap[data-url] em.service-label { cursor: pointer !important; }
 
+    .starry-account-hitbox{position:absolute;z-index:6;margin:0;padding:0;border:0;border-radius:10px;background:transparent;cursor:pointer;touch-action:manipulation}
+    .starry-account-hitbox:focus-visible{outline:2px solid #7df9ff;outline-offset:3px}
+    .starry-account-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:flex-end;justify-content:center;padding:max(14px,env(safe-area-inset-bottom)) 12px;background:rgba(0,3,13,.56);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .18s ease,visibility .18s ease}
+    .starry-account-backdrop.open{opacity:1;visibility:visible}
+    .starry-account-sheet{position:relative;width:min(430px,100%);padding:22px 16px 16px;border:1px solid rgba(105,232,255,.38);border-radius:22px;background:linear-gradient(160deg,rgba(5,17,39,.99),rgba(5,8,24,.99) 58%,rgba(25,8,46,.98));box-shadow:0 -18px 70px rgba(0,0,0,.52),0 0 42px rgba(66,187,255,.16);color:#effcff;text-align:center}
+    .starry-account-sheet::before{content:"";position:absolute;left:14%;right:14%;top:0;height:1px;background:linear-gradient(90deg,transparent,#7df9ff,transparent);box-shadow:0 0 16px #7df9ff}
+    .starry-account-title{margin:0 0 6px;font:800 19px/1.25 "Orbitron","Noto Sans TC",system-ui,sans-serif;letter-spacing:.05em}
+    .starry-account-copy{margin:0 0 15px;color:#a9cde1;font:600 12px/1.55 "Noto Sans TC",system-ui,sans-serif}
+    .starry-account-actions{display:grid;gap:10px}
+    .starry-account-action{min-height:48px;border:1px solid rgba(125,249,255,.28);border-radius:13px;background:rgba(8,24,49,.78);color:#effcff;font:800 14px/1 "Noto Sans TC",system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+    .starry-account-action.primary{border-color:rgba(125,249,255,.55);box-shadow:0 0 18px rgba(64,194,255,.12)}
+    .starry-account-action.logout{border-color:rgba(255,154,170,.28);color:#ffdce2;background:rgba(44,12,28,.62)}
+    .starry-account-action:disabled{opacity:.5;cursor:wait}
+    .starry-account-status{min-height:18px;margin-top:10px;color:#bfeaff;font:700 11px/1.45 "Noto Sans TC",system-ui,sans-serif}
+    .starry-account-status.error{color:#ffb8c2}
+    .starry-account-close{position:absolute;right:9px;top:9px;width:34px;height:34px;border:1px solid rgba(164,224,255,.25);border-radius:50%;background:rgba(5,14,33,.74);color:#eafaff;font-size:19px;cursor:pointer}
+
     @media (min-width: 768px) {
       .planet-wrap em.service-label {
         min-width: 210px !important;
@@ -147,4 +164,129 @@
     }
   `;
   document.head.appendChild(style);
+
+  // v34：登入後，點電池數量可登出或切換 Google 登入帳號。
+  const STARRY_LOGOUT_URL = 'https://id.starry.phd/api/logout';
+  const SWITCH_ACCOUNT_KEY = 'starry:switch-account-after-logout';
+
+  function initBatteryAccountActions() {
+    const badge = document.getElementById('starryBatteryCenter');
+    const value = badge?.querySelector('.battery-value');
+    if (!(badge instanceof HTMLElement) || !(value instanceof HTMLButtonElement)) return;
+    if (badge.dataset.accountActionsReady === '1') return;
+    badge.dataset.accountActionsReady = '1';
+
+    const hitbox = document.createElement('button');
+    hitbox.type = 'button';
+    hitbox.className = 'starry-account-hitbox';
+    hitbox.hidden = true;
+    hitbox.setAttribute('aria-label', '管理登入帳號');
+    badge.appendChild(hitbox);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'starry-account-backdrop';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `<section class="starry-account-sheet" role="dialog" aria-modal="true" aria-label="帳號選項"><button class="starry-account-close" type="button" aria-label="關閉">×</button><h2 class="starry-account-title">STARRY ID</h2><p class="starry-account-copy">選擇要切換 Google 登入帳號，或登出目前帳號。</p><div class="starry-account-actions"><button class="starry-account-action primary" type="button" data-account-action="switch">切換登入帳號</button><button class="starry-account-action logout" type="button" data-account-action="logout">登出</button></div><div class="starry-account-status" role="status"></div></section>`;
+    document.body.appendChild(overlay);
+
+    const closeButton = overlay.querySelector('.starry-account-close');
+    const switchButton = overlay.querySelector('[data-account-action="switch"]');
+    const logoutButton = overlay.querySelector('[data-account-action="logout"]');
+    const status = overlay.querySelector('.starry-account-status');
+    const actionButtons = [switchButton, logoutButton].filter((button) => button instanceof HTMLButtonElement);
+
+    const close = () => {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      if (status) {
+        status.textContent = '';
+        status.classList.remove('error');
+      }
+    };
+
+    const open = () => {
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      if (switchButton instanceof HTMLButtonElement) switchButton.focus({ preventScroll: true });
+    };
+
+    const syncHitbox = () => {
+      const text = String(value.textContent || '').trim();
+      const loggedIn = !value.classList.contains('login-ready') && text !== '--' && text !== '請先登入';
+      hitbox.hidden = !loggedIn;
+      if (!loggedIn) return;
+      const badgeRect = badge.getBoundingClientRect();
+      const valueRect = value.getBoundingClientRect();
+      hitbox.style.left = `${valueRect.left - badgeRect.left}px`;
+      hitbox.style.top = `${valueRect.top - badgeRect.top}px`;
+      hitbox.style.width = `${valueRect.width}px`;
+      hitbox.style.height = `${valueRect.height}px`;
+    };
+
+    const valueObserver = new MutationObserver(syncHitbox);
+    valueObserver.observe(value, { attributes: true, childList: true, characterData: true, subtree: true });
+    addEventListener('resize', syncHitbox, { passive: true });
+    requestAnimationFrame(syncHitbox);
+
+    hitbox.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      open();
+    });
+    closeButton?.addEventListener('click', close);
+    overlay.addEventListener('pointerdown', (event) => { if (event.target === overlay) close(); });
+    addEventListener('keydown', (event) => { if (event.key === 'Escape' && overlay.classList.contains('open')) close(); });
+
+    async function endSession(andSwitchAccount) {
+      actionButtons.forEach((button) => { button.disabled = true; });
+      if (status) {
+        status.textContent = andSwitchAccount ? '正在切換帳號…' : '正在登出…';
+        status.classList.remove('error');
+      }
+      if (andSwitchAccount) sessionStorage.setItem(SWITCH_ACCOUNT_KEY, '1');
+      else sessionStorage.removeItem(SWITCH_ACCOUNT_KEY);
+
+      try {
+        await fetch(STARRY_LOGOUT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          credentials: 'include',
+          cache: 'no-store',
+          keepalive: true
+        });
+        try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
+        location.reload();
+      } catch (error) {
+        if (andSwitchAccount) sessionStorage.removeItem(SWITCH_ACCOUNT_KEY);
+        actionButtons.forEach((button) => { button.disabled = false; });
+        if (status) {
+          status.textContent = '目前無法完成，請再試一次。';
+          status.classList.add('error');
+        }
+        console.warn('Starry account action:', error);
+      }
+    }
+
+    switchButton?.addEventListener('click', () => { void endSession(true); });
+    logoutButton?.addEventListener('click', () => { void endSession(false); });
+
+    if (sessionStorage.getItem(SWITCH_ACCOUNT_KEY) === '1') {
+      sessionStorage.removeItem(SWITCH_ACCOUNT_KEY);
+      const startedAt = Date.now();
+      const timer = setInterval(() => {
+        if (value.classList.contains('login-ready')) {
+          clearInterval(timer);
+          value.click();
+          return;
+        }
+        if (Date.now() - startedAt > 8000) clearInterval(timer);
+      }, 180);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBatteryAccountActions, { once: true });
+  } else {
+    queueMicrotask(initBatteryAccountActions);
+  }
 })();
