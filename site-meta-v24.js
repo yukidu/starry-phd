@@ -1,5 +1,6 @@
 (() => {
-  const title = '繁星生態系 Starry.phd';
+  // Legacy deploy marker: 繁星生態系 Starry.phd
+  const title = '繁星艦長';
   document.title = title;
 
   function setMeta(name, content) {
