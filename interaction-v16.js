@@ -212,11 +212,11 @@
     const syncAccountState = () => {
       if (isLoggedIn()) {
         if (value.disabled) value.disabled = false;
-        value.classList.add('account-ready');
-        value.title = '帳號選項';
+        if (!value.classList.contains('account-ready')) value.classList.add('account-ready');
+        if (value.title !== '帳號選項') value.title = '帳號選項';
       } else {
-        value.classList.remove('account-ready');
-        value.removeAttribute('title');
+        if (value.classList.contains('account-ready')) value.classList.remove('account-ready');
+        if (value.hasAttribute('title')) value.removeAttribute('title');
       }
     };
 
