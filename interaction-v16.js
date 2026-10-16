@@ -1,19 +1,50 @@
 (() => {
-  // Fix desktop planet-card clicks while preserving drag-to-look behavior.
+  // v33-card-only-navigation
+  // 只有星球下方服務卡片可開啟 App；點星球本體、星球名稱或卡片外空白都不跳轉。
   let press = null;
 
-  document.addEventListener('pointerdown', (event) => {
-    const card = event.target instanceof Element
-      ? event.target.closest('.planet-wrap[data-url]')
-      : null;
+  function getCardTarget(target) {
+    if (!(target instanceof Element)) return null;
+    const label = target.closest('.service-label');
+    const card = target.closest('.planet-wrap[data-url]');
+    if (!label || !card || label.closest('.planet-wrap[data-url]') !== card) return null;
+    return { label, card };
+  }
 
-    if (!card || (event.button != null && event.button !== 0)) {
+  document.querySelectorAll('.planet-wrap[data-url]').forEach((card) => {
+    const label = card.querySelector('.service-label');
+    card.removeAttribute('role');
+    card.removeAttribute('tabindex');
+    card.removeAttribute('aria-label');
+    card.style.cursor = 'default';
+
+    if (!label) return;
+    const name = card.querySelector('.service-name')?.textContent?.trim() || 'Starry App';
+    const host = card.querySelector('.service-host')?.textContent?.trim() || '';
+    label.setAttribute('role', 'link');
+    label.setAttribute('tabindex', '0');
+    label.setAttribute('aria-label', host ? `${name}，在新視窗開啟 ${host}` : name);
+    label.style.cursor = 'pointer';
+
+    label.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      event.stopPropagation();
+      const url = card.dataset.url;
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    });
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    const target = getCardTarget(event.target);
+    if (!target || (event.button != null && event.button !== 0)) {
       press = null;
       return;
     }
 
     press = {
-      card,
+      card: target.card,
+      label: target.label,
       pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
@@ -37,10 +68,11 @@
     press = null;
 
     if (current.travel > 12) return;
+    if (!(event.target instanceof Element) || !current.label.contains(event.target)) return;
     const url = current.card?.dataset?.url;
     if (!url) return;
 
-    current.card.dataset.v16OpenedAt = String(performance.now());
+    current.card.dataset.v33OpenedAt = String(performance.now());
     window.open(url, '_blank', 'noopener,noreferrer');
   }, true);
 
@@ -48,15 +80,17 @@
     press = null;
   }, true);
 
-  // Prevent the legacy click handler from opening a duplicate tab after the pointerup fix.
+  // 攔截原始 planet-wrap 點擊：卡片外一律不導頁；卡片已在 pointerup 開啟時阻止重複開分頁。
   document.addEventListener('click', (event) => {
-    const card = event.target instanceof Element
-      ? event.target.closest('.planet-wrap[data-url]')
-      : null;
+    if (!(event.target instanceof Element)) return;
+    const card = event.target.closest('.planet-wrap[data-url]');
     if (!card) return;
 
-    const openedAt = Number(card.dataset.v16OpenedAt || 0);
-    if (performance.now() - openedAt < 800) {
+    const label = event.target.closest('.service-label');
+    const isServiceCard = !!label && label.closest('.planet-wrap[data-url]') === card;
+    const openedAt = Number(card.dataset.v33OpenedAt || 0);
+
+    if (!isServiceCard || performance.now() - openedAt < 800) {
       event.preventDefault();
       event.stopImmediatePropagation();
     }
@@ -65,6 +99,9 @@
   // Tablet / large-screen readability: make service-card text substantially larger.
   const style = document.createElement('style');
   style.textContent = `
+    .planet-wrap[data-url] { cursor: default !important; }
+    .planet-wrap[data-url] em.service-label { cursor: pointer !important; }
+
     @media (min-width: 768px) {
       .planet-wrap em.service-label {
         min-width: 210px !important;
