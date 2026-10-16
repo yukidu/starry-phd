@@ -1,6 +1,6 @@
 (() => {
-  // v35-card-click-navigation
-  // 只有星球下方服務卡片可開啟 App；電腦與手機都使用真正 click 事件開啟，避免桌機 pointerup 被瀏覽器攔截。
+  // v37-native-service-links
+  // 只有星球下方服務卡片可開啟 App；改用真正 <a> 連結，避免桌機瀏覽器攔截 window.open。
   let touchPress = null;
 
   function getCardTarget(target) {
@@ -21,17 +21,26 @@
     if (!label) return;
     const name = card.querySelector('.service-name')?.textContent?.trim() || 'Starry App';
     const host = card.querySelector('.service-host')?.textContent?.trim() || '';
-    label.setAttribute('role', 'link');
-    label.setAttribute('tabindex', '0');
-    label.setAttribute('aria-label', host ? `${name}，在新視窗開啟 ${host}` : name);
+    const url = card.dataset.url;
+
+    label.removeAttribute('role');
+    label.removeAttribute('tabindex');
+    label.removeAttribute('aria-label');
     label.style.cursor = 'pointer';
 
-    label.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
+    let nativeLink = label.querySelector(':scope > .starry-service-native-link');
+    if (!nativeLink && url) {
+      nativeLink = document.createElement('a');
+      nativeLink.className = 'starry-service-native-link';
+      nativeLink.href = url;
+      nativeLink.target = '_blank';
+      nativeLink.rel = 'noopener noreferrer';
+      nativeLink.setAttribute('aria-label', host ? `${name}，在新視窗開啟 ${host}` : name);
+      label.appendChild(nativeLink);
+    }
+
+    nativeLink?.addEventListener('click', (event) => {
       event.stopPropagation();
-      const url = card.dataset.url;
-      if (url) window.open(url, '_blank', 'noopener,noreferrer');
     });
   });
 
@@ -60,7 +69,7 @@
 
   document.addEventListener('pointerup', (event) => {
     if (!touchPress || event.pointerId !== touchPress.pointerId) return;
-    if (touchPress.dragged) touchPress.label.dataset.v35DraggedAt = String(performance.now());
+    if (touchPress.dragged) touchPress.label.dataset.v37DraggedAt = String(performance.now());
     touchPress = null;
   }, true);
 
@@ -68,7 +77,7 @@
     touchPress = null;
   }, true);
 
-  // v35：改用 click 開啟，桌機 Chrome/Safari 都能被視為真正使用者點擊，不再被 popup blocker 擋掉。
+  // 星球本體、星球名稱與卡片外區域一律不導頁；服務卡上的原生連結交給瀏覽器直接處理。
   document.addEventListener('click', (event) => {
     if (!(event.target instanceof Element)) return;
     const card = event.target.closest('.planet-wrap[data-url]');
@@ -77,24 +86,25 @@
     const label = event.target.closest('.service-label');
     const isServiceCard = !!label && label.closest('.planet-wrap[data-url]') === card;
 
-    // 星球本體、名稱與卡片外區域一律不導頁。
     if (!isServiceCard) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
     }
 
-    const draggedAt = Number(label.dataset.v35DraggedAt || 0);
+    const draggedAt = Number(label.dataset.v37DraggedAt || 0);
     if (performance.now() - draggedAt < 650) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
     }
 
-    const url = card.dataset.url;
+    // 點在真正的 <a> 上時不 preventDefault，讓桌機 Chrome / Safari 使用原生導頁。
+    if (event.target.closest('.starry-service-native-link')) return;
+
+    // 保險：若極少數瀏覽器沒有命中覆蓋連結，仍不要觸發舊的整顆星球導頁。
     event.preventDefault();
     event.stopImmediatePropagation();
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }, true);
 
   // Tablet / large-screen readability: make service-card text substantially larger.
@@ -102,6 +112,8 @@
   style.textContent = `
     .planet-wrap[data-url] { cursor: default !important; }
     .planet-wrap[data-url] em.service-label { cursor: pointer !important; }
+    .starry-service-native-link{position:absolute;inset:0;z-index:20;display:block;border-radius:inherit;background:transparent;text-decoration:none;color:inherit;cursor:pointer;touch-action:none}
+    .starry-service-native-link:focus-visible{outline:2px solid #7df9ff;outline-offset:3px}
 
     #starryBatteryCenter .battery-value.account-ready{pointer-events:auto!important;cursor:pointer!important}
     #starryBatteryCenter .battery-value.account-ready:focus-visible{outline:2px solid #7df9ff;outline-offset:5px}
