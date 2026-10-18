@@ -19,6 +19,10 @@ jobs:
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
+          grep -F 'window.starryPerformance' dist/app-v5.js
+          grep -F "quality === 'eco'" dist/app-v5.js
+          grep -F 'primaryStarFraction' dist/app-v5.js
+          grep -F 'lastRenderedPlanetYaw' dist/app-v5.js
           grep -F 'starrySolarParallaxX' dist/app-v5.js
           grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' dist/app-v5.js
           grep -F 'rgba(255,241,166,.88)' dist/app-v5.js

@@ -44,6 +44,11 @@
     html[data-starry-quality="low"] .milky-way{filter:none!important}
     html[data-starry-quality="low"] .milky-way .galaxy-stars-a{filter:none!important;animation-duration:10s!important;opacity:.22!important}
     html[data-starry-quality="low"] .planet-wrap em.service-label{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+    html[data-starry-quality="eco"] .milky-way{filter:none!important;animation:none!important;opacity:.48!important}
+    html[data-starry-quality="eco"] .milky-way .galaxy-stars-a{animation:none!important;filter:none!important;opacity:.14!important}
+    html[data-starry-quality="eco"] .planet-wrap em.service-label{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+    html[data-starry-hidden="1"] .milky-way,
+    html[data-starry-hidden="1"] .milky-way .galaxy-stars-a{animation-play-state:paused!important}
     /* During finger interaction, prioritize the planet camera over ambience. */
     html[data-starry-interacting="1"] .milky-way,
     html[data-starry-interacting="1"] .milky-way::before,
@@ -76,7 +81,8 @@
   const mobile = matchMedia('(max-width: 900px)').matches || navigator.maxTouchPoints > 1;
   const cores = Number(navigator.hardwareConcurrency || 0);
   const memory = Number(navigator.deviceMemory || 0);
-  const QUALITY = ['low','medium','high'];
+  // Actual frame rate determines ongoing quality. CPU and RAM are only initial hints.
+  const QUALITY = ['eco','low','medium','high'];
   let quality = 'desktop';
   if (mobile) {
     quality = reduceMotion ? 'low' : ((cores && cores <= 4) || (memory && memory <= 4) ? 'low' : 'medium');
@@ -92,17 +98,42 @@
   let lowWindows = 0;
   let highWindows = 0;
   let lastQualityChange = 0;
+  let lastAmbientDraw = 0;
 
   function qualityConfig() {
     if (!mobile) return { count: Math.max(156, Math.min(315, Math.floor(width * height / 5000))), dpr: 1.5, skip: 0 };
     if (quality === 'high') return { count: 99, dpr: 1.3, skip: 0 };
     if (quality === 'medium') return { count: 66, dpr: 1.15, skip: 0 };
-    return { count: reduceMotion ? 24 : 39, dpr: 1, skip: 1 };
+    if (quality === 'low') return { count: reduceMotion ? 24 : 36, dpr: 1, skip: 1 };
+    return { count: 18, dpr: 1, skip: 2 };
   }
 
   function updateQualityMarker() {
     document.documentElement.dataset.starryQuality = mobile ? quality : 'desktop';
+    document.documentElement.dataset.starryHidden = document.hidden ? '1' : '0';
   }
+
+  // The two starfields and existing meteor timers consume this state;
+  // no added requestAnimationFrame loop, timer or cloud API traffic.
+  window.starryPerformance = {
+    getTier: () => mobile ? quality : 'high',
+    primaryInterval: () => !mobile ? 0
+      : quality === 'eco' ? 82 : quality === 'low' ? 48
+      : quality === 'medium' ? 32 : 0,
+    primaryStarFraction: () => !mobile ? 1
+      : quality === 'eco' ? .32 : quality === 'low' ? .5
+      : quality === 'medium' ? .78 : 1,
+    allowMeteor(kind='small') {
+      if (document.hidden) return false;
+      if (!mobile || quality === 'high' || quality === 'medium') return true;
+      const active = document.querySelectorAll('#meteorLayer .space-rock').length;
+      if (active >= (quality === 'eco' ? 3 : 5)) return false;
+      const chance = quality === 'eco'
+        ? (kind === 'extra' ? .3 : kind === 'giant' ? .5 : .52)
+        : (kind === 'extra' ? .6 : kind === 'giant' ? .8 : .78);
+      return Math.random() < chance;
+    }
+  };
 
   function makeStar(far = false) {
     const angle = Math.random() * Math.PI * 2;
@@ -149,12 +180,18 @@
     sampleFrames = 0;
     if (now - lastQualityChange < 9000) return;
 
-    if (fps < 47) {
+    // Each sample window is 2s. Downgrade promptly after sustained slow
+    // frames; take 12s of consistently fast frames before upgrading again.
+    if (fps < 55) {
       lowWindows += 1;
       highWindows = 0;
-      if (lowWindows >= 2) {
+      if (fps < 25 && lowWindows >= 2) changeQuality('eco');
+      else if (fps < 40 && lowWindows >= 2) {
         const index = QUALITY.indexOf(quality);
         if (index > 0) changeQuality(QUALITY[index - 1]);
+      } else if (fps >= 40 && lowWindows >= 3) {
+        const index = QUALITY.indexOf(quality);
+        if (index > 1) changeQuality(QUALITY[index - 1]);
       }
       return;
     }
@@ -179,7 +216,13 @@
     // One ambient starfield frame out of three while swiping or coasting.
     if (document.documentElement.dataset.starryInteracting === '1' && renderTick % 3 !== 0) return;
     const cfg = qualityConfig();
-    if (cfg.skip && renderTick % 2) return;
+    if (cfg.skip && renderTick % (cfg.skip + 1)) return;
+    // Decimate only decorative drawing; measure actual device FPS above.
+    const interval = !mobile ? 0 : quality === 'eco' ? 115
+      : quality === 'low' ? 66 : quality === 'medium' ? 34 : 0;
+    if (lastAmbientDraw && now - lastAmbientDraw < interval) return;
+    const elapsedDraw = lastAmbientDraw ? Math.max(8,Math.min(120,now-lastAmbientDraw)) : 16.7;
+    lastAmbientDraw = now;
 
     ctx.clearRect(0,0,width,height);
     const cx = width * .5;
@@ -187,7 +230,7 @@
     const projection = Math.max(width,520);
     for (const star of stars) {
       star.pz = star.z;
-      if (!reduceMotion) star.z -= star.speed;
+      if (!reduceMotion) star.z -= star.speed * Math.min(5,elapsedDraw/16.7);
       if (star.z < 2) resetStar(star);
       const sx = (star.x / star.z) * projection + cx;
       const sy = (star.y / star.z) * projection + cy;
@@ -208,7 +251,12 @@
 
   updateQualityMarker();
   addEventListener('resize', resize, { passive:true });
-  document.addEventListener('visibilitychange', () => { sampleStart=performance.now(); sampleFrames=0; });
+  document.addEventListener('visibilitychange', () => {
+    sampleStart=performance.now();
+    sampleFrames=0;
+    lastAmbientDraw=0;
+    updateQualityMarker();
+  });
   resize();
   requestAnimationFrame(draw);
 })();

@@ -223,6 +223,7 @@
 
   function spawnExtraSmallMeteor() {
     if (reduceMotion || document.hidden) return;
+    if (window.starryPerformance?.allowMeteor && !window.starryPerformance.allowMeteor('extra')) return;
 
     const rock = document.createElement('span');
     rock.className = 'space-rock small';
