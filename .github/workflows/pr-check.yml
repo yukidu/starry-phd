@@ -20,3 +20,4 @@ jobs:
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
           grep -F 'starrySolarParallaxX' dist/app-v5.js
+          grep -F 'starrySolarPlasma' dist/app-v5.js

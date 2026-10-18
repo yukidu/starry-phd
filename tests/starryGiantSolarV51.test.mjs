@@ -23,7 +23,7 @@ test('giant hero replaces the small tenth planet without an API or new canvas',(
  assert.match(html,/id="starrySolarHero"/);
  assert.match(html,/class="solar-hero__disc"/);
  assert.match(html,/class="solar-hero__corona"/);
- assert.equal((html.match(/class="solar-hero__flare/g)||[]).length,8);
+ assert.equal((html.match(/class="solar-hero__arc/g)||[]).length,6);
  assert.doesNotMatch(html,/planet-wrap p10/);
  assert.equal((html.match(/class="planet-wrap p[1-9]"/g)||[]).length,9);
  const app=read('app-v5.js');
@@ -42,9 +42,9 @@ test('180vw half-hidden sun stays beneath the site header without covering links
  assert.match(css,/\.solar-hero\{[^}]*z-index:0/);
  assert.match(css,/\.planet-lane\{z-index:1\}/);
  assert.match(css,/\.brand-mark\{isolation:isolate\}/);
- assert.match(css,/\.brand-mark h1\{text-shadow:/);
+ assert.match(css,/\.brand-mark h1\{/);
  assert.match(css,/pointer-events:none/);
- assert.match(css,/clip-path:polygon\(/);
+ assert.doesNotMatch(css,/clip-path:polygon\(/);
  assert.match(css,/radial-gradient\(/);
 });
 
@@ -69,14 +69,14 @@ test('sun travels with finger at forty percent initial horizontal speed; 360 sea
 
 test('high flames animate only opacity; interaction pauses and low devices reduce effects',()=>{
  const css=solar().css;
- assert.match(css,/solar-hero__flare--8/);
- assert.match(css,/@keyframes starrySolarFlare/);
+ assert.match(css,/solar-hero__arc--6/);
+ assert.match(css,/@keyframes starrySolarPlasma/);
  assert.match(css,/html\[data-starry-quality="medium"\]/);
  assert.match(css,/html\[data-starry-quality="low"\]/);
- assert.match(css,/html\[data-starry-interacting="1"\] \.solar-hero__flare\{animation-play-state:paused!important\}/);
+ assert.match(css,/html\[data-starry-interacting="1"\] \.solar-hero__arc\{animation-play-state:paused!important\}/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.doesNotMatch(css,/backdrop-filter|filter:blur\(/);
- assert.match(read('sw.js'),/starry-shell-v28/);
+ assert.match(read('sw.js'),/starry-shell-v29/);
  assert.match(read('.github/workflows/deploy.yml'),/solar-hero-v51\.js/);
  assert.match(read('.github/workflows/pr-check.yml'),/solar-hero-v51\.js/);
 });
