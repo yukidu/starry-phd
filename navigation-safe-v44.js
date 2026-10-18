@@ -1,5 +1,6 @@
-// navigation-safe-v44: screen-edge bounds with a soft fade, not the
-// reverted #42 card rearrangement. Keeps each planet/name/service together.
+// navigation-safe-v46: DO NOT clamp each planet's X/Y separately!
+// Individual edge clamping made near-edge planets freeze while their
+// neighbors kept moving, causing unsynchronized swipes. Only fade.
 (() => {
   const clamp=(n,low,high)=>Math.min(high,Math.max(low,n));
   window.starrySafePlanetPosition=(planet,viewport)=>{
@@ -14,11 +15,17 @@
     const minY=halfH+top,maxY=vh-halfH-bottom;
     if (!(vw>0&&vh>0&&minX<=maxX&&minY<=maxY))
       return {x:planet.x,y:planet.y,fade:0};
-    const x=clamp(planet.x,minX,maxX),y=clamp(planet.y,minY,maxY);
-    const spill=Math.max(Math.abs(planet.x-x),Math.abs(planet.y-y));
-    // Fade away if a whole group is far outside the view; do not glue
-    // planets to the border, and never cut names or card links in half.
-    const fade=clamp(1-spill/(mobile?75:100),0,1);
-    return {x,y,fade};
+    // Each planet stays at its true camera-projected location, so every
+    // planet, title and linked card travels in perfect step with the others.
+    // Fade near an edge without ever freezing or pulling an individual
+    // planet toward the center. Preserve safe areas for heading and shops.
+    const fadeDistance=mobile?85:90;
+    const fade=Math.min(
+      clamp((planet.x-minX+fadeDistance)/fadeDistance,0,1),
+      clamp((maxX-planet.x+fadeDistance)/fadeDistance,0,1),
+      clamp((planet.y-minY+fadeDistance)/fadeDistance,0,1),
+      clamp((maxY-planet.y+fadeDistance)/fadeDistance,0,1)
+    );
+    return {x:planet.x,y:planet.y,fade};
   };
 })();

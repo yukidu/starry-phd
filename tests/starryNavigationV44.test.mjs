@@ -13,9 +13,9 @@ test('planet/name/service group stays inside portrait viewport',()=>{
  for(const x of [-120,0,30,210,390,650]){
    const p={x,y:480,width:196,height:190};
    const result=position(p,{width:390,height:844});
-   if(result.fade===0)continue;
-   assert.ok(result.x>=110 && result.x<=280);
-   assert.ok(result.y>=0 && result.y<=844);
+   assert.equal(result.x,x,'true camera X is never independently clamped');
+   assert.equal(result.y,480,'true camera Y is never independently clamped');
+   assert.ok(result.fade>=0 && result.fade<=1);
  }
 });
 test('edge fading is smooth, fully visible at safe center',()=>{
@@ -26,6 +26,7 @@ test('edge fading is smooth, fully visible at safe center',()=>{
  assert.equal(centered.fade,1);
  assert.ok(partial.fade>0&&partial.fade<1);
  assert.equal(outside.fade,0);
+ assert.equal(partial.x,48);
  assert.equal(nav()({x:195,y:450,width:500,height:190},{width:390,height:844}).fade,0);
 });
 test('navigation soft starts and slows fast throws without extra work per frame',()=>{
@@ -38,10 +39,11 @@ test('navigation soft starts and slows fast throws without extra work per frame'
  assert.match(app,/if \(!planetSizes\) planetSizes = planets\.map/);
  assert.match(app,/starrySafePlanetPosition/);
 });
-test('keep the full-size #41 cards, with Jupiter and Saturn closer',()=>{
+test('keep the same planet style while the service labels are compact',()=>{
  const style=read('universe-readability-v41.js');
- assert.match(style,/min-width:min\(196px/);
- assert.match(style,/font-size:21px!important/);
+ assert.match(style,/width:max-content!important/);
+ assert.match(style,/min-width:0!important/);
+ assert.match(style,/font-size:20px!important/);
  assert.match(style,/\.planet-wrap\.p5 em\.service-label\{margin-top:26px!important\}/);
  assert.match(style,/\.planet-wrap\.p6 em\.service-label\{margin-top:26px!important\}/);
  assert.doesNotMatch(read('app-v5.js'),/starryArrangePlanetCards/);
