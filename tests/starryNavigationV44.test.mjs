@@ -34,8 +34,8 @@ test('navigation soft starts and slows fast throws without extra work per frame'
  assert.match(app,/function updateSmoothCamera\(now\)/);
  assert.match(app,/displayedYaw = normAngle\(displayedYaw \+ normAngle\(viewYaw\(\) - displayedYaw\)/);
  assert.match(app,/yawVelocity\*=\.84/);
- assert.match(app,/cameraPitch=clamp\(cameraPitch\+dy\*sens,-36,36\)/);
- assert.match(app,/emptyViewFrames > 90/);
+ assert.doesNotMatch(app,/cameraPitch=clamp\(cameraPitch\+dy\*sens,-36,36\)/);
+ assert.match(app,/function viewPitch\(\) \{ return 0; \}/);
  assert.match(app,/if \(!planetSizes\) \{\s*planetSizes = planets\.map/);
  assert.match(app,/starrySafePlanetPosition/);
 });

@@ -13,12 +13,12 @@ test('all nine displayed planets form an even 40-degree loop; Mercury and Pluto 
  assert.deepEqual(yaws,[0,40,80,120,160,200,240,280,320]);
  assert.equal((360-yaws[8]+yaws[0])%360,40);
  assert.match(js,/const fovX = portrait \? 138 : 112, fovY = 82/);
- assert.match(js,/height \* \.56 - \(layoutPitch \/ \(fovY\/2\)\) \* height \* \.28/);
+ assert.match(js,/window\.starryCenteredPlanetY\(p\.pitch/);
 });
 test('mobile portrait keeps around three linked cards visible across 360° headings',()=>{
  const ctx={window:{}};
  runInNewContext(read('navigation-safe-v44.js'),ctx);
- const safe=ctx.window.starrySafePlanetPosition;
+ const centered=ctx.window.starryCenteredPlanetY;
  const planetMap=[
   [-23,1],[0,1],[23,1],[-23,1],[0,1],[23,1],[-23,0],[0,1],[23,1]
  ];
@@ -27,12 +27,10 @@ test('mobile portrait keeps around three linked cards visible across 360° headi
   let count=0;
   for(let i=0;i<9;i++){
    const dyaw=((((i*40-yaw)+540)%360)+360)%360-180;
-   const dpitch=planetMap[i][0];
    if(!planetMap[i][1])continue;
    const x=width*.5+(dyaw/(fovX/2))*width*.5;
-   const y=height*.56-(dpitch/(fovY/2))*height*.28;
-   const position=safe({x,y,width:155,height:148},{width,height,headerBottom:180});
-   if(position.fade>.12)count++;
+   const y=centered(planetMap[i][0],{width,height,headerBottom:180,groupHeight:173});
+   if(x>=0&&x<=width&&y>200&&y<height-120)count++;
   }
   assert.ok(count>=2&&count<=4, 'heading '+yaw+' has '+count+' linked cards');
  }
@@ -53,7 +51,7 @@ test('top protection hides planet group before it touches website header/battery
   }
  }
  const app=read('app-v5.js');
- assert.match(app,/protectedHeaderBottom = document\.querySelector\('\.brand-mark'\)/);
+ assert.match(app,/protectedHeaderBottom = Math\.max\(/);
  assert.match(app,/headerBottom:protectedHeaderBottom/);
 });
 test('planet names: 50% translucent, regular weight, closely above the planet',()=>{

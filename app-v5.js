@@ -37,14 +37,14 @@
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
 
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
-  let cameraYaw = 0, cameraPitch = 0, autoYaw = 0, autoPitch = 0, tiltYaw = 0, tiltPitch = 0;
+  let cameraYaw = 0, autoYaw = 0, tiltYaw = 0;
   let dragging = false, pointerId = null, lastX = 0, lastY = 0, totalMove = 0;
   let dragStartedOnServiceLink = false, dragCaptured = false;
-  let yawVelocity = 0, pitchVelocity = 0, inertiaId = 0, inertiaActive = false;
+  let yawVelocity = 0, inertiaId = 0, inertiaActive = false;
   let motionAttached = false, calibration = null, motionPermissionAttempted = false;
-  let targetTiltYaw = 0, targetTiltPitch = 0;
+  let targetTiltYaw = 0;
   let displayedYaw = 0, displayedPitch = 0, lastFrameAt = 0;
-  let planetSizes = null, emptyViewFrames = 0, protectedHeaderBottom = 0;
+  let planetSizes = null, maxPlanetGroupHeight = 0, protectedHeaderBottom = 0;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
 
@@ -149,7 +149,8 @@
   }
 
   function viewYaw() { return normAngle(cameraYaw + autoYaw + tiltYaw); }
-  function viewPitch() { return clamp(cameraPitch + autoPitch + tiltPitch, -53, 53); }
+  // V49: fixed vertical viewing angle across touch, inertia and phone tilt.
+  function viewPitch() { return 0; }
   function updateSmoothCamera(now) {
     // Frame-time damping is consistent on 60/90/120Hz phones.
     const delta = lastFrameAt ? clamp(now - lastFrameAt, 8, 50) : 16.7;
@@ -164,7 +165,7 @@
     }
     const follow = 1 - Math.pow(1 - .17, delta / 16.7);
     displayedYaw = normAngle(displayedYaw + normAngle(viewYaw() - displayedYaw) * follow);
-    displayedPitch += (viewPitch() - displayedPitch) * follow;
+    displayedPitch = 0;
   }
 
   function renderPlanets() {
@@ -177,24 +178,25 @@
       planetSizes = planets.map(el => ({
         width: el.offsetWidth, height: el.offsetHeight
       }));
-      protectedHeaderBottom = document.querySelector('.brand-mark')
-        ?.getBoundingClientRect()?.bottom || 0;
+      maxPlanetGroupHeight = Math.max(150, ...planetSizes.map(group => group.height));
+      protectedHeaderBottom = Math.max(
+        document.querySelector('.brand-mark')?.getBoundingClientRect()?.bottom || 0,
+        document.querySelector('#starryBatteryCenter')?.getBoundingClientRect()?.bottom || 0
+      );
     }
     let visibleCount = 0;
     planets.forEach((el, i) => {
       const p = planetMap[i] || planetMap[0];
       const dyaw = normAngle(p.yaw - yaw);
       const dpitch = p.pitch - pitch;
-      // Never hard-hide a planet by pitch/heading. Offscreen planets fade
-      // continuously based on their full group bounds instead.
-      const layoutPitch = p.pitch - clamp(pitch,-20,20);
+      // Keep each planet in a fixed, centered height lane at every yaw angle.
       const visual = el.querySelector('.planet');
       const x = width * .5 + (dyaw / (fovX/2)) * width * .5;
-      // Three vertical lanes are spaced farther apart. The limited visual
-      // pitch protects the fixed heading/battery and lower store controls.
-      const y = portrait
-        ? height * .56 - (layoutPitch / (fovY/2)) * height * .28
-        : height * .49 - (layoutPitch / (fovY/2)) * height * .48;
+      const y = window.starryCenteredPlanetY
+        ? window.starryCenteredPlanetY(p.pitch, {
+            width,height,headerBottom:protectedHeaderBottom,groupHeight:maxPlanetGroupHeight
+          })
+        : height * .53 - (p.pitch / 23) * Math.min(90,height*.12);
       const bounds = planetSizes[i] || {width:180,height:180};
       const safe = window.starrySafePlanetPosition
         ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height},
@@ -203,29 +205,18 @@
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
       // Uniform planet base diameter, with gentle depth scaling.
       const scale = p.size * (.95 + centerBoost * .05);
-      const opacity = clamp((centerBoost-.25)*1.5,.7,1) * safe.fade;
-      if (opacity > .2) visibleCount++;
-      el.style.opacity = `${opacity}`;
-      el.style.pointerEvents = opacity > .4 && el.dataset.url ? 'auto' : 'none';
+      // Fully opaque until the physical group exits the viewport; never
+      // fade the planet and its linked card because of its viewing angle.
+      const onScreen = x + bounds.width/2 > 0 && x - bounds.width/2 < width
+        && y + bounds.height/2 > 0 && y - bounds.height/2 < height;
+      if (onScreen) visibleCount++;
+      el.style.opacity = '1';
+      el.style.pointerEvents = onScreen && el.dataset.url ? 'auto' : 'none';
       el.style.zIndex = `${Math.round(centerBoost*10)}`;
       el.style.transform = `translate3d(${safe.x}px,${safe.y}px,0) translate(-50%,-50%)`;
       if (visual) visual.style.transform = `scale(${scale})`;
     });
-    // Gently find the closest planet only when the sky has been empty for
-    // ~1.5 seconds and the user is neither touching nor tilting the phone.
-    // This does not rearrange planets or intercept service-card clicks.
-    emptyViewFrames = visibleCount ? 0 : Math.min(240, emptyViewFrames + 1);
-    if (emptyViewFrames > 90 && !reduceMotion && !dragging && !inertiaActive
-        && Math.abs(targetTiltYaw) < 2 && Math.abs(targetTiltPitch) < 2) {
-      const nearest = planetMap.slice(0, planets.length)
-        .map(p => ({p, deltaYaw:normAngle(p.yaw-yaw), deltaPitch:p.pitch-pitch}))
-        .sort((m,n) => (Math.abs(m.deltaYaw)+Math.abs(m.deltaPitch)*.8)
-          - (Math.abs(n.deltaYaw)+Math.abs(n.deltaPitch)*.8))[0];
-      if (nearest) {
-        cameraYaw = normAngle(cameraYaw + clamp(nearest.deltaYaw*.008,-.12,.12));
-        cameraPitch = clamp(cameraPitch+clamp(nearest.deltaPitch*.009,-.12,.12),-36,36);
-      }
-    }
+    // No hidden automatic camera recentering; all yaw sectors have planets.
     if (nebulaA) nebulaA.style.transform = `translate3d(${Math.sin(rad(yaw))*-82}px,${pitch*-1.25}px,0) scale(1.1)`;
     if (nebulaB) nebulaB.style.transform = `translate3d(${Math.sin(rad(yaw+90))*68}px,${pitch*.95}px,0) scale(1.08)`;
   }
@@ -236,11 +227,11 @@
 
     if (!reduceMotion && !dragging && !inertiaActive) {
       autoYaw = normAngle(autoYaw + 0.013);
-      autoPitch = Math.sin(now / 10500) * 3.4;
+      // Vertical auto motion remains disabled.
     }
 
     tiltYaw += (targetTiltYaw - tiltYaw) * .16;
-    tiltPitch += (targetTiltPitch - tiltPitch) * .16;
+    // No vertical sensor movement.
     updateSmoothCamera(now);
     const yaw = displayedYaw, pitch = displayedPitch;
     const cx = width/2 + Math.sin(rad(yaw))*width*.18;
@@ -491,7 +482,7 @@
     lastX=e.clientX;
     lastY=e.clientY;
     totalMove=0;
-    yawVelocity=pitchVelocity=0;
+    yawVelocity=0;
     cancelAnimationFrame(inertiaId);
     hint?.classList.add('hidden');
     dragCaptured=false;
@@ -513,18 +504,15 @@
     }
     const sens=.27;
     cameraYaw=normAngle(cameraYaw-dx*sens);
-    cameraPitch=clamp(cameraPitch+dy*sens,-36,36);
+    // Vertical finger travel does not change the camera.
     yawVelocity=clamp(-dx*sens,-2,2);
-    pitchVelocity=clamp(dy*sens,-1.4,1.4);
   }
 
   function runInertia() {
     inertiaActive=true;
     yawVelocity*=.84;
-    pitchVelocity*=.83;
     cameraYaw=normAngle(cameraYaw+yawVelocity);
-    cameraPitch=clamp(cameraPitch+pitchVelocity,-36,36);
-    if(Math.abs(yawVelocity)>.025||Math.abs(pitchVelocity)>.025){
+    if(Math.abs(yawVelocity)>.025){
       inertiaId=requestAnimationFrame(runInertia);
     }else{
       inertiaActive=false;
@@ -573,7 +561,7 @@
     else if(a===180){x=-dg;y=-db}
     // Original pre-#41 motion sensitivity, keeping current touch drag intact.
     targetTiltYaw = clamp(x / 24,-1,1) * 6;
-    targetTiltPitch = clamp(y / 24,-1,1) * 4;
+    // Vertical tilt remains locked at zero.
   }
 
   function attachMotion(){
@@ -609,7 +597,7 @@
       void enableMotion();
     },{passive:true});
   }
-  addEventListener('orientationchange',()=>{calibration=null;targetTiltYaw=0;targetTiltPitch=0;},{passive:true});
+  addEventListener('orientationchange',()=>{calibration=null;targetTiltYaw=0;},{passive:true});
 
   addEventListener('resize',resize,{passive:true});
   document.fonts?.ready?.then(() => { planetSizes = null; });
