@@ -71,10 +71,10 @@ test('high flames animate only opacity; interaction pauses and low devices reduc
  const css=solar().css;
  assert.doesNotMatch(css,/solar-hero__arc|starrySolarPlasma|@keyframes/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
- assert.match(css,/radial-gradient\(ellipse 2\.7% 1\.9% at 25% 82%/);
+ assert.match(css,/radial-gradient\(ellipse 1\.55% 1\.15% at 25% 82%/);
  assert.match(css,/-webkit-text-stroke:\.55px rgba\(255,199,134,\.63\)/);
  assert.doesNotMatch(css,/backdrop-filter|filter:blur\(/);
- assert.match(read('sw.js'),/starry-shell-v30/);
+ assert.match(read('sw.js'),/starry-shell-v31/);
  assert.match(read('.github/workflows/deploy.yml'),/solar-hero-v51\.js/);
  assert.match(read('.github/workflows/pr-check.yml'),/solar-hero-v51\.js/);
 });

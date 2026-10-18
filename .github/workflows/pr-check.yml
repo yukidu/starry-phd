@@ -21,4 +21,6 @@ jobs:
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
           grep -F 'starrySolarParallaxX' dist/app-v5.js
           grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-75%,0)' dist/app-v5.js
+          grep -F 'rgba(255,233,150,.70)' dist/app-v5.js
+          grep -F 'radial-gradient(ellipse 1.55% 1.15% at 25% 82%' dist/app-v5.js
           ! grep -F 'starrySolarPlasma' dist/app-v5.js

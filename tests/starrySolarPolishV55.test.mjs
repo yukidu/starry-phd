@@ -38,13 +38,13 @@ test('sun is still 180vw across but projects half the previous visible height',(
 });
 test('realistic texture has irregular darker spots, subdued sunrim and detailed warmth',()=>{
  const css=solar().css;
- assert.match(css,/radial-gradient\(ellipse 2\.7% 1\.9% at 25% 82%/);
- assert.match(css,/radial-gradient\(ellipse 2% 1\.8% at 68% 88%/);
- assert.match(css,/radial-gradient\(ellipse 13% 4\.8% at 45% 91%/);
+ assert.match(css,/radial-gradient\(ellipse 1\.55% 1\.15% at 25% 82%/);
+ assert.match(css,/radial-gradient\(ellipse 1\.2% \.95% at 68% 88%/);
+ assert.match(css,/radial-gradient\(ellipse 9% 3\.3% at 45% 91%/);
  assert.match(css,/\.solar-hero__disc::before\{/);
  assert.match(css,/\.solar-hero__disc::after\{/);
  assert.match(css,/\.solar-hero__corona\{/);
- assert.match(css,/rgba\(255,176,71,\.085\)/);
+ assert.match(css,/rgba\(255,233,150,\.70\)/);
  assert.doesNotMatch(css,/repeating-conic-gradient|repeating-radial-gradient|backdrop-filter|filter:blur\(/);
 });
 test('platinum and champagne logo integrates with sunlight and stays readable',()=>{
@@ -66,7 +66,7 @@ test('nine planets, Earth/Moon position, all apps, battery and PWA remain intact
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v30/);
+ assert.match(read('sw.js'),/starry-shell-v31/);
  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v30/);
 });
 test('existing 40% seamless solar parallax is preserved without extra animation',()=>{
