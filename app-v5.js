@@ -458,6 +458,9 @@
     g.gain.exponentialRampToValueAtTime(.0001,now+duration);
     o.connect(g);
     if(p){p.pan.value=clamp(pan,-1,1);g.connect(p);p.connect(fxGain)}else{g.connect(fxGain)}
+    o.onended=()=>{
+      try{o.disconnect();g.disconnect();p?.disconnect()}catch{}
+    };
     o.start(now);o.stop(now+duration+.03);
   }
 
@@ -467,21 +470,29 @@
   addEventListener('starry:meteor-blasted', () => {
     lastMeteorBlastAt = performance.now();
   });
+  // V61: a single bounded ring per screen tap, with no decorative DOM shards.
+  // Avoid overlapping GPU glow redraws and saturating WebAudio on fast tapping.
+  let currentClickRing=null,clickRingTimer=null,lastClickSoundAt=-Infinity;
   function clickFx(x,y) {
-    if (performance.now() - lastMeteorBlastAt < 220) return;
-    const burst=document.createElement('div');
-    burst.className='click-burst';
-    burst.style.left=`${x}px`;
-    burst.style.top=`${y}px`;
-    for(let i=0;i<12;i++){
-      const s=document.createElement('i');
-      s.className='click-spark';
-      s.style.setProperty('--a',`${i*30+Math.random()*12-6}deg`);
-      burst.appendChild(s);
+    const now=performance.now();
+    if (now - lastMeteorBlastAt < 220) return;
+    if(currentClickRing)currentClickRing.remove();
+    if(clickRingTimer!==null)clearTimeout(clickRingTimer);
+    const ring=document.createElement('div');
+    ring.className='click-burst';
+    ring.style.left=`${x}px`;
+    ring.style.top=`${y}px`;
+    document.body.appendChild(ring);
+    currentClickRing=ring;
+    clickRingTimer=setTimeout(()=>{
+      ring.remove();
+      if(currentClickRing===ring)currentClickRing=null;
+      clickRingTimer=null;
+    },400);
+    if(now-lastClickSoundAt>=80){
+      lastClickSoundAt=now;
+      fxTone(900+Math.random()*320,.18,.045,(x/Math.max(1,width)-.5)*1.5);
     }
-    document.body.appendChild(burst);
-    setTimeout(()=>burst.remove(),720);
-    fxTone(900+Math.random()*320,.3,.075,(x/Math.max(1,width)-.5)*1.5);
   }
 
   function isInteractive(target) {

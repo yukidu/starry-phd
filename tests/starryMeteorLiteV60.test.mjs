@@ -89,9 +89,10 @@ test('reuse one audio noise buffer for 50 booms with 100 source starts',()=>{
 test('meteor blast avoids generic twelve-spark click while ordinary clicks remain',()=>{
  assert.match(app,/addEventListener\('starry:meteor-blasted', \(\) => \{/);
  assert.match(app,/lastMeteorBlastAt = performance\.now\(\)/);
- assert.match(app,/if \(performance\.now\(\) - lastMeteorBlastAt < 220\) return;/);
- assert.match(app,/for\(let i=0;i<12;i\+\+\)/);
+ assert.match(app,/if \(now - lastMeteorBlastAt < 220\) return;/);
+ assert.doesNotMatch(app,/for\(let i=0;i<12;i\+\+\)/);
+ assert.match(app,/currentClickRing=ring;/);
  assert.match(read('index.html'),/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
  assert.match(read('index.html'),/\.universe > \.planet-lane\{z-index:2;pointer-events:none\}/);
- assert.match(read('sw.js'),/starry-shell-v35/);
+ assert.match(read('sw.js'),/starry-shell-v36/);
 });

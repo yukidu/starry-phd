@@ -49,11 +49,14 @@
     html[data-starry-quality="eco"] .planet-wrap em.service-label{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
     html[data-starry-hidden="1"] .milky-way,
     html[data-starry-hidden="1"] .milky-way .galaxy-stars-a{animation-play-state:paused!important}
-    /* During finger interaction, prioritize the planet camera over ambience. */
-    html[data-starry-interacting="1"] .milky-way,
-    html[data-starry-interacting="1"] .milky-way::before,
-    html[data-starry-interacting="1"] .nebula,
+    /* V61: dragging never stops the background galaxy; the planet camera
+       still gets priority by pausing ONLY the planets' surface spin. */
     html[data-starry-interacting="1"] .planet-wrap .planet>span{animation-play-state:paused!important}
+    /* Eco mode above deliberately stops galaxy rotation to save old phones.
+       Respect OS reduced-motion preference at every quality level. */
+    @media(prefers-reduced-motion:reduce){
+      .milky-way,.milky-way::before,.milky-way .galaxy-stars-a{animation:none!important}
+    }
   `;
   document.head.appendChild(style);
 
