@@ -44,8 +44,8 @@ test('keep the same planet style while the service labels are compact',()=>{
  assert.match(style,/width:max-content!important/);
  assert.match(style,/min-width:0!important/);
  assert.match(style,/font-size:20px!important/);
- assert.match(style,/\.planet-wrap\.p5 em\.service-label\{margin-top:32px!important\}/);
- assert.match(style,/\.planet-wrap\.p6 em\.service-label\{margin-top:40px!important\}/);
+ assert.match(style,/\.planet-wrap\.p5 em\.service-label\{margin-top:10px!important\}/);
+ assert.match(style,/\.planet-wrap\.p6 em\.service-label\{margin-top:12px!important\}/);
  assert.doesNotMatch(read('app-v5.js'),/starryArrangePlanetCards/);
 });
 test('battery updates reject stale GET and prior meteor POST values',()=>{

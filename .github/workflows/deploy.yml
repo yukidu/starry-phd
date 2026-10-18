@@ -28,6 +28,8 @@ jobs:
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
+          grep -F 'let cameraYaw = 80' dist/app-v5.js
+          grep -F 'planetMap' dist/app-v5.js
           grep -F "starry:meteor-blasted" dist/app-v5.js
           grep -F "https://id.starry.phd/api/starry-game/battery" dist/app-v5.js
           grep -F "https://id.starry.phd/api/google-sync" dist/app-v5.js
@@ -108,6 +110,9 @@ jobs:
           grep -F 'universe-readability-v41' /tmp/starry-app.js
           grep -F 'starrySafePlanetPosition' /tmp/starry-app.js
           grep -F "app-v5.js" /tmp/starry.html
+          grep -F 'planet-wrap p10' /tmp/starry.html
+          ! grep -F '繁星主站' /tmp/starry.html
+          grep -F 'let cameraYaw = 80' /tmp/starry-app.js
           grep -F "starry:meteor-blasted" /tmp/starry-app.js
           grep -F "https://id.starry.phd/api/starry-game/battery" /tmp/starry-app.js
           grep -F "reward.toFixed(2)" /tmp/starry-app.js
@@ -121,7 +126,7 @@ jobs:
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v26" /tmp/starry-sw.js
+          grep -F "starry-shell-v27" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

@@ -20,7 +20,7 @@ test('nine 40-degree positions spread among three vertical lanes, including the 
  const app=source('app-v5.js');
  const block=app.match(/const planetMap = \[([\s\S]*?)\];/)[1];
  const pitch=[...block.matchAll(/pitch:\s*(-?\d+)/g)].map(m=>+m[1]).slice(0,9);
- assert.deepEqual(pitch,[-23,0,23,-23,0,23,-23,0,23]);
+ assert.deepEqual(pitch,[-23,23,0,-23,0,23,-23,0,23]);
  const scope={window:{}};
  runInNewContext(source('navigation-safe-v44.js'),scope);
  const centered=scope.window.starryCenteredPlanetY;
