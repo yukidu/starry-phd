@@ -39,6 +39,7 @@
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
   let cameraYaw = 0, cameraPitch = 0, autoYaw = 0, autoPitch = 0, tiltYaw = 0, tiltPitch = 0;
   let dragging = false, pointerId = null, lastX = 0, lastY = 0, totalMove = 0;
+  let dragStartedOnServiceLink = false, dragCaptured = false;
   let yawVelocity = 0, pitchVelocity = 0, inertiaId = 0, inertiaActive = false;
   let motionAttached = false, calibration = null, motionPermissionAttempted = false;
   let targetTiltYaw = 0, targetTiltPitch = 0;
@@ -146,7 +147,15 @@
     // Frame-time damping is consistent on 60/90/120Hz phones.
     const delta = lastFrameAt ? clamp(now - lastFrameAt, 8, 50) : 16.7;
     lastFrameAt = now;
-    const follow = 1 - Math.pow(1 - (dragging ? .29 : .17), delta / 16.7);
+    // A touch drag must move every projected planet on the very same frame.
+    // Do not delay the camera behind the finger; keep smooth easing only
+    // for phone tilt and the inertia after release.
+    if (dragging) {
+      displayedYaw = viewYaw();
+      displayedPitch = viewPitch();
+      return;
+    }
+    const follow = 1 - Math.pow(1 - .17, delta / 16.7);
     displayedYaw = normAngle(displayedYaw + normAngle(viewYaw() - displayedYaw) * follow);
     displayedPitch += (viewPitch() - displayedPitch) * follow;
   }
@@ -453,7 +462,12 @@
     ensureAudio();
     audioContext?.resume().catch(()=>{});
     if(!musicOn)setMusic(true);
-    if(isInteractive(e.target))return;
+    // The transparent native service link fills much of the mobile screen.
+    // It must be draggable too, without losing normal tap-to-open behavior.
+    dragStartedOnServiceLink = e.pointerType === 'touch'
+      && e.target instanceof Element
+      && !!e.target.closest('.starry-service-native-link');
+    if(isInteractive(e.target) && !dragStartedOnServiceLink)return;
     dragging=true;
     inertiaActive=false;
     pointerId=e.pointerId;
@@ -463,7 +477,12 @@
     yawVelocity=pitchVelocity=0;
     cancelAnimationFrame(inertiaId);
     hint?.classList.add('hidden');
-    try{document.body.setPointerCapture(pointerId)}catch{}
+    dragCaptured=false;
+    // Do not capture a simple service-card tap (otherwise the link stops
+    // opening in mobile browsers). Capture a real swipe only when moving.
+    if(!dragStartedOnServiceLink) {
+      try{document.body.setPointerCapture(pointerId);dragCaptured=true}catch{}
+    }
   }
 
   function moveDrag(e) {
@@ -472,6 +491,9 @@
     const dx=e.clientX-lastX,dy=e.clientY-lastY;
     lastX=e.clientX;lastY=e.clientY;
     totalMove+=Math.abs(dx)+Math.abs(dy);
+    if (dragStartedOnServiceLink && !dragCaptured && totalMove > 14) {
+      try{document.body.setPointerCapture(pointerId);dragCaptured=true}catch{}
+    }
     const sens=.19;
     cameraYaw=normAngle(cameraYaw-dx*sens);
     cameraPitch=clamp(cameraPitch+dy*sens,-36,36);
@@ -495,7 +517,9 @@
   function endDrag(e) {
     if(!dragging||e.pointerId!==pointerId)return;
     dragging=false;
-    try{document.body.releasePointerCapture(pointerId)}catch{}
+    if(dragCaptured)try{document.body.releasePointerCapture(pointerId)}catch{}
+    dragCaptured=false;
+    dragStartedOnServiceLink=false;
     pointerId=null;
     if(totalMove<12) {
       clickFx(e.clientX,e.clientY);
