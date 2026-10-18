@@ -28,8 +28,8 @@
     }
     .planet-wrap.p5 > .celestial-name{margin-bottom:22px!important}
     .planet-wrap.p6 > .celestial-name{margin-bottom:28px!important}
-    .planet-wrap.p5 em.service-label{margin-top:40px!important}
-    .planet-wrap.p6 em.service-label{margin-top:40px!important}
+    .planet-wrap.p5 em.service-label{margin-top:26px!important}
+    .planet-wrap.p6 em.service-label{margin-top:26px!important}
     .earth-moon-companion .celestial-name{font-size:16px!important}
     @media(min-width:768px){
       .planet-wrap em.service-label{min-width:260px!important;padding:16px 22px 18px!important;border-radius:18px!important}

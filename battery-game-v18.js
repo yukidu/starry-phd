@@ -6,6 +6,9 @@
   const LOGIN_ORIGIN = 'https://id.starry.phd';
   const GOOGLE_CLIENT_ID = '661055525630-ndcq5gtr16h7rqqprlqqkkvineea87lc.apps.googleusercontent.com';
   let currentBalance = null;
+  // Network replies can arrive out of order. Do not let an older GET response
+  // overwrite an authenticated meteor reward that was credited later.
+  let balanceGeneration = 0, balanceReadSequence = 0, activeRewardRequests = 0;
   let loginSheet = null;
   let googleInitialized = false;
   let googleSdkPromise = null;
@@ -201,14 +204,19 @@
     }
   }
 
-  function displayBalance(balance) {
+  function displayBalance(balance, fromReward = false) {
     const number = Number(balance);
-    if (!Number.isFinite(number)) return;
-    currentBalance = number;
-    value.textContent = `${number.toFixed(2)} 顆`;
+    if (!Number.isFinite(number) || number < 0) return;
+    // Meteor rewards only add units. Earlier concurrent POST responses
+    // must not temporarily replace the newest credited balance.
+    const updated = fromReward && currentBalance !== null
+      ? Math.max(currentBalance, number)
+      : number;
+    currentBalance = updated;
+    value.textContent = `${updated.toFixed(2)} 顆`;
     value.disabled = true;
     value.classList.remove('login-ready');
-    value.setAttribute('aria-label', `目前電池 ${number.toFixed(2)} 顆`);
+    value.setAttribute('aria-label', `目前電池 ${updated.toFixed(2)} 顆`);
   }
 
   function displayLoggedOut() {
@@ -240,8 +248,12 @@
   }
 
   async function loadBalance() {
+    const generation = balanceGeneration;
+    const sequence = ++balanceReadSequence;
     try {
       const { response, data } = await api('GET');
+      if (generation !== balanceGeneration ||
+          sequence !== balanceReadSequence || activeRewardRequests) return;
       if (response.status === 401) { displayLoggedOut(); return; }
       if (!response.ok) throw new Error(data?.error || '讀取失敗');
       displayBalance(data.balance);
@@ -279,19 +291,23 @@
   async function rewardMeteor(rock, x, y) {
     if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
     rock.dataset.batteryRewardSent='1';
+    balanceGeneration++;
+    activeRewardRequests++;
     try {
       const sizeLevel = Number(rock.dataset.batterySizeLevel);
       const { response, data } = await api('POST',{ targetId:targetId(rock), sizeLevel });
       if (response.status===401) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); displayLoggedOut(); return; }
-      if (response.status===429) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); if (Number.isFinite(Number(data.balance))) displayBalance(data.balance); return; }
+      if (response.status===429) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); return; }
       if (!response.ok || !data.success) throw new Error(data?.error||'獎勵寫入失敗');
       const added = Number(data.added || 0);
       if (!data.duplicate && added > 0) showReward(x, y, added, rock);
       else window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
-      displayBalance(data.balance);
+      displayBalance(data.balance, true);
     } catch (error) {
       window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
       console.warn('Starry battery reward:',error);
+    } finally {
+      activeRewardRequests = Math.max(0, activeRewardRequests - 1);
     }
   }
 
