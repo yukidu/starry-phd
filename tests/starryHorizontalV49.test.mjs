@@ -61,5 +61,5 @@ test('360 degree planet order, rewards and offline updates stay intact',()=>{
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
  assert.match(source('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(source('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(source('sw.js'),/starry-shell-v27/);
+ assert.match(source('sw.js'),/starry-shell-v28/);
 });

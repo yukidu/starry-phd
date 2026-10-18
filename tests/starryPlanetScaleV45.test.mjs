@@ -8,7 +8,7 @@ test('planet sizes remain between Earth / 1.2 and Earth * 1.2',()=>{
   const block=js.match(/const planetMap = \[([\s\S]*?)\];/);
   assert.ok(block);
   const sizes=[...block[1].matchAll(/size:\s*([\d.]+)/g)].map(m=>Number(m[1]));
-  assert.equal(sizes.length,10);
+  assert.equal(sizes.length,9);
   assert.equal(sizes[2],1);
   for(const n of sizes) assert.ok(n>=1/1.2&&n<=1.2, 'size '+n);
   assert.ok(js.includes('const scale = p.size * (.95 + centerBoost * .05)'));

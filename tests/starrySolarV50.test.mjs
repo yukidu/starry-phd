@@ -10,7 +10,7 @@ test("the first rendered viewpoint is Earth's yaw without animation lag",()=>{
  assert.ok(map);
  const items=[...map[1].matchAll(/yaw:\s*(\d+), pitch:\s*(-?\d+), size:\s*([\d.]+)/g)]
    .map((m)=>({yaw:+m[1],pitch:+m[2],size:+m[3]}));
- assert.equal(items.length,10);
+ assert.equal(items.length,9);
  assert.equal(items[2].yaw,80);
  assert.equal(items[2].pitch,0,'Earth occupies the centered vertical lane');
  assert.match(app,/let cameraYaw = 80, autoYaw = 0, tiltYaw = 0;/);
@@ -25,21 +25,18 @@ test("the first rendered viewpoint is Earth's yaw without animation lag",()=>{
  assert.ok(center>300&&center<600);
 });
 
-test('Sun fills the existing final slot between Pluto and Mercury at 1.2 Earth',()=>{
+test('Sun is an independent hero while nine planets keep their original slots',()=>{
  const app=read('app-v5.js'),html=read('index.html');
  const raw=app.match(/const planetMap = \[([\s\S]*?)\];/)[1];
  const planetYaws=[...raw.matchAll(/yaw:\s*(\d+)/g)].map(m=>+m[1]);
- assert.deepEqual(planetYaws,[0,40,80,120,160,200,240,280,320,340]);
- assert.match(raw,/yaw:\s*340, pitch:\s*0, size:\s*1\.2/);
- assert.match(html,/<div class="planet-wrap p10"><span class="celestial-name">太陽<\/span><div class="planet sun"><span><\/span><\/div><\/div>/);
- const sun=html.match(/<div class="planet-wrap p10">([^\n]+)<\/div>/)?.[0];
- assert.ok(sun);
- assert.doesNotMatch(sun,/service-label|service-host|href=|https?:/);
- const css=read('universe-readability-v41.js');
- assert.match(css,/\.planet-wrap \.sun\{/);
- assert.match(css,/\.planet-wrap \.sun>span\{/);
- assert.match(css,/animation:none!important/);
- assert.match(css,/width:var\(--starry-earth-diameter\)!important;/);
+ assert.deepEqual(planetYaws,[0,40,80,120,160,200,240,280,320]);
+ assert.match(html,/id="starrySolarHero"/);
+ assert.doesNotMatch(html,/planet-wrap p10/);
+ assert.match(html,/class="solar-hero__disc"/);
+ assert.match(app,/window\.starrySolarUpdate\?\.\(yaw,width,height\)/);
+ const css=read('solar-hero-v51.js');
+ assert.match(css,/starrySolarParallaxX/);
+ assert.doesNotMatch(css,/fetch\(/);
 });
 
 test('Mercury is still shown with no Starry main card or link',()=>{
@@ -76,5 +73,5 @@ test('keep horizontal-only controls, 12-tier rewards and new PWA cache',()=>{
  assert.doesNotMatch(app,/cameraPitch=/);
  assert.match(read('battery-game-v18.js'),/sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v27/);
+ assert.match(read('sw.js'),/starry-shell-v28/);
 });
