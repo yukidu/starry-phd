@@ -19,7 +19,7 @@
     // planet, title and linked card travels in perfect step with the others.
     // Fade near an edge without ever freezing or pulling an individual
     // planet toward the center. Preserve safe areas for heading and shops.
-    const fadeDistance=mobile?48:64;
+    const fadeDistance=mobile?85:90;
     const fade=Math.min(
       clamp((planet.x-minX+fadeDistance)/fadeDistance,0,1),
       clamp((maxX-planet.x+fadeDistance)/fadeDistance,0,1),
