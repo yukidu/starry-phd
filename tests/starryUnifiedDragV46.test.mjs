@@ -29,7 +29,7 @@ test('camera follows finger immediately and all planets share one camera yaw/pit
   assert.match(app,/const yaw = displayedYaw, pitch = displayedPitch/);
   assert.match(app,/const dyaw = normAngle\(p.yaw - yaw\)/);
   assert.match(app,/const dpitch = p.pitch - pitch/);
-  assert.match(app,/starrySafePlanetPosition\(\{x,y,width:bounds.width,height:bounds.height\}/);
+  assert.match(app,/starrySafePlanetPosition\(\{x,y,width:bounds.width\*planetDisplayScale,height:bounds.height\*planetDisplayScale\}/);
   assert.doesNotMatch(app,/starryArrangePlanetCards/);
 });
 
