@@ -28,6 +28,10 @@ jobs:
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
+          grep -F 'window.starryPerformance' dist/app-v5.js
+          grep -F "quality === 'eco'" dist/app-v5.js
+          grep -F 'primaryStarFraction' dist/app-v5.js
+          grep -F 'lastRenderedPlanetYaw' dist/app-v5.js
           grep -F 'starrySolarParallaxX' dist/app-v5.js
           grep -F 'let cameraYaw = 80' dist/app-v5.js
           grep -F 'planetMap' dist/app-v5.js
@@ -109,7 +113,10 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v32' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v33' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'window.starryPerformance' /tmp/starry-app.js >/dev/null \
+              && grep -F 'primaryStarFraction' /tmp/starry-app.js >/dev/null \
+              && grep -F "quality === 'eco'" /tmp/starry-app.js >/dev/null \
               && grep -F 'rgba(255,241,166,.88)' /tmp/starry-app.js >/dev/null \
               && grep -F 'filter:blur(12px)' /tmp/starry-app.js >/dev/null \
               && grep -F '已安裝繁星艦長' /tmp/starry-app.js >/dev/null \
@@ -151,7 +158,7 @@ jobs:
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v32" /tmp/starry-sw.js
+          grep -F "starry-shell-v33" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

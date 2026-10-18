@@ -45,6 +45,7 @@
   let targetTiltYaw = 0;
   let displayedYaw = 80, displayedPitch = 0, lastFrameAt = 0;
   let planetSizes = null, maxPlanetGroupHeight = 0, protectedHeaderBottom = 0;
+  let lastPrimaryDraw = 0, lastRenderedPlanetYaw = NaN;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
 
@@ -125,6 +126,8 @@
       : Math.max(180, Math.min(520, Math.floor(width * height / 3800)));
     stars = Array.from({ length: count }, makeStar);
     planetSizes = null;
+    lastRenderedPlanetYaw = NaN;
+    lastPrimaryDraw = 0;
   }
 
   function makeStar() {
@@ -225,7 +228,14 @@
 
   function drawStarfield(now = 0) {
     if (document.hidden) { requestAnimationFrame(drawStarfield); return; }
-    ctx.clearRect(0,0,width,height);
+    const perf = window.starryPerformance;
+    const interval = reduceMotion ? 240 : (perf?.primaryInterval?.() || 0);
+    const redrawStars = !lastPrimaryDraw || now - lastPrimaryDraw >= interval;
+    const elapsedPrimary = lastPrimaryDraw ? Math.max(8,Math.min(100,now-lastPrimaryDraw)) : 16.7;
+    if (redrawStars) {
+      lastPrimaryDraw = now;
+      ctx.clearRect(0,0,width,height);
+    }
 
     // Hold Earth at the landing angle until the user actually swipes.
     // Automatic yaw was slowly moving Earth away from the center each minute.
@@ -239,9 +249,11 @@
     const cy = height/2 + Math.sin(rad(pitch))*height*.13;
     const speed = reduceMotion ? 0 : Math.max(2.45,width/315);
 
-    for (const s of stars) {
+    const count = redrawStars ? Math.max(12,Math.ceil(stars.length*(perf?.primaryStarFraction?.() || 1))) : 0;
+    for (let i = 0; i < count; i++) {
+      const s = stars[i];
       s.pz=s.z;
-      s.z-=speed;
+      s.z-=speed*Math.min(5,elapsedPrimary/16.7);
       if (s.z<1) resetStar(s);
       const sx=(s.x/s.z)*width+cx, sy=(s.y/s.z)*width+cy;
       const px=(s.x/s.pz)*width+cx, py=(s.y/s.pz)*width+cy;
@@ -258,7 +270,14 @@
       ctx.stroke();
     }
 
-    renderPlanets();
+    // Do not recompute nine planet cards if the camera is completely still.
+    // Drag and inertia remain on the browser's full native frame rate.
+    if (dragging || inertiaActive || !Number.isFinite(lastRenderedPlanetYaw)
+        || Math.abs(normAngle(displayedYaw-lastRenderedPlanetYaw)) > .02
+        || planetSizes === null) {
+      renderPlanets();
+      lastRenderedPlanetYaw = displayedYaw;
+    }
     frame++;
     if (frame%200===0) velocity.textContent=`${(7.8+Math.random()*2.4).toFixed(1)}c`;
     requestAnimationFrame(drawStarfield);
@@ -266,6 +285,7 @@
 
   function spawnMeteor(kind='small') {
     if (reduceMotion || document.hidden) return;
+    if (window.starryPerformance?.allowMeteor && !window.starryPerformance.allowMeteor(kind)) return;
     const giant = kind === 'giant';
     const rock = document.createElement('span');
     rock.className = `space-rock ${giant ? 'giant' : 'small'}`;
@@ -601,9 +621,11 @@
   addEventListener('orientationchange',()=>{calibration=null;targetTiltYaw=0;},{passive:true});
 
   addEventListener('resize',resize,{passive:true});
-  document.fonts?.ready?.then(() => { planetSizes = null; });
+  document.fonts?.ready?.then(() => { planetSizes = null; lastRenderedPlanetYaw = NaN; });
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden){
+      lastPrimaryDraw=0;
+      lastRenderedPlanetYaw=NaN;
       sector.textContent=sectors[Math.floor(Math.random()*sectors.length)];
       if(musicOn){audioContext?.resume().catch(()=>{});scheduleMelody()}
     }else{
@@ -624,6 +646,8 @@
     autoYaw = 0;
     tiltYaw = 0;
     targetTiltYaw = 0;
+    lastPrimaryDraw=0;
+    lastRenderedPlanetYaw=NaN;
     setInteractionMode(false);
     renderPlanets();
   });
