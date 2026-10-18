@@ -114,7 +114,6 @@ jobs:
           grep -F 'id="starrySolarHero"' /tmp/starry.html
           ! grep -F 'planet-wrap p10' /tmp/starry.html
           grep -F 'starrySolarParallaxX' /tmp/starry-app.js
-          grep -F 'planet-wrap p10' /tmp/starry.html
           ! grep -F '繁星主站' /tmp/starry.html
           grep -F 'let cameraYaw = 80' /tmp/starry-app.js
           grep -F "starry:meteor-blasted" /tmp/starry-app.js
