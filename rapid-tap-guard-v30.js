@@ -1,9 +1,11 @@
 (() => {
-  // v31：恢復任意位置點擊特效與既有音效；同時限制特效堆疊，避免快速連點造成畫面破碎。
+  // V59: keep tap/explosion glows visible outside their tiny origin boxes.
+  // Paint containment clipped sparks and rings into rectangular fragments.
+  // The existing observer still limits effect counts on rapid repeat taps.
   const style = document.createElement('style');
   style.textContent = `
-    .click-burst{contain:layout paint style}
-    .meteor-hit-explosion{contain:layout paint style}
+    .click-burst{contain:layout style;overflow:visible!important}
+    .meteor-hit-explosion{contain:layout style;overflow:visible!important}
   `;
   document.head.appendChild(style);
 

@@ -27,6 +27,13 @@
       background:radial-gradient(circle,#fff 0 16%,#ffe4a3 17% 30%,#ff8a2c 31% 48%,rgba(255,55,20,.55) 49% 64%,transparent 65%);
       box-shadow:0 0 20px 7px rgba(255,209,118,.95),0 0 54px 22px rgba(255,93,30,.62),0 0 110px 34px rgba(255,35,15,.24);
       animation:meteorExplosionCore .72s cubic-bezier(.14,.82,.2,1) forwards;
+      overflow:visible;
+    }
+    /* Smaller glow on constrained devices, without changing reward or sound. */
+    html[data-starry-quality="low"] .meteor-hit-explosion,
+    html[data-starry-quality="eco"] .meteor-hit-explosion{
+      box-shadow:0 0 16px 6px rgba(255,209,118,.85),0 0 36px 13px rgba(255,93,30,.4);
+      /* Maintain the original .72s explosion and radial colors. */
     }
     .meteor-hit-explosion::before,
     .meteor-hit-explosion::after{
@@ -141,15 +148,21 @@
   }
 
   function createExplosion(x, y) {
+    // Synchronously discard prior visual effects before appending a new one:
+    // a MutationObserver alone cleans up only after the current event stack.
+    document.querySelectorAll('.meteor-hit-explosion').forEach((el) => el.remove());
     const burst = document.createElement('span');
     burst.className = 'meteor-hit-explosion';
     burst.style.left = `${x}px`;
     burst.style.top = `${y}px`;
 
-    for (let i = 0; i < 18; i++) {
+    const quality = window.starryPerformance?.getTier?.() || 'high';
+    const shardCount = quality === 'eco' ? 6 : quality === 'low' ? 9
+      : quality === 'medium' ? 12 : 18;
+    for (let i = 0; i < shardCount; i++) {
       const shard = document.createElement('i');
       shard.className = 'meteor-hit-shard';
-      shard.style.setProperty('--shard-angle', `${i * 20 + (Math.random() * 10 - 5)}deg`);
+      shard.style.setProperty('--shard-angle', `${i * (360 / shardCount) + (Math.random() * 10 - 5)}deg`);
       shard.style.setProperty('--shard-distance', `${38 + Math.random() * 46}px`);
       burst.appendChild(shard);
     }

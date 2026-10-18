@@ -73,5 +73,5 @@ test('keep horizontal-only controls, 12-tier rewards and new PWA cache',()=>{
  assert.doesNotMatch(app,/cameraPitch=/);
  assert.match(read('battery-game-v18.js'),/sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v33/);
+ assert.match(read('sw.js'),/starry-shell-v34/);
 });

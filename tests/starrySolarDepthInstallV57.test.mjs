@@ -101,7 +101,7 @@ test('click burst, moon, nine planet order and PWA cache stay intact',()=>{
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  const yaw=[...app.match(/const planetMap = \[([\s\S]*?)\];/)[1].matchAll(/yaw:\s*(\d+)/g)].map(m=>+m[1]);
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
- assert.match(read('sw.js'),/starry-shell-v33/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v33/);
+ assert.match(read('sw.js'),/starry-shell-v34/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v34/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
