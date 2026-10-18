@@ -520,6 +520,9 @@
     dragStartedOnServiceLink = e.pointerType === 'touch'
       && e.target instanceof Element
       && !!e.target.closest('.starry-service-native-link');
+    // V65: desktop native card links are also valid drag-start surfaces.
+    if (e.pointerType === 'mouse' && e.target instanceof Element
+        && e.target.closest('.starry-service-native-link')) dragStartedOnServiceLink = true;
     if(isInteractive(e.target) && !dragStartedOnServiceLink)return;
     dragging=true;
     inertiaActive=false;

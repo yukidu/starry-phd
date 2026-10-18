@@ -35,18 +35,20 @@
       nativeLink.href = url;
       nativeLink.target = '_blank';
       nativeLink.rel = 'noopener noreferrer';
+      nativeLink.draggable = false; // V65: prevent link ghost dragging.
       nativeLink.setAttribute('aria-label', host ? `${name}，在新視窗開啟 ${host}` : name);
       label.appendChild(nativeLink);
     }
 
+    if (nativeLink) nativeLink.draggable = false; // Existing anchors, if any.
     nativeLink?.addEventListener('click', (event) => {
       event.stopPropagation();
     });
   });
 
-  // 手機拖曳 360° 視野時不要誤開服務卡；桌機滑鼠不套用此門檻。
+  // V65: both touch and desktop mouse dragging must suppress card navigation.
   document.addEventListener('pointerdown', (event) => {
-    if (event.pointerType !== 'touch') return;
+    if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return;
     const target = getCardTarget(event.target);
     if (!target) {
       touchPress = null;
@@ -55,6 +57,7 @@
     touchPress = {
       label: target.label,
       pointerId: event.pointerId,
+      pointerType: event.pointerType,
       x: event.clientX,
       y: event.clientY,
       dragged: false
@@ -65,6 +68,7 @@
     if (!touchPress || event.pointerId !== touchPress.pointerId) return;
     const travel = Math.abs(event.clientX - touchPress.x) + Math.abs(event.clientY - touchPress.y);
     if (travel > 14) touchPress.dragged = true;
+    if (touchPress.pointerType === 'mouse' && travel >= 12) touchPress.dragged = true;
   }, true);
 
   document.addEventListener('pointerup', (event) => {
@@ -93,7 +97,7 @@
     }
 
     const draggedAt = Number(label.dataset.v37DraggedAt || 0);
-    if (performance.now() - draggedAt < 650) {
+    if (label.dataset.v37DraggedAt && performance.now() - draggedAt < 650) {
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
