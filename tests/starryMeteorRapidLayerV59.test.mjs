@@ -70,7 +70,7 @@ test('reduced mobile tiers retain blast but shed visual shards safely',()=>{
     assert.match(meteor,/playExplosionSound\(\);/);
   }
   assert.match(meteor,/window\.dispatchEvent\(new CustomEvent\('starry:meteor-blasted'/);
-  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+  assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
   assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
 test('reward overlay records are released after timeout, confirmation or failure',()=>{

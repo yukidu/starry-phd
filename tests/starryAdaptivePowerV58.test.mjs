@@ -76,7 +76,7 @@ test('old phones reduce decorative meteors but keep regular meteor rewards intac
  assert.equal(typeof perf.allowMeteor('extra'),'boolean');
  assert.match(read('meteor-v14.js'),/window\.starryPerformance\.allowMeteor\('extra'\)/);
  assert.match(read('app-v5.js'),/window\.starryPerformance\.allowMeteor\(kind\)/);
- assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
 test('page hidden resets performance samples and blocks meteor spawning',()=>{

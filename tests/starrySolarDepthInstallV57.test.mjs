@@ -72,7 +72,7 @@ test('balance uses meteor yellow while the login action stays cyan',()=>{
  assert.match(js,/#starryBatteryCenter \.battery-value:disabled\{opacity:1;color:#fff4a9/);
  assert.match(js,/\.battery-reward-float\{[^\n]+color:#fff4a9/);
  assert.match(js,/#starryBatteryCenter \.battery-value\.login-ready\{[^\n]+color:#eaffff/);
- assert.match(js,/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(js,/targetId:id, sizeLevel/);
 });
 test('Google Play shows 已安裝 when proven by standalone context',async()=>{
  const fx=installFixture({standalone:true});

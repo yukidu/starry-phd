@@ -14,7 +14,7 @@ test('twelve meteor size ranges map to an exact 1.00 to 0.01 award',()=>{
 test('reward is derived from displayed size and sent as grade, not a client amount',()=>{
   assert.match(source('meteor-v14.js'),/originalSize >= 18 && originalSize <= 36/);
   assert.match(source('meteor-v14.js'),/dataset\.batterySizeLevel/);
-  assert.match(source('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+  assert.match(source('battery-game-v18.js'),/targetId:id, sizeLevel/);
   assert.match(source('meteor-feedback-v27.js'),/tierPreview\(rock\)/);
   assert.match(source('meteor-feedback-v27.js'),/starry:meteor-reward-failed/);
 });

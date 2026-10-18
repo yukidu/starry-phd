@@ -61,7 +61,7 @@ test('adaptive shards preserve meteor rewards and audio for each hit',()=>{
  }
  assert.match(meteor,/playExplosionSound\(\);/);
  assert.match(meteor,/window\.dispatchEvent\(new CustomEvent\('starry:meteor-blasted'/);
- assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
 test('reuse one audio noise buffer for 50 booms with 100 source starts',()=>{

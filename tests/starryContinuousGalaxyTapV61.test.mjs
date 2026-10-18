@@ -77,7 +77,7 @@ test('solar, planet order, meteor depth and battery rewards remain untouched',()
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
  assert.match(html,/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
  assert.match(html,/\.universe > \.planet-lane\{z-index:2;pointer-events:none\}/);
- assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-v14.js'),/playExplosionSound\(\);/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v37/);
