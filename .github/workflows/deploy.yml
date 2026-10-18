@@ -56,7 +56,7 @@ jobs:
           grep -F "const shardCount = quality === 'eco' ? 2" dist/app-v5.js
           grep -F "if (!meteorNoiseBuffer)" dist/app-v5.js
           grep -F "box-shadow:none!important;" dist/app-v5.js
-          grep -F "if (performance.now() - lastMeteorBlastAt < 220) return;" dist/app-v5.js
+          grep -F "if (now - lastMeteorBlastAt < 220) return;" dist/app-v5.js
           grep -F 'currentClickRing=ring;' dist/app-v5.js
           grep -F 'if(now-lastClickSoundAt>=80)' dist/app-v5.js
           grep -F 'html[data-starry-quality="eco"] .milky-way{filter:none!important;animation:none!important' dist/app-v5.js
@@ -114,7 +114,7 @@ jobs:
               && grep -F "const shardCount = quality === 'eco' ? 2" /tmp/starry-app.js >/dev/null \
               && grep -F "if (!meteorNoiseBuffer)" /tmp/starry-app.js >/dev/null \
               && grep -F "box-shadow:none!important;" /tmp/starry-app.js >/dev/null \
-              && grep -F "if (performance.now() - lastMeteorBlastAt < 220) return;" /tmp/starry-app.js >/dev/null \
+              && grep -F "if (now - lastMeteorBlastAt < 220) return;" /tmp/starry-app.js >/dev/null \
               && grep -F 'currentClickRing=ring;' /tmp/starry-app.js >/dev/null \
               && grep -F 'if(now-lastClickSoundAt>=80)' /tmp/starry-app.js >/dev/null \
               && grep -F 'html[data-starry-quality="eco"] .milky-way{filter:none!important;animation:none!important' /tmp/starry-app.js >/dev/null \
