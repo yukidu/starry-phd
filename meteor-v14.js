@@ -186,8 +186,11 @@
     if (rock.dataset.interactiveMeteor === '1') return;
 
     rock.dataset.interactiveMeteor = '1';
-    const visualSize = 18 + Math.random() * 18;
+    const originalSize = Number.parseFloat(rock.style.getPropertyValue('--rock-size'));
+    const visualSize = originalSize >= 18 && originalSize <= 36 ? originalSize : 18 + Math.random() * 18;
     rock.style.setProperty('--rock-size', `${visualSize}px`);
+    const tier = window.starryMeteorRewardTier?.(visualSize);
+    if(tier){ rock.dataset.batterySizeLevel=String(tier.level); rock.dataset.batteryRewardHundredths=String(tier.hundredths); }
     rock.style.setProperty('--tail-size', `${105 + Math.random() * 150}px`);
     rock.style.setProperty('--tail-thickness', `${1.8 + Math.random() * 2.5}px`);
     rock.style.pointerEvents = 'auto';

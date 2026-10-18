@@ -279,14 +279,17 @@
     if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
     rock.dataset.batteryRewardSent='1';
     try {
-      const { response, data } = await api('POST',{ targetId:targetId(rock) });
-      if (response.status===401) { displayLoggedOut(); return; }
-      if (response.status===429) { if (Number.isFinite(Number(data.balance))) displayBalance(data.balance); return; }
+      const sizeLevel = Number(rock.dataset.batterySizeLevel);
+      const { response, data } = await api('POST',{ targetId:targetId(rock), sizeLevel });
+      if (response.status===401) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); displayLoggedOut(); return; }
+      if (response.status===429) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); if (Number.isFinite(Number(data.balance))) displayBalance(data.balance); return; }
       if (!response.ok || !data.success) throw new Error(data?.error||'獎勵寫入失敗');
       const added = Number(data.added || 0);
       if (!data.duplicate && added > 0) showReward(x, y, added);
+      else window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
       displayBalance(data.balance);
     } catch (error) {
+      window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
       console.warn('Starry battery reward:',error);
     }
   }

@@ -54,19 +54,20 @@
     lastMeteorPointer = { rock, x:event.clientX, y:event.clientY, at:performance.now() };
   }, true);
 
-  function randomPreview() {
-    return ((Math.floor(Math.random() * 9) + 1) / 100).toFixed(2);
+  function tierPreview(rock) {
+    const cents=Number(rock?.dataset?.batteryRewardHundredths);
+    return Number.isInteger(cents) && cents>=1 && cents<=100 ? (cents/100).toFixed(2) : '0.01';
   }
 
-  function showImmediateReward(x, y) {
+  function showImmediateReward(x, y, rock) {
     const el = document.createElement('span');
     el.className = 'battery-reward-instant';
     el.style.left = `${Math.min(Math.max(Number(x || 0), 66), Math.max(66, innerWidth - 66))}px`;
     el.style.top = `${Math.min(Math.max(Number(y || 0), 36), Math.max(36, innerHeight - 36))}px`;
-    el.textContent = `獎勵 +${randomPreview()} 顆電池`;
+    el.textContent = `獎勵 +${tierPreview(rock)} 顆電池`;
     document.body.appendChild(el);
 
-    const item = { el, done:false, timeout:0 };
+    const item = { el, rock, done:false, timeout:0 };
     item.timeout = setTimeout(() => {
       if (item.done) return;
       item.done = true;
@@ -93,7 +94,7 @@
     const pointer = lastMeteorPointer && lastMeteorPointer.rock === detail.rock && performance.now() - lastMeteorPointer.at < 500
       ? lastMeteorPointer
       : null;
-    showImmediateReward(pointer?.x ?? detail.x, pointer?.y ?? detail.y);
+    showImmediateReward(pointer?.x ?? detail.x, pointer?.y ?? detail.y, detail.rock);
     lastMeteorPointer = null;
   }, true);
 
@@ -106,4 +107,10 @@
       }
     }
   }).observe(document.body, { childList:true });
+  addEventListener('starry:meteor-reward-failed',(event)=>{
+    const rock = event instanceof CustomEvent ? event.detail?.rock : null;
+    const item = pending.find(entry=>!entry.done && entry.rock===rock);
+    if(!item)return;
+    item.done=true;clearTimeout(item.timeout);item.el.remove();
+  });
 })();

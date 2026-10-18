@@ -39,7 +39,8 @@
   let cameraYaw = 0, cameraPitch = 0, autoYaw = 0, autoPitch = 0, tiltYaw = 0, tiltPitch = 0;
   let dragging = false, pointerId = null, lastX = 0, lastY = 0, totalMove = 0;
   let yawVelocity = 0, pitchVelocity = 0, inertiaId = 0, inertiaActive = false;
-  let motionAttached = false, calibration = null;
+  let motionAttached = false, calibration = null, motionPermissionAttempted = false;
+  let targetTiltYaw = 0, targetTiltPitch = 0;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
 
@@ -178,6 +179,8 @@
       autoPitch = Math.sin(now / 10500) * 3.4;
     }
 
+    tiltYaw += (targetTiltYaw - tiltYaw) * .19;
+    tiltPitch += (targetTiltPitch - tiltPitch) * .19;
     const yaw = viewYaw(), pitch = viewPitch();
     const cx = width/2 + Math.sin(rad(yaw))*width*.18;
     const cy = height/2 + Math.sin(rad(pitch))*height*.13;
@@ -484,8 +487,11 @@
     const a=((screenAngle()%360)+360)%360;
     let x=dg,y=db;
     if(a===90){x=db;y=-dg}else if(a===270){x=-db;y=dg}
-    tiltYaw=clamp(x/24,-1,1)*6;
-    tiltPitch=clamp(y/24,-1,1)*4;
+    else if(a===180){x=-dg;y=-db}
+    const filteredX = Math.abs(x) < 1.2 ? 0 : x;
+    const filteredY = Math.abs(y) < 1.2 ? 0 : y;
+    targetTiltYaw = clamp(filteredX / 22,-1,1) * 22;
+    targetTiltPitch = clamp(filteredY / 22,-1,1) * 17;
   }
 
   function attachMotion(){
@@ -513,6 +519,15 @@
   });
 
   if('DeviceOrientationEvent'in window&&typeof window.DeviceOrientationEvent.requestPermission!=='function')attachMotion();
+  // iOS requires permission in an actual gesture, not the auto-music click.
+  if('DeviceOrientationEvent'in window&&typeof window.DeviceOrientationEvent.requestPermission==='function'){
+    addEventListener('pointerdown',()=>{
+      if(motionAttached || motionPermissionAttempted) return;
+      motionPermissionAttempted = true;
+      void enableMotion();
+    },{passive:true});
+  }
+  addEventListener('orientationchange',()=>{calibration=null;targetTiltYaw=0;targetTiltPitch=0;},{passive:true});
 
   addEventListener('resize',resize,{passive:true});
   document.addEventListener('visibilitychange',()=>{
