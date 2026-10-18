@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 
-test('the first rendered viewpoint is Earth's yaw without animation lag',()=>{
+test("the first rendered viewpoint is Earth's yaw without animation lag",()=>{
  const app=read('app-v5.js');
  const map=app.match(/const planetMap = \[([\s\S]*?)\];/);
  assert.ok(map);

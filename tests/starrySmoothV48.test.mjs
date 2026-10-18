@@ -42,8 +42,8 @@ test('earth atmosphere and Saturn rings are optical only; cards clear their surf
  assert.match(css,/height:calc\(var\(--starry-earth-diameter\) \* \.612\)/);
  assert.match(css,/\.planet-wrap \.earth::after/);
  assert.match(css,/inset:-25%/);
- assert.match(css,/\.planet-wrap\.p6 em\.service-label\{margin-top:40px!important\}/);
- assert.match(css,/\.planet-wrap\.p3 em\.service-label\{margin-top:28px!important\}/);
+ assert.match(css,/\.planet-wrap\.p6 em\.service-label\{margin-top:12px!important\}/);
+ assert.match(css,/\.planet-wrap\.p3 em\.service-label\{margin-top:17px!important\}/);
  assert.match(css,/font-weight:400!important/);
 });
 
