@@ -64,8 +64,8 @@ test('golden battery type, large charge lightning and immediate correct totals r
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
 });
 test('PWA updates cache but keeps continuous galaxy, eco stop and foreground meteors',()=>{
- assert.match(read('sw.js'),/starry-shell-v39/);
+ assert.match(read('sw.js'),/starry-shell-v40/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
  assert.match(read('index.html'),/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v39/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v40/);
 });

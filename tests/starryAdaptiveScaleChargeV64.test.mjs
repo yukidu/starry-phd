@@ -90,7 +90,7 @@ test('portable documentation, PWA and workflows include independent helper',()=>
  assert.match(guide,/StarryBatteryCharge\.flash/);
  assert.match(guide,/不包含 Starry ID/);
  assert.match(guide,/本次 #64.*只在繁星艦長/);
- assert.match(read('sw.js'),/starry-shell-v39/);
+ assert.match(read('sw.js'),/starry-shell-v40/);
  for(const p of ['.github/workflows/pr-check.yml','.github/workflows/deploy.yml']){
   assert.match(read(p),/starry-battery-charge-v1\.js battery-game-v18\.js/);
  }

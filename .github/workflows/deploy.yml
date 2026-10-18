@@ -66,6 +66,12 @@ jobs:
           grep -F "forget(item);" dist/app-v5.js
           grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' dist/index.html
           grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' dist/index.html
+          grep -F '.universe,.universe .planet-lane,.universe .planet-wrap,.universe .planet-wrap *{-webkit-user-select:none!important;user-select:none!important}' dist/index.html
+          grep -F '.universe .planet-wrap a{-webkit-user-drag:none!important}' dist/index.html
+          grep -F 'nativeLink.draggable = false' dist/app-v5.js
+          grep -F "event.pointerType !== 'touch' && event.pointerType !== 'mouse'" dist/app-v5.js
+          grep -F "if (touchPress.pointerType === 'mouse' && travel >= 12)" dist/app-v5.js
+          grep -F "e.pointerType === 'mouse' && e.target instanceof Element" dist/app-v5.js
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" dist/app-v5.js
           ! grep -F "rewardInstantPulse" dist/app-v5.js
           grep -F "data-starry-quality" dist/app-v5.js
@@ -136,6 +142,12 @@ jobs:
               && grep -F '.click-burst::before,.click-burst::after{content:none!important}' /tmp/starry.html >/dev/null \
               && grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' /tmp/starry.html >/dev/null \
               && grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' /tmp/starry.html >/dev/null \
+              && grep -F '.universe,.universe .planet-lane,.universe .planet-wrap,.universe .planet-wrap *{-webkit-user-select:none!important;user-select:none!important}' /tmp/starry.html >/dev/null \
+              && grep -F '.universe .planet-wrap a{-webkit-user-drag:none!important}' /tmp/starry.html >/dev/null \
+              && grep -F 'nativeLink.draggable = false' /tmp/starry-app.js >/dev/null \
+              && grep -F "event.pointerType !== 'touch' && event.pointerType !== 'mouse'" /tmp/starry-app.js >/dev/null \
+              && grep -F "if (touchPress.pointerType === 'mouse' && travel >= 12)" /tmp/starry-app.js >/dev/null \
+              && grep -F "e.pointerType === 'mouse' && e.target instanceof Element" /tmp/starry-app.js >/dev/null \
               && grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js >/dev/null \
               && ! grep -F "rewardInstantPulse" /tmp/starry-app.js >/dev/null \
               && grep -F "data-starry-quality" /tmp/starry-app.js >/dev/null \
@@ -151,7 +163,7 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v39' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v40' /tmp/starry-sw.js >/dev/null \
               && grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js >/dev/null \
               && grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js >/dev/null \
               && grep -F 'currentBalance = number; // Always display the confirmed server ledger.' /tmp/starry-app.js >/dev/null \
@@ -213,6 +225,8 @@ jobs:
           grep -F '.click-spark{display:none!important}' /tmp/starry.html
           grep -F "box-shadow:none!important;" /tmp/starry-app.js
           grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' /tmp/starry.html
+          grep -F '.universe,.universe .planet-lane,.universe .planet-wrap,.universe .planet-wrap *{-webkit-user-select:none!important;user-select:none!important}' /tmp/starry.html
+          grep -F 'nativeLink.draggable = false' /tmp/starry-app.js
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
@@ -225,7 +239,7 @@ jobs:
           grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
           grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js
           grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js
-          grep -F "starry-shell-v39" /tmp/starry-sw.js
+          grep -F "starry-shell-v40" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

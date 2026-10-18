@@ -18,6 +18,10 @@
     .planet-wrap{animation:none!important;will-change:transform;transition:none!important;transform-origin:center;gap:5px!important}
     .planet-wrap .planet{will-change:transform;transition:transform .12s linear}
     .universe{overflow:hidden!important;perspective:none!important}
+    /* V65: orbit is a drag surface, not selectable document text.
+       Keep all dialogs, form inputs and unrelated page text selectable. */
+    .universe,.universe .planet-lane,.universe .planet-wrap,.universe .planet-wrap *{-webkit-user-select:none!important;user-select:none!important}
+    .universe .planet-wrap a{-webkit-user-drag:none!important}
     /* V59: one scene stacking context: Sun (0) < clickable meteors (1) < planets/cards (2). */
     .universe > #meteorLayer{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none}
     .universe > .planet-lane{z-index:2;pointer-events:none}
