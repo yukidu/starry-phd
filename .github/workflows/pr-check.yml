@@ -1,0 +1,20 @@
+name: Starry Main PR Verification
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify-ui-and-rewards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and verify bundled scripts
+        run: |
+          mkdir -p dist
+          cp app-v5.js dist/app-v5.js
+          cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js >> dist/app-v5.js
+          node --check dist/app-v5.js
+          node --test tests/*.test.mjs
+          grep -F 'starryMeteorRewardTier' dist/app-v5.js
+          grep -F 'universe-readability-v41' dist/app-v5.js
