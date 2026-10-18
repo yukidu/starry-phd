@@ -36,7 +36,6 @@
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
 
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
-  let planetSizes = null;
   let cameraYaw = 0, cameraPitch = 0, autoYaw = 0, autoPitch = 0, tiltYaw = 0, tiltPitch = 0;
   let dragging = false, pointerId = null, lastX = 0, lastY = 0, totalMove = 0;
   let yawVelocity = 0, pitchVelocity = 0, inertiaId = 0, inertiaActive = false;
@@ -114,7 +113,6 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const count = Math.max(180, Math.min(520, Math.floor(width * height / 3800)));
     stars = Array.from({ length: count }, makeStar);
-    planetSizes = null; // Re-measure only when viewport dimensions change.
   }
 
   function makeStar() {
@@ -144,13 +142,6 @@
   function renderPlanets() {
     const fovX = 112, fovY = 82;
     const yaw = viewYaw(), pitch = viewPitch();
-    // Size reads are expensive; cache them instead of measuring each animation
-    // frame. The bundled style rules have loaded before the first animation.
-    if (!planetSizes) planetSizes = planets.map(el => ({
-      width: el.offsetWidth + 12,
-      height: el.offsetHeight + 16
-    }));
-    const positions = [];
     planets.forEach((el, i) => {
       const p = planetMap[i] || planetMap[0];
       const dyaw = normAngle(p.yaw - yaw);
@@ -158,39 +149,23 @@
       const visible = Math.abs(dyaw) < fovX * .62 && Math.abs(dpitch) < fovY * .68;
       const visual = el.querySelector('.planet');
       if (!visible) {
-        positions.push({ id:i, visible:false });
+        el.style.opacity = '0';
+        el.style.pointerEvents = 'none';
         return;
       }
       const x = width * .5 + (dyaw / (fovX/2)) * width * .5;
       const y = height * .47 - (dpitch / (fovY/2)) * height * .5;
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
       const scale = p.size * (.82 + centerBoost * .32);
-      positions.push({
-        id:i, visible:true, x, y, depth:centerBoost,
-        width:planetSizes[i].width, height:planetSizes[i].height,
-        scale, visual
-      });
-    });
-    const arranged = width <= 900 && typeof window.starryArrangePlanetCards === 'function'
-      ? window.starryArrangePlanetCards(positions, { width, height })
-      : positions;
-    arranged.forEach(position => {
-      const el = planets[position.id];
-      if (!el) return;
-      if (!position.visible) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
-        return;
-      }
       el.style.left = '0';
       el.style.top = '0';
       el.style.right = 'auto';
       el.style.bottom = 'auto';
-      el.style.opacity = `${clamp((position.depth-.5)*2.2,.22,1)}`;
+      el.style.opacity = `${clamp((centerBoost-.5)*2.2,.22,1)}`;
       el.style.pointerEvents = el.dataset.url ? 'auto' : 'none';
-      el.style.zIndex = `${Math.round(position.depth*10)}`;
-      el.style.transform = `translate3d(${position.x}px,${position.y}px,0) translate(-50%,-50%)`;
-      if (position.visual) position.visual.style.transform = `scale(${position.scale})`;
+      el.style.zIndex = `${Math.round(centerBoost*10)}`;
+      el.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-50%)`;
+      if (visual) visual.style.transform = `scale(${scale})`;
     });
     if (nebulaA) nebulaA.style.transform = `translate3d(${Math.sin(rad(yaw))*-82}px,${pitch*-1.25}px,0) scale(1.1)`;
     if (nebulaB) nebulaB.style.transform = `translate3d(${Math.sin(rad(yaw+90))*68}px,${pitch*.95}px,0) scale(1.08)`;
@@ -555,7 +530,6 @@
   addEventListener('orientationchange',()=>{calibration=null;targetTiltYaw=0;targetTiltPitch=0;},{passive:true});
 
   addEventListener('resize',resize,{passive:true});
-  document.fonts?.ready?.then(() => { planetSizes = null; });
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden){
       sector.textContent=sectors[Math.floor(Math.random()*sectors.length)];
