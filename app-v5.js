@@ -22,16 +22,17 @@
   ];
   const sectors = ['ORION-09','LYRA-27','NOVA-16','VEGA-81','ASTRA-03','KEPLER-22'];
   const planetMap = [
+    // Earth = 1.00x. Every planet stays between 1/1.2 and 1.2 Earth.
     { yaw: 0, pitch: -8, size: .88 },
-    { yaw: 34, pitch: 12, size: .98 },
-    { yaw: 68, pitch: -2, size: 1.08 },
+    { yaw: 34, pitch: 12, size: .96 },
+    { yaw: 68, pitch: -2, size: 1 },
     { yaw: 105, pitch: 18, size: .92 },
-    { yaw: 142, pitch: -11, size: 1.28 },
-    { yaw: 181, pitch: 7, size: 1.2 },
-    { yaw: 218, pitch: -18, size: .96 },
-    { yaw: 252, pitch: 13, size: 1.02 },
-    { yaw: 288, pitch: 25, size: .8 },
-    { yaw: 348, pitch: 19, size: .9 }
+    { yaw: 142, pitch: -11, size: 1.13 },
+    { yaw: 181, pitch: 7, size: 1.07 },
+    { yaw: 218, pitch: -18, size: .90 },
+    { yaw: 252, pitch: 13, size: 1.04 },
+    { yaw: 288, pitch: 25, size: .88 },
+    { yaw: 348, pitch: 19, size: .95 }
   ];
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
 
@@ -176,7 +177,8 @@
         ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height}, {width,height})
         : {x,y,fade:1};
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
-      const scale = p.size * (.82 + centerBoost * .32);
+      // Uniform planet base diameter, with gentle depth scaling.
+      const scale = p.size * (.95 + centerBoost * .05);
       el.style.left = '0';
       el.style.top = '0';
       el.style.right = 'auto';
@@ -526,10 +528,9 @@
     let x=dg,y=db;
     if(a===90){x=db;y=-dg}else if(a===270){x=-db;y=dg}
     else if(a===180){x=-dg;y=-db}
-    const filteredX = Math.abs(x) < 1.2 ? 0 : x;
-    const filteredY = Math.abs(y) < 1.2 ? 0 : y;
-    targetTiltYaw = clamp(filteredX / 22,-1,1) * 22;
-    targetTiltPitch = clamp(filteredY / 22,-1,1) * 17;
+    // Original pre-#41 motion sensitivity, keeping current touch drag intact.
+    targetTiltYaw = clamp(x / 24,-1,1) * 6;
+    targetTiltPitch = clamp(y / 24,-1,1) * 4;
   }
 
   function attachMotion(){
