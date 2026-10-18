@@ -106,5 +106,5 @@ test('eco level reduces galaxy and oversized solar blur, but keeps planets sharp
  assert.match(visual,/html\[data-starry-quality="eco"\] \.milky-way \.galaxy-stars-a\{animation:none!important/);
  assert.match(solar,/html\[data-starry-quality=\\"eco\\"\] \.solar-hero__disc\{filter:blur\(4px\)\}/);
  assert.match(read('solid-planets-v32.js'),/filter:none!important/);
- assert.match(read('sw.js'),/starry-shell-v34/);
+ assert.match(read('sw.js'),/starry-shell-v35/);
 });

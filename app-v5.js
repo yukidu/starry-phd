@@ -461,7 +461,14 @@
     o.start(now);o.stop(now+duration+.03);
   }
 
+  // A meteor already produces a dedicated blast, reward notice and audio.
+  // Avoid adding the separate 12-spark generic click animation on the same tap.
+  let lastMeteorBlastAt = -Infinity;
+  addEventListener('starry:meteor-blasted', () => {
+    lastMeteorBlastAt = performance.now();
+  });
   function clickFx(x,y) {
+    if (performance.now() - lastMeteorBlastAt < 220) return;
     const burst=document.createElement('div');
     burst.className='click-burst';
     burst.style.left=`${x}px`;

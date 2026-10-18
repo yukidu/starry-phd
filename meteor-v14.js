@@ -4,6 +4,9 @@
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let meteorAudioContext = null;
+  let meteorNoiseBuffer = null;
+  let activeBurst = null;
+  let burstRemovalTimer = null;
 
   const style = document.createElement('style');
   style.textContent = `
@@ -16,66 +19,61 @@
       min-height:18px;
       filter:drop-shadow(0 0 6px rgba(255,176,92,.42));
     }
+    /* V60: bounded compositor-friendly flash. No broad box-shadow or blur
+       means tapping over the enormous soft-focus Sun does not invalidate
+       hundreds of pixels of expensive GPU filter content every blast. */
     .meteor-hit-explosion{
       position:fixed;
       z-index:80;
-      width:24px;
-      height:24px;
+      width:32px;
+      height:32px;
       border-radius:50%;
       pointer-events:none;
-      transform:translate(-50%,-50%);
-      background:radial-gradient(circle,#fff 0 16%,#ffe4a3 17% 30%,#ff8a2c 31% 48%,rgba(255,55,20,.55) 49% 64%,transparent 65%);
-      box-shadow:0 0 20px 7px rgba(255,209,118,.95),0 0 54px 22px rgba(255,93,30,.62),0 0 110px 34px rgba(255,35,15,.24);
-      animation:meteorExplosionCore .72s cubic-bezier(.14,.82,.2,1) forwards;
+      transform:translate3d(-50%,-50%,0);
+      background:radial-gradient(circle,#fff5c1 0 16%,#ffbe54 24%,rgba(255,99,27,.70) 53%,transparent 75%);
+      box-shadow:none!important;
+      filter:none!important;
       overflow:visible;
+      animation:meteorExplosionCore .38s ease-out forwards;
     }
-    /* Smaller glow on constrained devices, without changing reward or sound. */
-    html[data-starry-quality="low"] .meteor-hit-explosion,
-    html[data-starry-quality="eco"] .meteor-hit-explosion{
-      box-shadow:0 0 16px 6px rgba(255,209,118,.85),0 0 36px 13px rgba(255,93,30,.4);
-      /* Maintain the original .72s explosion and radial colors. */
-    }
-    .meteor-hit-explosion::before,
-    .meteor-hit-explosion::after{
+    .meteor-hit-explosion::before{
       content:"";
       position:absolute;
       left:50%;
       top:50%;
-      width:32px;
-      height:32px;
+      width:30px;
+      height:30px;
       border-radius:50%;
-      border:2px solid rgba(255,224,155,.95);
-      transform:translate(-50%,-50%) scale(.35);
-      animation:meteorExplosionRing .72s ease-out forwards;
+      border:2px solid rgba(255,224,155,.90);
+      transform:translate(-50%,-50%) scale(.4);
+      animation:meteorExplosionRing .38s ease-out forwards;
     }
-    .meteor-hit-explosion::after{
-      border-color:rgba(255,112,52,.76);
-      animation-delay:.06s;
-    }
+    .meteor-hit-explosion::after{content:none!important}
     .meteor-hit-shard{
       position:absolute;
       left:50%;
       top:50%;
-      width:4px;
-      height:24px;
-      border-radius:999px;
-      background:linear-gradient(#fff8cf,#ff9b37 42%,rgba(255,70,25,.45) 68%,transparent);
+      width:3px;
+      height:13px;
+      border-radius:99px;
+      background:linear-gradient(#fff8cf,#ffad4f 45%,transparent);
       transform-origin:50% 0;
-      filter:drop-shadow(0 0 5px rgba(255,170,74,.95));
-      animation:meteorExplosionShard .68s ease-out forwards;
+      filter:none!important;
+      box-shadow:none!important;
+      animation:meteorExplosionShard .35s ease-out forwards;
     }
     @keyframes meteorExplosionCore{
-      0%{opacity:1;transform:translate(-50%,-50%) scale(.2)}
-      34%{opacity:1;transform:translate(-50%,-50%) scale(2.5)}
-      100%{opacity:0;transform:translate(-50%,-50%) scale(4.1)}
+      0%{opacity:1;transform:translate3d(-50%,-50%,0) scale(.55)}
+      50%{opacity:1;transform:translate3d(-50%,-50%,0) scale(1.35)}
+      100%{opacity:0;transform:translate3d(-50%,-50%,0) scale(1.8)}
     }
     @keyframes meteorExplosionRing{
-      0%{opacity:1;transform:translate(-50%,-50%) scale(.25)}
-      100%{opacity:0;transform:translate(-50%,-50%) scale(5.3)}
+      0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}
+      100%{opacity:0;transform:translate(-50%,-50%) scale(2.25)}
     }
     @keyframes meteorExplosionShard{
       0%{opacity:1;transform:rotate(var(--shard-angle)) translateY(0) scaleY(.65)}
-      100%{opacity:0;transform:rotate(var(--shard-angle)) translateY(var(--shard-distance)) scaleY(.15)}
+      100%{opacity:0;transform:rotate(var(--shard-angle)) translateY(var(--shard-distance)) scaleY(.22)}
     }
   `;
   document.head.appendChild(style);
@@ -124,16 +122,20 @@
     boom.start(now);
     boom.stop(now + .62);
 
-    const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate * .5), ac.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      const decay = 1 - i / data.length;
-      data[i] = (Math.random() * 2 - 1) * decay * decay;
+    // V60: synthesize noise ONCE per audio context, not on every tap.
+    // Keep a boom plus noise on every valid meteor hit; only reuse audio data.
+    if (!meteorNoiseBuffer) {
+      meteorNoiseBuffer = ac.createBuffer(1, Math.floor(ac.sampleRate * .5), ac.sampleRate);
+      const data = meteorNoiseBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        const decay = 1 - i / data.length;
+        data[i] = (Math.random() * 2 - 1) * decay * decay;
+      }
     }
     const noise = ac.createBufferSource();
     const noiseFilter = ac.createBiquadFilter();
     const noiseGain = ac.createGain();
-    noise.buffer = buffer;
+    noise.buffer = meteorNoiseBuffer;
     noiseFilter.type = 'bandpass';
     noiseFilter.frequency.setValueAtTime(1250, now);
     noiseFilter.frequency.exponentialRampToValueAtTime(420, now + .42);
@@ -145,30 +147,42 @@
     noiseGain.connect(master);
     noise.start(now);
     noise.stop(now + .5);
+    // Release the per-hit audio connections when sources finish.
+    noise.onended = () => {
+      noise.disconnect(); noiseFilter.disconnect(); noiseGain.disconnect();
+    };
+    boom.onended = () => {
+      boom.disconnect(); boomGain.disconnect(); master.disconnect();
+    };
   }
 
   function createExplosion(x, y) {
-    // Synchronously discard prior visual effects before appending a new one:
-    // a MutationObserver alone cleans up only after the current event stack.
-    document.querySelectorAll('.meteor-hit-explosion').forEach((el) => el.remove());
+    // No full-document query or stacking of old effects on the critical tap path.
+    if (activeBurst) activeBurst.remove();
+    if (burstRemovalTimer !== null) clearTimeout(burstRemovalTimer);
     const burst = document.createElement('span');
     burst.className = 'meteor-hit-explosion';
     burst.style.left = `${x}px`;
     burst.style.top = `${y}px`;
 
     const quality = window.starryPerformance?.getTier?.() || 'high';
-    const shardCount = quality === 'eco' ? 6 : quality === 'low' ? 9
-      : quality === 'medium' ? 12 : 18;
+    const shardCount = quality === 'eco' ? 2 : quality === 'low' ? 3
+      : quality === 'medium' ? 5 : 8;
     for (let i = 0; i < shardCount; i++) {
       const shard = document.createElement('i');
       shard.className = 'meteor-hit-shard';
       shard.style.setProperty('--shard-angle', `${i * (360 / shardCount) + (Math.random() * 10 - 5)}deg`);
-      shard.style.setProperty('--shard-distance', `${38 + Math.random() * 46}px`);
+      shard.style.setProperty('--shard-distance', `${17 + Math.random() * 21}px`);
       burst.appendChild(shard);
     }
 
     document.body.appendChild(burst);
-    setTimeout(() => burst.remove(), 850);
+    activeBurst = burst;
+    burstRemovalTimer = setTimeout(() => {
+      burst.remove();
+      if (activeBurst === burst) activeBurst = null;
+      burstRemovalTimer = null;
+    }, 440);
   }
 
   function explodeMeteor(rock, event) {

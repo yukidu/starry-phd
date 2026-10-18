@@ -42,15 +42,15 @@ function burstHarness(tier){
     };
   }
   const document={
-    querySelectorAll:s=>s==='.meteor-hit-explosion'?explosions.slice():[],
+    querySelectorAll(){throw new Error('Critical tap path may not scan the DOM');},
     createElement:make,
     body:{appendChild:el=>explosions.push(el)}
   };
   const window={starryPerformance:{getTier:()=>tier}};
   const code='function createExplosion(x, y) {'+
     meteor.split('  function createExplosion(x, y) {')[1].split('\n  function explodeMeteor(')[0];
-  const context={document,window,setTimeout(){},Math};
-  runInNewContext(code+';this.createExplosion=createExplosion;',context);
+  const context={document,window,setTimeout(){return 1},clearTimeout(){},Math};
+  runInNewContext('let activeBurst = null; let burstRemovalTimer = null;'+code+';this.createExplosion=createExplosion;',context);
   return {explode:context.createExplosion,explosions};
 }
 test('150 rapid explosions leave exactly one active burst and no graphic accumulation',()=>{
@@ -58,11 +58,11 @@ test('150 rapid explosions leave exactly one active burst and no graphic accumul
   for(let i=0;i<150;i++){
     fx.explode(30+i,100);
     assert.equal(fx.explosions.length,1,'old effect must be deleted before next is added');
-    assert.equal(fx.explosions[0].children.length,18);
+    assert.equal(fx.explosions[0].children.length,8);
   }
 });
 test('reduced mobile tiers retain blast but shed visual shards safely',()=>{
-  for(const [tier,expected] of [['high',18],['medium',12],['low',9],['eco',6]]){
+  for(const [tier,expected] of [['high',8],['medium',5],['low',3],['eco',2]]){
     const fx=burstHarness(tier);
     fx.explode(30,100);
     assert.equal(fx.explosions.length,1);
@@ -81,6 +81,6 @@ test('reward overlay records are released after timeout, confirmation or failure
   assert.ok(matches.length>=4,'cleanup helper plus timeout, success and error');
   assert.match(feedback,/clearTimeout\(item\.timeout\)/);
   assert.match(feedback,/battery-reward-instant/);
-  assert.match(read('sw.js'),/starry-shell-v34/);
-  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v34/);
+  assert.match(read('sw.js'),/starry-shell-v35/);
+  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v35/);
 });
