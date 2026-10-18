@@ -24,26 +24,27 @@
   const planetMap = [
     // Earth = 1.00x. Every planet stays between 1/1.2 and 1.2 Earth.
     { yaw: 0, pitch: -23, size: .88 },
-    { yaw: 40, pitch: 0, size: .96 },
-    { yaw: 80, pitch: 23, size: 1 },
+    { yaw: 40, pitch: 23, size: .96 },
+    { yaw: 80, pitch: 0, size: 1 },
     { yaw: 120, pitch: -23, size: .92 },
     { yaw: 160, pitch: 0, size: 1.13 },
     { yaw: 200, pitch: 23, size: 1.07 },
     { yaw: 240, pitch: -23, size: .90 },
     { yaw: 280, pitch: 0, size: 1.04 },
     { yaw: 320, pitch: 23, size: .88 },
-    { yaw: 348, pitch: 19, size: .95 }
+    { yaw: 340, pitch: 0, size: 1.2 } // Sun: halfway between Pluto and Mercury.
   ];
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
 
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
-  let cameraYaw = 0, autoYaw = 0, tiltYaw = 0;
+  // Earth (index 2, 80°) is the landing viewpoint on every new entry.
+  let cameraYaw = 80, autoYaw = 0, tiltYaw = 0;
   let dragging = false, pointerId = null, lastX = 0, lastY = 0, totalMove = 0;
   let dragStartedOnServiceLink = false, dragCaptured = false;
   let yawVelocity = 0, inertiaId = 0, inertiaActive = false;
   let motionAttached = false, calibration = null, motionPermissionAttempted = false;
   let targetTiltYaw = 0;
-  let displayedYaw = 0, displayedPitch = 0, lastFrameAt = 0;
+  let displayedYaw = 80, displayedPitch = 0, lastFrameAt = 0;
   let planetSizes = null, maxPlanetGroupHeight = 0, protectedHeaderBottom = 0;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
@@ -611,6 +612,21 @@
     }
   });
 
+  // A bfcache return counts as entering the site again.
+  addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    cancelAnimationFrame(inertiaId);
+    dragging = false;
+    inertiaActive = false;
+    yawVelocity = 0;
+    cameraYaw = 80;
+    displayedYaw = 80;
+    autoYaw = 0;
+    tiltYaw = 0;
+    targetTiltYaw = 0;
+    setInteractionMode(false);
+    renderPlanets();
+  });
   resize();
   requestAnimationFrame(drawStarfield);
   setTimeout(()=>hint?.classList.add('hidden'),6500);

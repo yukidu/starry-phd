@@ -71,11 +71,26 @@
     }
     .planet-wrap.p5 > .celestial-name{margin-bottom:0!important}
     .planet-wrap.p6 > .celestial-name{margin-bottom:0!important}
-    /* Keep the card below the actual planet + the enlarged atmosphere/ring. */
-    .planet-wrap em.service-label{margin-top:22px!important}
-    .planet-wrap.p3 em.service-label{margin-top:28px!important}
-    .planet-wrap.p5 em.service-label{margin-top:32px!important}
-    .planet-wrap.p6 em.service-label{margin-top:40px!important}
+    /* Tight cards, with safety clearance after the 5px flex gap.
+       Earth's 1.5x atmosphere reaches 25% outside its sphere; the ring
+       extends slightly beyond Saturn after rotation. */
+    .planet-wrap em.service-label{margin-top:8px!important}
+    .planet-wrap.p3 em.service-label{margin-top:17px!important}
+    .planet-wrap.p5 em.service-label{margin-top:10px!important}
+    .planet-wrap.p6 em.service-label{margin-top:12px!important}
+    /* No extra Canvas, network call or animation for the Sun. The 1.2x
+       apparent diameter comes only from planetMap[i].size. */
+    .planet-wrap .sun{
+      background:radial-gradient(circle at 35% 30%,#fff9d7 0 9%,#ffe680 20%,#ffb83e 46%,#e36d19 75%,#8a2908 100%)!important;
+      box-shadow:inset -10px -8px 18px rgba(117,39,3,.28),
+        0 0 15px rgba(255,182,48,.58),0 0 32px rgba(255,130,24,.22)!important;
+    }
+    .planet-wrap .sun>span{
+      animation:none!important;
+      background:radial-gradient(ellipse at 28% 42%,rgba(255,249,178,.25),transparent 65%)!important;
+      box-shadow:none!important;
+    }
+    .planet-wrap .sun>span::before,.planet-wrap .sun>span::after{display:none!important}
     /* Saturn's ring grows 1.7x without changing the solid planet diameter. */
     .planet-wrap .saturn .ring{
       width:calc(var(--starry-earth-diameter) * 1.87)!important;
