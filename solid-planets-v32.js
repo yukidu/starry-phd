@@ -4,7 +4,7 @@
 (() => {
   const style = document.createElement('style');
   style.textContent = `
-    .planet-wrap{backface-visibility:hidden}
+    .planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}
     .planet-wrap .planet,.planet-wrap .planet>span{opacity:1!important}
   `;
   document.head.appendChild(style);

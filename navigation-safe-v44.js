@@ -34,4 +34,23 @@
     );
     return {x:planet.x,y:planet.y,fade};
   };
+
+  // V49: stable three-lane vertical layout, centered within usable screen
+  // space. Never reposition an individual planet based on its x/y position.
+  window.starryCenteredPlanetY=(pitch,viewport)=>{
+    const vw=Number(viewport.width),vh=Number(viewport.height);
+    const mobile=vw<=760;
+    const header=Number(viewport.headerBottom)||0;
+    const groupHeight=Math.max(150,Number(viewport.groupHeight)||150);
+    const safeTop=mobile?Math.max(165,Math.min(210,vh*.235),header+22)
+      :Math.max(80,header+22);
+    const safeBottom=mobile?Math.min(135,Math.max(98,vh*.155)):70;
+    const margin=groupHeight/2+8;
+    const low=safeTop+margin;
+    const high=vh-safeBottom-margin;
+    const center=high>=low?(low+high)/2:Math.max(0,vh*.5);
+    const maxSpread=Math.max(0,(high-low)/2);
+    const spread=Math.min(mobile?104:130,vh*(mobile?.125:.15),maxSpread);
+    return center - clamp(Number(pitch)/23,-1,1)*spread;
+  };
 })();

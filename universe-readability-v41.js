@@ -54,6 +54,11 @@
       font-family:'Noto Sans TC',system-ui,sans-serif!important;
       font-weight:400!important;
     }
+    /* Remove the animated frosted-glass compositing layer to keep both
+       cards and their planets true-color on mobile browsers. */
+    html[data-starry-quality] .planet-wrap em.service-label{
+      backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+    }
     .planet-wrap > .celestial-name{
       font-size:18px!important;font-weight:400!important;line-height:1.15!important;
       color:rgba(243,252,255,.50)!important;letter-spacing:.08em!important;

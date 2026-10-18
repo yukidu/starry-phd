@@ -15,9 +15,9 @@
     button{touch-action:manipulation}
     .cockpit,.cockpit-top,.cockpit-left,.cockpit-right,.cockpit-bottom,.reticle,.hud{display:none!important}
     .nav-data{display:none!important}
-    .planet-wrap{animation:none!important;will-change:transform,opacity;transition:opacity .18s linear;transform-origin:center;gap:5px!important}
+    .planet-wrap{animation:none!important;will-change:transform;transition:none!important;transform-origin:center;gap:5px!important}
     .planet-wrap .planet{will-change:transform;transition:transform .12s linear}
-    .universe{overflow:visible!important;perspective:none!important}
+    .universe{overflow:hidden!important;perspective:none!important}
     .milky-way{position:fixed;inset:-34%;z-index:1;pointer-events:none;opacity:.7;transform:rotate(-18deg) scale(1.14);mix-blend-mode:screen;filter:blur(.45px);background:radial-gradient(ellipse at 49% 52%,rgba(255,255,255,.2) 0 1%,rgba(179,211,255,.16) 2% 5%,transparent 14%),linear-gradient(90deg,transparent 14%,rgba(84,103,190,.05) 24%,rgba(169,194,255,.12) 35%,rgba(248,238,255,.28) 49%,rgba(120,154,255,.12) 63%,rgba(83,78,167,.06) 75%,transparent 87%);animation:galaxyFlow 46s linear infinite}
     .milky-way::before{content:"";position:absolute;inset:25% -5%;background:radial-gradient(circle at 6% 52%,rgba(255,255,255,.9) 0 1px,transparent 1.7px),radial-gradient(circle at 19% 47%,rgba(193,221,255,.75) 0 1px,transparent 1.6px),radial-gradient(circle at 34% 55%,rgba(255,224,253,.7) 0 1.1px,transparent 1.8px),radial-gradient(circle at 51% 44%,rgba(255,255,255,.95) 0 1px,transparent 1.9px),radial-gradient(circle at 68% 53%,rgba(181,211,255,.78) 0 1px,transparent 1.7px),radial-gradient(circle at 82% 46%,rgba(255,236,255,.72) 0 1px,transparent 1.6px),radial-gradient(circle at 94% 56%,rgba(255,255,255,.82) 0 1px,transparent 1.8px);background-size:11% 26%,13% 22%,17% 28%,19% 25%,14% 24%,12% 27%,15% 23%;opacity:.78;filter:drop-shadow(0 0 4px rgba(173,206,255,.52));animation:galaxySparkle 8s ease-in-out infinite alternate}
     .milky-way::after{content:"";position:absolute;inset:36% -3%;background:linear-gradient(90deg,transparent,rgba(85,114,228,.12) 16%,rgba(196,214,255,.2) 36%,rgba(255,236,255,.34) 50%,rgba(157,188,255,.18) 66%,rgba(74,90,201,.08) 84%,transparent);filter:blur(18px);opacity:.88}
@@ -83,7 +83,7 @@
   </div>
 
   <div class="nav-data" aria-hidden="true"><span id="velocity">08.6c</span><span id="sector">ORION-09</span></div>
-  <div class="free-look-hint" id="freeLookHint">↔ 拖曳 360° 探索 Starry 星系</div>
+  <div class="free-look-hint" id="freeLookHint">↔ 左右拖曳 360° 探索 Starry 星系</div>
 
   <main class="hero">
     <div class="brand-mark" aria-label="Starry.phd">

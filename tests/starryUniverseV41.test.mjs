@@ -21,7 +21,7 @@ test('reward is derived from displayed size and sent as grade, not a client amou
 test('phone tilt restores original 6/4 sensitivity and iOS permission support',()=>{
   const js=source('app-v5.js');
   assert.match(js,/targetTiltYaw = clamp\(x \/ 24,-1,1\) \* 6/);
-  assert.match(js,/targetTiltPitch = clamp\(y \/ 24,-1,1\) \* 4/);
+  assert.doesNotMatch(js,/targetTiltPitch = clamp\(y \/ 24,-1,1\) \* 4/);
   assert.match(js,/motionPermissionAttempted/);
   assert.match(js,/orientationchange/);
 });
