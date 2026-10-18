@@ -35,6 +35,22 @@
     return {x:planet.x,y:planet.y,fade};
   };
 
+  // V64: one responsive multiplier for the entire planet, name and card.
+  // Phones are 1x; tablet/desktop approach 2x as free space allows.
+  window.starryAdaptivePlanetScale=(viewport)=>{
+    const vw=Number(viewport.width),vh=Number(viewport.height);
+    const groupWidth=Math.max(1,Number(viewport.groupWidth)||180);
+    const groupHeight=Math.max(1,Number(viewport.groupHeight)||190);
+    if (!(vw>0&&vh>0) || vw<=760) return 1;
+    const header=Math.max(80,Number(viewport.headerBottom)||80);
+    const availableHeight=Math.max(0,vh-header-80);
+    const widthScale=(vw-64)/groupWidth;
+    const heightScale=availableHeight/(groupHeight*1.35);
+    // Narrow portrait tablets: avoid adjacent orbit sectors clipping cards.
+    const tabletFit=Math.max(1,Math.min(2,vw/520));
+    return Math.max(1,Math.min(2,widthScale,heightScale,tabletFit));
+  };
+
   // V49: stable three-lane vertical layout, centered within usable screen
   // space. Never reposition an individual planet based on its x/y position.
   window.starryCenteredPlanetY=(pitch,viewport)=>{

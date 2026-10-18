@@ -74,7 +74,7 @@ test('high flames animate only opacity; interaction pauses and low devices reduc
  assert.match(css,/radial-gradient\(ellipse 1\.55% 1\.15% at 25% 82%/);
  assert.match(css,/-webkit-text-stroke:\.95px rgba\(255,148,32,\.92\)!important/);
  assert.doesNotMatch(css,/backdrop-filter/);
- assert.match(read('sw.js'),/starry-shell-v38/);
+ assert.match(read('sw.js'),/starry-shell-v39/);
  assert.match(read('.github/workflows/deploy.yml'),/solar-hero-v51\.js/);
  assert.match(read('.github/workflows/pr-check.yml'),/solar-hero-v51\.js/);
 });

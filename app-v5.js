@@ -44,7 +44,8 @@
   let motionAttached = false, calibration = null, motionPermissionAttempted = false;
   let targetTiltYaw = 0;
   let displayedYaw = 80, displayedPitch = 0, lastFrameAt = 0;
-  let planetSizes = null, maxPlanetGroupHeight = 0, protectedHeaderBottom = 0;
+  let planetSizes = null, maxPlanetGroupHeight = 0, maxPlanetGroupWidth = 0;
+  let protectedHeaderBottom = 0, planetDisplayScale = 1;
   let lastPrimaryDraw = 0, lastRenderedPlanetYaw = NaN;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
@@ -182,10 +183,16 @@
         width: el.offsetWidth, height: el.offsetHeight
       }));
       maxPlanetGroupHeight = Math.max(150, ...planetSizes.map(group => group.height));
+      maxPlanetGroupWidth = Math.max(140, ...planetSizes.map(group => group.width));
       protectedHeaderBottom = Math.max(
         document.querySelector('.brand-mark')?.getBoundingClientRect()?.bottom || 0,
         document.querySelector('#starryBatteryCenter')?.getBoundingClientRect()?.bottom || 0
       );
+      planetDisplayScale = window.starryAdaptivePlanetScale
+        ? window.starryAdaptivePlanetScale({
+            width,height,headerBottom:protectedHeaderBottom,
+            groupWidth:maxPlanetGroupWidth,groupHeight:maxPlanetGroupHeight
+          }) : 1;
     }
     let visibleCount = 0;
     planets.forEach((el, i) => {
@@ -197,12 +204,12 @@
       const x = width * .5 + (dyaw / (fovX/2)) * width * .5;
       const y = window.starryCenteredPlanetY
         ? window.starryCenteredPlanetY(p.pitch, {
-            width,height,headerBottom:protectedHeaderBottom,groupHeight:maxPlanetGroupHeight
+            width,height,headerBottom:protectedHeaderBottom,groupHeight:maxPlanetGroupHeight*planetDisplayScale
           })
         : height * .53 - (p.pitch / 23) * Math.min(90,height*.12);
       const bounds = planetSizes[i] || {width:180,height:180};
       const safe = window.starrySafePlanetPosition
-        ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height},
+        ? window.starrySafePlanetPosition({x,y,width:bounds.width*planetDisplayScale,height:bounds.height*planetDisplayScale},
             {width,height,headerBottom:protectedHeaderBottom})
         : {x,y,fade:1};
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
@@ -210,13 +217,13 @@
       const scale = p.size * (.95 + centerBoost * .05);
       // Fully opaque until the physical group exits the viewport; never
       // fade the planet and its linked card because of its viewing angle.
-      const onScreen = x + bounds.width/2 > 0 && x - bounds.width/2 < width
-        && y + bounds.height/2 > 0 && y - bounds.height/2 < height;
+      const onScreen = x + bounds.width*planetDisplayScale/2 > 0 && x - bounds.width*planetDisplayScale/2 < width
+        && y + bounds.height*planetDisplayScale/2 > 0 && y - bounds.height*planetDisplayScale/2 < height;
       if (onScreen) visibleCount++;
       el.style.opacity = '1';
       el.style.pointerEvents = onScreen && el.dataset.url ? 'auto' : 'none';
       el.style.zIndex = `${Math.round(centerBoost*10)}`;
-      el.style.transform = `translate3d(${safe.x}px,${safe.y}px,0) translate(-50%,-50%)`;
+      el.style.transform = `translate3d(${safe.x}px,${safe.y}px,0) translate(-50%,-50%) scale(${planetDisplayScale})`;
       if (visual) visual.style.transform = `scale(${scale})`;
     });
     // No hidden automatic camera recentering; all yaw sectors have planets.

@@ -45,7 +45,7 @@ test('sun diameter/height and existing parallax, heading, click effects stay unc
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  assert.match(html,/\.click-burst\{/);
  assert.match(html,/\.click-spark\{/);
- assert.match(read('sw.js'),/starry-shell-v38/);
+ assert.match(read('sw.js'),/starry-shell-v39/);
  assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });

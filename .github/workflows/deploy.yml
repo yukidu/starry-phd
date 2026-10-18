@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html styles.css app.js app-v5.js manifest.webmanifest sw.js icon-192.png icon-512.png icon-192.svg icon-512.svg dist/
-          cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js navigation-safe-v44.js solar-hero-v51.js >> dist/app-v5.js
+          cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js starry-battery-charge-v1.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js navigation-safe-v44.js solar-hero-v51.js >> dist/app-v5.js
 
       - name: Verify bundle
         run: |
@@ -75,6 +75,10 @@ jobs:
           grep -F 'rewardQueue.push({ rock, x, y, id });' dist/app-v5.js
           grep -F 'currentBalance = number; // Always display the confirmed server ledger.' dist/app-v5.js
           grep -F 'flashBattery();' dist/app-v5.js
+          grep -F 'starry-battery-charge-bolt' dist/app-v5.js
+          grep -F 'width:124px;height:144px' dist/app-v5.js
+          grep -F 'starryAdaptivePlanetScale' dist/app-v5.js
+          grep -F -- 'text-shadow:none!important' dist/app-v5.js
           grep -F 'battery-charge-bolt' dist/app-v5.js
           grep -F 'battery-value:not(.login-ready)' dist/app-v5.js
           grep -F -- '-webkit-appearance:none!important;appearance:none!important' dist/app-v5.js
@@ -147,11 +151,15 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v38' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v39' /tmp/starry-sw.js >/dev/null \
               && grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js >/dev/null \
               && grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js >/dev/null \
               && grep -F 'currentBalance = number; // Always display the confirmed server ledger.' /tmp/starry-app.js >/dev/null \
               && grep -F 'flashBattery();' /tmp/starry-app.js >/dev/null \
+              && grep -F 'starry-battery-charge-bolt' /tmp/starry-app.js >/dev/null \
+              && grep -F 'width:124px;height:144px' /tmp/starry-app.js >/dev/null \
+              && grep -F 'starryAdaptivePlanetScale' /tmp/starry-app.js >/dev/null \
+              && grep -F -- 'text-shadow:none!important' /tmp/starry-app.js >/dev/null \
               && grep -F 'battery-charge-bolt' /tmp/starry-app.js >/dev/null \
               && grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js >/dev/null \
               && grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js >/dev/null \
@@ -210,11 +218,14 @@ jobs:
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
           grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js
           grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js
+          grep -F 'starry-battery-charge-bolt' /tmp/starry-app.js
+          grep -F 'width:124px;height:144px' /tmp/starry-app.js
+          grep -F 'starryAdaptivePlanetScale' /tmp/starry-app.js
           grep -F 'battery-charge-bolt' /tmp/starry-app.js
           grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
           grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js
           grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js
-          grep -F "starry-shell-v38" /tmp/starry-sw.js
+          grep -F "starry-shell-v39" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

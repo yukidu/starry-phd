@@ -17,6 +17,7 @@ test('signed-in numeric balance has no button chrome, background, border or rect
    'border:0!important',
    'border-radius:0!important',
    'box-shadow:none!important',
+   'text-shadow:none!important',
    'outline:none!important',
    'clip-path:none!important',
    'padding:0!important',
@@ -51,7 +52,9 @@ test('golden battery type, large charge lightning and immediate correct totals r
  const src=read('battery-game-v18.js');
  assert.match(src,/#starryBatteryCenter \.battery-value\{[^\n]+color:#fff4a9/);
  assert.match(src,/batteryIcon\.textContent = '🔋'/);
- assert.match(src,/batteryIcon\.appendChild\(chargeBolt\)/);
+ assert.match(src,/window\.StarryBatteryCharge\?\.mount\(batteryIcon\)/);
+ assert.match(src,/window\.StarryBatteryCharge\?\.flash\(chargeBolt\)/);
+ assert.match(read('starry-battery-charge-v1.js'),/width:124px;height:144px/);
  assert.match(src,/flashBattery\(\);/);
  assert.match(src,/optimisticAwards\.set\(id, cents\)/);
  assert.match(src,/renderBalance\(\);/);
@@ -61,8 +64,8 @@ test('golden battery type, large charge lightning and immediate correct totals r
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
 });
 test('PWA updates cache but keeps continuous galaxy, eco stop and foreground meteors',()=>{
- assert.match(read('sw.js'),/starry-shell-v38/);
+ assert.match(read('sw.js'),/starry-shell-v39/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
  assert.match(read('index.html'),/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v38/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v39/);
 });
