@@ -60,7 +60,7 @@ test('360 degree planet order, rewards and offline updates stay intact',()=>{
  const map=app.match(/const planetMap = \[([\s\S]*?)\];/)[1];
  const yaw=[...map.matchAll(/yaw:\s*(\d+)/g)].map(x=>+x[1]).slice(0,9);
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
- assert.match(source('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(source('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(source('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(source('sw.js'),/starry-shell-v36/);
+ assert.match(source('sw.js'),/starry-shell-v37/);
 });

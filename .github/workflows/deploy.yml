@@ -71,6 +71,12 @@ jobs:
           grep -F "data-starry-quality" dist/app-v5.js
           grep -F "navigator.serviceWorker.register('/sw.js'" dist/app-v5.js
           grep -F "繁星生態系 Starry.phd" dist/app-v5.js
+          grep -F 'const optimisticAwards = new Map();' dist/app-v5.js
+          grep -F 'rewardQueue.push({ rock, x, y, id });' dist/app-v5.js
+          grep -F 'currentBalance = number; // Always display the confirmed server ledger.' dist/app-v5.js
+          grep -F 'flashBattery();' dist/app-v5.js
+          grep -F 'battery-charge-bolt' dist/app-v5.js
+          grep -F 'battery-value:not(.login-ready)' dist/app-v5.js
           grep -F '"display": "standalone"' dist/manifest.webmanifest
           grep -F '"src": "/icon-192.png"' dist/manifest.webmanifest
           grep -F '"src": "/icon-512.png"' dist/manifest.webmanifest
@@ -138,7 +144,13 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v36' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v37' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js >/dev/null \
+              && grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js >/dev/null \
+              && grep -F 'currentBalance = number; // Always display the confirmed server ledger.' /tmp/starry-app.js >/dev/null \
+              && grep -F 'flashBattery();' /tmp/starry-app.js >/dev/null \
+              && grep -F 'battery-charge-bolt' /tmp/starry-app.js >/dev/null \
+              && grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js >/dev/null \
               && grep -F 'window.starryPerformance' /tmp/starry-app.js >/dev/null \
               && grep -F 'primaryStarFraction' /tmp/starry-app.js >/dev/null \
               && grep -F "quality === 'eco'" /tmp/starry-app.js >/dev/null \
@@ -190,7 +202,11 @@ jobs:
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v36" /tmp/starry-sw.js
+          grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js
+          grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js
+          grep -F 'battery-charge-bolt' /tmp/starry-app.js
+          grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
+          grep -F "starry-shell-v37" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

@@ -5,9 +5,13 @@
   const LOGIN_FALLBACK_URL = 'https://id.starry.phd/starry-main-login';
   const LOGIN_ORIGIN = 'https://id.starry.phd';
   const GOOGLE_CLIENT_ID = '661055525630-ndcq5gtr16h7rqqprlqqkkvineea87lc.apps.googleusercontent.com';
-  let currentBalance = null;
-  // Network replies can arrive out of order. Do not let an older GET response
-  // overwrite an authenticated meteor reward that was credited later.
+  let currentBalance = null; // Server-confirmed balance only.
+  // V62: show unconfirmed rewards immediately, but never persist estimates.
+  // Serialize existing POSTs so a confirmed server balance cannot already
+  // include another request that is still awaiting its response.
+  const optimisticAwards = new Map();
+  const rewardQueue = [];
+  let rewardQueueRunning = false;
   let balanceGeneration = 0, balanceReadSequence = 0, activeRewardRequests = 0;
   let loginSheet = null;
   let googleInitialized = false;
@@ -23,6 +27,13 @@
     #starryBatteryCenter .battery-title{display:inline;margin:0;color:#fff4a9;font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.06em;pointer-events:none}
     #starryBatteryCenter .battery-value{position:relative;display:inline;margin:0;padding:0;border:0;background:none;color:#fff4a9;font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.06em;text-shadow:inherit;overflow:hidden}
     #starryBatteryCenter .battery-value:disabled{opacity:1;color:#fff4a9}
+    /* Signed-in balance: absolutely no background panel. Guest login stays unchanged. */
+    #starryBatteryCenter{background:none!important;border:0!important;box-shadow:none!important}
+    #starryBatteryCenter .battery-value:not(.login-ready){background:none!important;border:0!important;box-shadow:none!important;clip-path:none!important}
+    #starryBatteryCenter .battery-icon{position:relative;display:inline-grid;place-items:center;width:26px;height:30px;line-height:1;font-size:23px;flex:none;isolation:isolate}
+    #starryBatteryCenter .battery-charge-bolt{position:absolute;left:50%;top:50%;width:62px;height:72px;pointer-events:none;opacity:0;overflow:visible;transform:translate3d(-50%,-50%,0) scale(.3);transform-origin:center;will-change:transform,opacity;z-index:2}
+    #starryBatteryCenter .battery-title{display:inline-flex;align-items:center;gap:2px;overflow:visible}
+    @media(prefers-reduced-motion:reduce){#starryBatteryCenter .battery-charge-bolt{will-change:auto}}
     #starryBatteryCenter .battery-value.login-ready{pointer-events:auto;cursor:pointer;min-height:38px;padding:8px 18px 8px 20px;border:1px solid rgba(103,238,255,.72);border-radius:9px;background:linear-gradient(135deg,rgba(7,28,55,.96),rgba(8,11,34,.94) 52%,rgba(37,14,67,.92));color:#eaffff;font:800 14px/1 "Orbitron","Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-decoration:none;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);box-shadow:0 0 0 1px rgba(112,239,255,.08) inset,0 0 15px rgba(54,219,255,.22),0 0 32px rgba(108,69,255,.16);text-shadow:0 0 10px rgba(112,239,255,.7);animation:starryLoginPulse 2.2s ease-in-out infinite}
     #starryBatteryCenter .battery-value.login-ready::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 38%,rgba(130,249,255,.23) 48%,transparent 58%);transform:translateX(-130%);animation:starryLoginScan 2.4s ease-in-out infinite;pointer-events:none}
     #starryBatteryCenter .battery-value.login-ready::after{content:"◈";margin-left:8px;color:#7df9ff;text-shadow:0 0 9px #7df9ff}
@@ -81,7 +92,18 @@
   badge.setAttribute('aria-live', 'polite');
   const title = document.createElement('span');
   title.className = 'battery-title';
-  title.textContent = '🔋 電池';
+  title.textContent = '電池';
+  const batteryIcon = document.createElement('span');
+  batteryIcon.className = 'battery-icon';
+  batteryIcon.setAttribute('aria-hidden', 'true');
+  batteryIcon.textContent = '🔋';
+  const chargeBolt = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  chargeBolt.classList.add('battery-charge-bolt');
+  chargeBolt.setAttribute('viewBox', '0 0 80 80');
+  chargeBolt.setAttribute('aria-hidden', 'true');
+  chargeBolt.innerHTML = '<path d="M46 4 18 41h17l-8 35 37-47H44l7-25Z" fill="#9dff35" stroke="#28ee91" stroke-width="4" stroke-linejoin="round"/><path d="M46 16 29 38h15L36 61l19-27H40Z" fill="#f7ffda"/>';
+  batteryIcon.appendChild(chargeBolt);
+  title.prepend(batteryIcon);
   const value = document.createElement('button');
   value.type = 'button';
   value.className = 'battery-value';
@@ -204,23 +226,46 @@
     }
   }
 
+  function renderBalance() {
+    if (currentBalance === null) return;
+    // Integer hundredths prevent 0.01+0.02 floating-point drift.
+    const cents = Math.round(currentBalance * 100)
+      + Array.from(optimisticAwards.values()).reduce((sum, amount) => sum + amount, 0);
+    const visible = (cents / 100).toFixed(2);
+    value.textContent = `${visible} 顆`;
+    value.disabled = true;
+    value.classList.remove('login-ready');
+    value.setAttribute('aria-label', `目前電池 ${visible} 顆`);
+  }
+
   function displayBalance(balance, fromReward = false) {
     const number = Number(balance);
     if (!Number.isFinite(number) || number < 0) return;
-    // Meteor rewards only add units. Earlier concurrent POST responses
-    // must not temporarily replace the newest credited balance.
-    const updated = fromReward && currentBalance !== null
-      ? Math.max(currentBalance, number)
-      : number;
-    currentBalance = updated;
-    value.textContent = `${updated.toFixed(2)} 顆`;
-    value.disabled = true;
-    value.classList.remove('login-ready');
-    value.setAttribute('aria-label', `目前電池 ${updated.toFixed(2)} 顆`);
+    // POSTs are serialized; each response confirms one queued credit.
+    // The server is always authoritative; its amount may differ from preview.
+    currentBalance = number; // Always display the confirmed server ledger.
+    renderBalance();
+  }
+
+  function flashBattery() {
+    if (currentBalance === null || typeof chargeBolt.animate !== 'function') return;
+    // One GPU-composited flash. Cancel the prior flash on rapid hits.
+    const old = chargeBolt.getAnimations?.() || [];
+    old.forEach(anim => anim.cancel());
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    chargeBolt.animate(reduced
+      ? [{ opacity:0 }, { opacity:1 }, { opacity:0 }]
+      : [
+          { opacity:0, transform:'translate3d(-50%,-50%,0) scale(.3)' },
+          { opacity:1, transform:'translate3d(-50%,-50%,0) scale(1.27)', offset:.22 },
+          { opacity:.95, transform:'translate3d(-50%,-50%,0) scale(1.12)', offset:.54 },
+          { opacity:0, transform:'translate3d(-50%,-50%,0) scale(.78)' }
+        ], { duration:reduced?220:540, easing:'ease-out' });
   }
 
   function displayLoggedOut() {
     currentBalance = null;
+    optimisticAwards.clear();
     value.textContent = '請先登入';
     value.disabled = false;
     value.classList.add('login-ready');
@@ -282,39 +327,78 @@
     floater.style.top=`${rewardY}px`;
     document.body.appendChild(floater);
     setTimeout(()=>floater.remove(),950);
-    badge.classList.remove('rewarded');
-    void badge.offsetWidth;
-    badge.classList.add('rewarded');
-    setTimeout(()=>badge.classList.remove('rewarded'),650);
+    // The charging flash is shown immediately at the hit, not after POST.
   }
 
-  async function rewardMeteor(rock, x, y) {
-    if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
-    rock.dataset.batteryRewardSent='1';
-    balanceGeneration++;
-    activeRewardRequests++;
+  function failReward(rock) {
+    window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
+  }
+
+  function predictReward(rock, id) {
+    if (currentBalance === null || value.classList.contains('login-ready')) return;
+    const cents = Number(rock.dataset.batteryRewardHundredths);
+    if (!Number.isInteger(cents) || cents < 1 || cents > 100) return;
+    optimisticAwards.set(id, cents);
+    renderBalance();
+    flashBattery();
+  }
+
+  async function drainRewardQueue() {
+    if (rewardQueueRunning) return;
+    rewardQueueRunning = true;
     try {
-      const sizeLevel = Number(rock.dataset.batterySizeLevel);
-      const { response, data } = await api('POST',{ targetId:targetId(rock), sizeLevel });
-      if (response.status===401) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); displayLoggedOut(); return; }
-      if (response.status===429) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); return; }
-      if (!response.ok || !data.success) throw new Error(data?.error||'獎勵寫入失敗');
-      const added = Number(data.added || 0);
-      if (!data.duplicate && added > 0) showReward(x, y, added, rock);
-      else window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
-      displayBalance(data.balance, true);
-    } catch (error) {
-      window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
-      console.warn('Starry battery reward:',error);
+      while (rewardQueue.length) {
+        const { rock, x, y, id } = rewardQueue.shift();
+        try {
+          const sizeLevel = Number(rock.dataset.batterySizeLevel);
+          const { response, data } = await api('POST',{ targetId:id, sizeLevel });
+          if (response.status === 401) {
+            failReward(rock);
+            displayLoggedOut();
+            // No more authenticated requests until the member signs in again.
+            for (const item of rewardQueue.splice(0)) failReward(item.rock);
+            activeRewardRequests = 1; // Finalizer below releases current item.
+            break;
+          }
+          if (response.status === 429) { failReward(rock); continue; }
+          if (!response.ok || !data.success) throw new Error(data?.error || '獎勵寫入失敗');
+          const authoritative = Number(data.balance);
+          if (!Number.isFinite(authoritative) || authoritative < 0) throw new Error('無效電池總量');
+          // Remove this prediction before incorporating the confirmed server total.
+          optimisticAwards.delete(id);
+          const added = Number(data.added || 0);
+          if (!data.duplicate && added > 0) showReward(x, y, added, rock);
+          else failReward(rock);
+          displayBalance(authoritative, true);
+        } catch (error) {
+          failReward(rock);
+          console.warn('Starry battery reward:', error);
+        } finally {
+          optimisticAwards.delete(id);
+          activeRewardRequests = Math.max(0, activeRewardRequests - 1);
+          renderBalance(); // Failed or duplicate credits roll back immediately.
+        }
+      }
     } finally {
-      activeRewardRequests = Math.max(0, activeRewardRequests - 1);
+      rewardQueueRunning = false;
     }
+  }
+
+  function rewardMeteor(rock, x, y) {
+    if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
+    rock.dataset.batteryRewardSent = '1';
+    const id = targetId(rock);
+    balanceGeneration++; // Invalidate in-flight GET before showing the estimate.
+    activeRewardRequests++;
+    predictReward(rock, id);
+    rewardQueue.push({ rock, x, y, id });
+    void drainRewardQueue();
   }
 
   addEventListener('starry:meteor-blasted',(event)=>{
     const detail=event instanceof CustomEvent?event.detail:null;
     if (!(detail?.rock instanceof HTMLElement)) return;
-    void rewardMeteor(detail.rock, detail.x, detail.y);
+    rewardMeteor(detail.rock, detail.x, detail.y);
   });
 
   void loadBalance();

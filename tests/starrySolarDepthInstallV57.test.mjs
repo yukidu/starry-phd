@@ -72,7 +72,7 @@ test('balance uses meteor yellow while the login action stays cyan',()=>{
  assert.match(js,/#starryBatteryCenter \.battery-value:disabled\{opacity:1;color:#fff4a9/);
  assert.match(js,/\.battery-reward-float\{[^\n]+color:#fff4a9/);
  assert.match(js,/#starryBatteryCenter \.battery-value\.login-ready\{[^\n]+color:#eaffff/);
- assert.match(js,/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(js,/targetId:id, sizeLevel/);
 });
 test('Google Play shows 已安裝 when proven by standalone context',async()=>{
  const fx=installFixture({standalone:true});
@@ -101,7 +101,7 @@ test('click burst, moon, nine planet order and PWA cache stay intact',()=>{
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  const yaw=[...app.match(/const planetMap = \[([\s\S]*?)\];/)[1].matchAll(/yaw:\s*(\d+)/g)].map(m=>+m[1]);
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
- assert.match(read('sw.js'),/starry-shell-v36/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v36/);
+ assert.match(read('sw.js'),/starry-shell-v37/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v37/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });

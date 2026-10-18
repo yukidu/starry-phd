@@ -68,7 +68,7 @@ test('eco mode halts galaxy; OS reduced-motion also halts regardless of quality'
  assert.match(visual,/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important;opacity:\.48!important\}/);
  assert.match(visual,/html\[data-starry-quality="eco"\] \.milky-way \.galaxy-stars-a\{animation:none!important/);
  assert.match(visual,/@media\(prefers-reduced-motion:reduce\)\{\s*\.milky-way,\.milky-way::before,\.milky-way \.galaxy-stars-a\{animation:none!important\}/);
- assert.match(read('sw.js'),/starry-shell-v36/);
+ assert.match(read('sw.js'),/starry-shell-v37/);
 });
 test('solar, planet order, meteor depth and battery rewards remain untouched',()=>{
  const m=app.match(/const planetMap = \[([\s\S]*?)\];/);
@@ -77,8 +77,8 @@ test('solar, planet order, meteor depth and battery rewards remain untouched',()
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
  assert.match(html,/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
  assert.match(html,/\.universe > \.planet-lane\{z-index:2;pointer-events:none\}/);
- assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-v14.js'),/playExplosionSound\(\);/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v36/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v37/);
 });

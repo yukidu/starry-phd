@@ -53,9 +53,9 @@ test('battery updates reject stale GET and prior meteor POST values',()=>{
  assert.match(js,/const generation = balanceGeneration/);
  assert.match(js,/generation !== balanceGeneration/);
  assert.match(js,/sequence !== balanceReadSequence \|\| activeRewardRequests/);
- assert.match(js,/Math\.max\(currentBalance, number\)/);
+ assert.match(js,/currentBalance = number;/);
  assert.match(js,/activeRewardRequests = Math\.max\(0, activeRewardRequests - 1\)/);
- assert.match(js,/targetId:targetId\(rock\), sizeLevel/);
+ assert.match(js,/targetId:id, sizeLevel/);
 });
 test('workflow builds mobile-safety script into production',()=>{
  assert.match(read('.github/workflows/deploy.yml'),/navigation-safe-v44\.js/);

@@ -70,7 +70,7 @@ test('reduced mobile tiers retain blast but shed visual shards safely',()=>{
     assert.match(meteor,/playExplosionSound\(\);/);
   }
   assert.match(meteor,/window\.dispatchEvent\(new CustomEvent\('starry:meteor-blasted'/);
-  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
+  assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
   assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
 test('reward overlay records are released after timeout, confirmation or failure',()=>{
@@ -81,6 +81,6 @@ test('reward overlay records are released after timeout, confirmation or failure
   assert.ok(matches.length>=4,'cleanup helper plus timeout, success and error');
   assert.match(feedback,/clearTimeout\(item\.timeout\)/);
   assert.match(feedback,/battery-reward-instant/);
-  assert.match(read('sw.js'),/starry-shell-v36/);
-  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v36/);
+  assert.match(read('sw.js'),/starry-shell-v37/);
+  assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v37/);
 });
