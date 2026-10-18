@@ -15,6 +15,7 @@ function harness({cores=4,memory=4,mobile=true}={}){
  const document={
   hidden:false,documentElement:root,
   querySelector:s=>s==='#starfield'?stars:null,
+  querySelectorAll:()=>[],
   createElement:tag=>({id:'',dataset:{},style:{},setAttribute(){},appendChild(){},getContext(){return drawing}}),
   head:{appendChild(){}},
   addEventListener:(type,cb)=>{documentListeners[type]=cb}
