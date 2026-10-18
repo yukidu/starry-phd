@@ -23,7 +23,7 @@ test('giant hero replaces the small tenth planet without an API or new canvas',(
  assert.match(html,/id="starrySolarHero"/);
  assert.match(html,/class="solar-hero__disc"/);
  assert.match(html,/class="solar-hero__corona"/);
- assert.equal((html.match(/class="solar-hero__arc/g)||[]).length,6);
+ assert.equal((html.match(/class="solar-hero__arc/g)||[]).length,0);
  assert.doesNotMatch(html,/planet-wrap p10/);
  assert.equal((html.match(/class="planet-wrap p[1-9]"/g)||[]).length,9);
  const app=read('app-v5.js');
@@ -37,7 +37,7 @@ test('giant hero replaces the small tenth planet without an API or new canvas',(
 test('180vw half-hidden sun stays beneath the site header without covering links',()=>{
  const x=solar(),css=x.css;
  assert.match(css,/\.solar-hero__body\{[\s\S]*?top:0/);
- assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-50%,0\)/);
+ assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-75%,0\)/);
  assert.match(css,/@media\(max-width:760px\)\{[\s\S]*?\.solar-hero__body\{width:180vw\}/);
  assert.match(css,/\.solar-hero\{[^}]*z-index:0/);
  assert.match(css,/\.planet-lane\{z-index:1\}/);
@@ -69,14 +69,12 @@ test('sun travels with finger at forty percent initial horizontal speed; 360 sea
 
 test('high flames animate only opacity; interaction pauses and low devices reduce effects',()=>{
  const css=solar().css;
- assert.match(css,/solar-hero__arc--6/);
- assert.match(css,/@keyframes starrySolarPlasma/);
- assert.match(css,/html\[data-starry-quality="medium"\]/);
- assert.match(css,/html\[data-starry-quality="low"\]/);
- assert.match(css,/html\[data-starry-interacting="1"\] \.solar-hero__arc\{animation-play-state:paused!important\}/);
+ assert.doesNotMatch(css,/solar-hero__arc|starrySolarPlasma|@keyframes/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(css,/radial-gradient\(ellipse 2\.7% 1\.9% at 25% 82%/);
+ assert.match(css,/-webkit-text-stroke:\.55px rgba\(255,199,134,\.63\)/);
  assert.doesNotMatch(css,/backdrop-filter|filter:blur\(/);
- assert.match(read('sw.js'),/starry-shell-v29/);
+ assert.match(read('sw.js'),/starry-shell-v30/);
  assert.match(read('.github/workflows/deploy.yml'),/solar-hero-v51\.js/);
  assert.match(read('.github/workflows/pr-check.yml'),/solar-hero-v51\.js/);
 });
