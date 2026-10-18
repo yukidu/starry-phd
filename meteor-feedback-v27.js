@@ -46,6 +46,10 @@
   }).observe(document.body, { childList:true, subtree:true });
 
   const pending = [];
+  function forget(item) {
+    const index = pending.indexOf(item);
+    if (index !== -1) pending.splice(index, 1);
+  }
   let lastMeteorPointer = null;
 
   document.addEventListener('pointerdown', (event) => {
@@ -72,6 +76,7 @@
       if (item.done) return;
       item.done = true;
       el.remove();
+      forget(item);
     }, 2200);
     pending.push(item);
   }
@@ -81,6 +86,7 @@
     if (!item) return;
     item.done = true;
     clearTimeout(item.timeout);
+    forget(item);
     item.el.textContent = `獎勵 +${Number(amount).toFixed(2)} 顆電池`;
     setTimeout(() => item.el.remove(), 1100);
   }
@@ -111,6 +117,6 @@
     const rock = event instanceof CustomEvent ? event.detail?.rock : null;
     const item = pending.find(entry=>!entry.done && entry.rock===rock);
     if(!item)return;
-    item.done=true;clearTimeout(item.timeout);item.el.remove();
+    item.done=true;clearTimeout(item.timeout);item.el.remove();forget(item);
   });
 })();

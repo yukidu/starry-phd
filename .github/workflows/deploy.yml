@@ -50,9 +50,13 @@ jobs:
           grep -F ".status-pill{display:none!important}" dist/app-v5.js
           grep -F "v28DensityChecked" dist/app-v5.js
           grep -F 'font-feature-settings:"zero" 0' dist/app-v5.js
-          grep -F ".click-burst{contain:layout paint style}" dist/app-v5.js
+          grep -F ".click-burst{contain:layout style;overflow:visible!important}" dist/app-v5.js
           grep -F "limitEffects('.click-burst', 2)" dist/app-v5.js
           grep -F "limitEffects('.meteor-hit-explosion', 1)" dist/app-v5.js
+          grep -F "const shardCount = quality === 'eco' ? 6" dist/app-v5.js
+          grep -F "forget(item);" dist/app-v5.js
+          grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' dist/index.html
+          grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' dist/index.html
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" dist/app-v5.js
           ! grep -F "rewardInstantPulse" dist/app-v5.js
           grep -F "data-starry-quality" dist/app-v5.js
@@ -95,9 +99,12 @@ jobs:
               && grep -F ".status-pill{display:none!important}" /tmp/starry-app.js >/dev/null \
               && grep -F "v28DensityChecked" /tmp/starry-app.js >/dev/null \
               && grep -F 'font-feature-settings:"zero" 0' /tmp/starry-app.js >/dev/null \
-              && grep -F ".click-burst{contain:layout paint style}" /tmp/starry-app.js >/dev/null \
+              && grep -F ".click-burst{contain:layout style;overflow:visible!important}" /tmp/starry-app.js >/dev/null \
               && grep -F "limitEffects('.click-burst', 2)" /tmp/starry-app.js >/dev/null \
               && grep -F "limitEffects('.meteor-hit-explosion', 1)" /tmp/starry-app.js >/dev/null \
+              && grep -F "const shardCount = quality === 'eco' ? 6" /tmp/starry-app.js >/dev/null \
+              && grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' /tmp/starry.html >/dev/null \
+              && grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' /tmp/starry.html >/dev/null \
               && grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js >/dev/null \
               && ! grep -F "rewardInstantPulse" /tmp/starry-app.js >/dev/null \
               && grep -F "data-starry-quality" /tmp/starry-app.js >/dev/null \
@@ -113,7 +120,7 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v33' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v34' /tmp/starry-sw.js >/dev/null \
               && grep -F 'window.starryPerformance' /tmp/starry-app.js >/dev/null \
               && grep -F 'primaryStarFraction' /tmp/starry-app.js >/dev/null \
               && grep -F "quality === 'eco'" /tmp/starry-app.js >/dev/null \
@@ -152,13 +159,15 @@ jobs:
           grep -F "獎勵 +" /tmp/starry-app.js
           grep -F "v28DensityChecked" /tmp/starry-app.js
           grep -F 'font-feature-settings:"zero" 0' /tmp/starry-app.js
-          grep -F ".click-burst{contain:layout paint style}" /tmp/starry-app.js
+          grep -F ".click-burst{contain:layout style;overflow:visible!important}" /tmp/starry-app.js
           grep -F "limitEffects('.click-burst', 2)" /tmp/starry-app.js
           grep -F "limitEffects('.meteor-hit-explosion', 1)" /tmp/starry-app.js
+          grep -F "const shardCount = quality === 'eco' ? 6" /tmp/starry-app.js
+          grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' /tmp/starry.html
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v33" /tmp/starry-sw.js
+          grep -F "starry-shell-v34" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js
