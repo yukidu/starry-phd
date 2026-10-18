@@ -52,7 +52,7 @@ test('warm solar light, title clarity and retained rewards',()=>{
  assert.match(css,/-webkit-text-fill-color:transparent!important/);
  assert.match(css,/text-shadow:none!important/);
  assert.match(css,/\.planet-wrap > \.planet:not\(\.moon\):not\(\.saturn\)/);
- assert.match(read('sw.js'),/starry-shell-v35/);
+ assert.match(read('sw.js'),/starry-shell-v36/);
  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });
