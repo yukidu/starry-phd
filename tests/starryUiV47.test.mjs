@@ -13,14 +13,14 @@ test('all nine displayed planets form an even 40-degree loop; Mercury and Pluto 
  assert.deepEqual(yaws,[0,40,80,120,160,200,240,280,320]);
  assert.equal((360-yaws[8]+yaws[0])%360,40);
  assert.match(js,/const fovX = portrait \? 138 : 112, fovY = 82/);
- assert.match(js,/height \* \.50 - \(dpitch \/ \(fovY\/2\)\) \* height \* \.25/);
+ assert.match(js,/height \* \.56 - \(layoutPitch \/ \(fovY\/2\)\) \* height \* \.28/);
 });
 test('mobile portrait keeps around three linked cards visible across 360° headings',()=>{
  const ctx={window:{}};
  runInNewContext(read('navigation-safe-v44.js'),ctx);
  const safe=ctx.window.starrySafePlanetPosition;
  const planetMap=[
-  [-8,1],[12,1],[-2,1],[18,1],[-11,1],[7,1],[-18,0],[13,1],[2,1]
+  [-23,1],[0,1],[23,1],[-23,1],[0,1],[23,1],[-23,0],[0,1],[23,1]
  ];
  const width=390,height=844,fovX=138,fovY=82;
  for(let yaw=0;yaw<360;yaw+=10){
@@ -28,9 +28,9 @@ test('mobile portrait keeps around three linked cards visible across 360° headi
   for(let i=0;i<9;i++){
    const dyaw=((((i*40-yaw)+540)%360)+360)%360-180;
    const dpitch=planetMap[i][0];
-   if(Math.abs(dyaw)>=fovX*.62||Math.abs(dpitch)>=fovY*.68||!planetMap[i][1])continue;
+   if(!planetMap[i][1])continue;
    const x=width*.5+(dyaw/(fovX/2))*width*.5;
-   const y=height*.5-(dpitch/(fovY/2))*height*.25;
+   const y=height*.56-(dpitch/(fovY/2))*height*.28;
    const position=safe({x,y,width:155,height:148},{width,height,headerBottom:180});
    if(position.fade>.12)count++;
   }

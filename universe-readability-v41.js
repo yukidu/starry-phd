@@ -51,6 +51,8 @@
     .planet-wrap .service-host{
       margin-top:4px!important;font-size:12px!important;line-height:1.2!important;
       letter-spacing:.035em!important;overflow-wrap:anywhere;
+      font-family:'Noto Sans TC',system-ui,sans-serif!important;
+      font-weight:400!important;
     }
     .planet-wrap > .celestial-name{
       font-size:18px!important;font-weight:400!important;line-height:1.15!important;
@@ -64,8 +66,24 @@
     }
     .planet-wrap.p5 > .celestial-name{margin-bottom:0!important}
     .planet-wrap.p6 > .celestial-name{margin-bottom:0!important}
-    .planet-wrap.p5 em.service-label{margin-top:26px!important}
-    .planet-wrap.p6 em.service-label{margin-top:26px!important}
+    /* Keep the card below the actual planet + the enlarged atmosphere/ring. */
+    .planet-wrap em.service-label{margin-top:22px!important}
+    .planet-wrap.p3 em.service-label{margin-top:28px!important}
+    .planet-wrap.p5 em.service-label{margin-top:32px!important}
+    .planet-wrap.p6 em.service-label{margin-top:40px!important}
+    /* Saturn's ring grows 1.7x without changing the solid planet diameter. */
+    .planet-wrap .saturn .ring{
+      width:calc(var(--starry-earth-diameter) * 1.87)!important;
+      height:calc(var(--starry-earth-diameter) * .612)!important;
+      border-width:5px!important;
+    }
+    /* The Earth's extra atmosphere occupies 1.5x diameter, not a larger sphere. */
+    .planet-wrap .earth::after{
+      content:'';position:absolute;inset:-25%;border-radius:50%;
+      pointer-events:none;z-index:-1;
+      background:radial-gradient(circle,rgba(91,202,255,.13) 38%,rgba(64,166,255,.30) 61%,rgba(85,186,255,.12) 70%,transparent 73%);
+      box-shadow:0 0 20px rgba(82,183,255,.24);
+    }
     .earth-moon-companion .celestial-name{
       font-size:16px!important;font-weight:400!important;
       color:rgba(243,252,255,.50)!important;background:transparent!important;
