@@ -51,7 +51,7 @@ function harness({initial=10,reduced=false}={}){
 }
 test('signed-in battery has no background, guest login button retains its design',()=>{
  assert.match(source,/#starryBatteryCenter\{background:none!important;border:0!important;box-shadow:none!important\}/);
- assert.match(source,/#starryBatteryCenter \.battery-value:not\(\.login-ready\)\{background:none!important;border:0!important;box-shadow:none!important/);
+ assert.match(source,/#starryBatteryCenter \.battery-value:not\(\.login-ready\)\{[^\n]+background:transparent!important;[^\n]+border:0!important;[^\n]+box-shadow:none!important/);
  assert.match(source,/#starryBatteryCenter \.battery-value\.login-ready\{[^\n]*background:linear-gradient/);
  assert.match(source,/batteryIcon\.textContent = '🔋'/);
  assert.match(source,/batteryIcon\.appendChild\(chargeBolt\)/);
@@ -134,6 +134,6 @@ test('unchanged backend, server-authoritative balance, independent PWA and galax
  assert.match(source,/currentBalance = number; \/\/ Always display the confirmed server ledger/);
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v37/);
+ assert.match(read('sw.js'),/starry-shell-v38/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
 });

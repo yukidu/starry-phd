@@ -1,4 +1,4 @@
-const CACHE = 'starry-shell-v37';
+const CACHE = 'starry-shell-v38';
 const SHELL = [
   '/',
   '/styles.css',

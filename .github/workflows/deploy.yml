@@ -77,6 +77,9 @@ jobs:
           grep -F 'flashBattery();' dist/app-v5.js
           grep -F 'battery-charge-bolt' dist/app-v5.js
           grep -F 'battery-value:not(.login-ready)' dist/app-v5.js
+          grep -F -- '-webkit-appearance:none!important;appearance:none!important' dist/app-v5.js
+          grep -F '#starryBatteryCenter{filter:none!important}' dist/app-v5.js
+          ! grep -F '#starryBatteryCenter{filter:drop-shadow(' dist/app-v5.js
           grep -F '"display": "standalone"' dist/manifest.webmanifest
           grep -F '"src": "/icon-192.png"' dist/manifest.webmanifest
           grep -F '"src": "/icon-512.png"' dist/manifest.webmanifest
@@ -144,13 +147,16 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v37' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v38' /tmp/starry-sw.js >/dev/null \
               && grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js >/dev/null \
               && grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js >/dev/null \
               && grep -F 'currentBalance = number; // Always display the confirmed server ledger.' /tmp/starry-app.js >/dev/null \
               && grep -F 'flashBattery();' /tmp/starry-app.js >/dev/null \
               && grep -F 'battery-charge-bolt' /tmp/starry-app.js >/dev/null \
               && grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js >/dev/null \
+              && grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js >/dev/null \
+              && grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js >/dev/null \
+              && ! grep -F '#starryBatteryCenter{filter:drop-shadow(' /tmp/starry-app.js >/dev/null \
               && grep -F 'window.starryPerformance' /tmp/starry-app.js >/dev/null \
               && grep -F 'primaryStarFraction' /tmp/starry-app.js >/dev/null \
               && grep -F "quality === 'eco'" /tmp/starry-app.js >/dev/null \
@@ -206,7 +212,9 @@ jobs:
           grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js
           grep -F 'battery-charge-bolt' /tmp/starry-app.js
           grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
-          grep -F "starry-shell-v37" /tmp/starry-sw.js
+          grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js
+          grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js
+          grep -F "starry-shell-v38" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js
