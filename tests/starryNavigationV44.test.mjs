@@ -36,7 +36,7 @@ test('navigation soft starts and slows fast throws without extra work per frame'
  assert.match(app,/yawVelocity\*=\.79/);
  assert.match(app,/cameraPitch=clamp\(cameraPitch\+dy\*sens,-36,36\)/);
  assert.match(app,/emptyViewFrames > 90/);
- assert.match(app,/if \(!planetSizes\) planetSizes = planets\.map/);
+ assert.match(app,/if \(!planetSizes\) \{\s*planetSizes = planets\.map/);
  assert.match(app,/starrySafePlanetPosition/);
 });
 test('keep the same planet style while the service labels are compact',()=>{

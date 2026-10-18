@@ -21,8 +21,8 @@
     #immersiveToggle{display:none!important}
     #starryBatteryCenter{position:relative;z-index:25;display:inline-flex;align-items:center;justify-content:center;gap:4px 10px;margin:10px auto 0;padding:0;border:0;background:transparent;text-align:center;color:#f4fcff;text-shadow:0 0 12px rgba(125,249,255,.28);user-select:none}
     #starryBatteryCenter .battery-title{display:inline;margin:0;color:rgba(179,229,255,.82);font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.06em;pointer-events:none}
-    #starryBatteryCenter .battery-value{position:relative;display:inline;margin:0;padding:0;border:0;background:none;color:#f4fcff;font:800 clamp(26px,2.7vw,34px)/1.08 "Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-shadow:inherit;overflow:hidden}
-    #starryBatteryCenter .battery-value:disabled{opacity:1;color:#f4fcff}
+    #starryBatteryCenter .battery-value{position:relative;display:inline;margin:0;padding:0;border:0;background:none;color:rgba(179,229,255,.82);font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.06em;text-shadow:inherit;overflow:hidden}
+    #starryBatteryCenter .battery-value:disabled{opacity:1;color:rgba(179,229,255,.82)}
     #starryBatteryCenter .battery-value.login-ready{pointer-events:auto;cursor:pointer;min-height:38px;padding:8px 18px 8px 20px;border:1px solid rgba(103,238,255,.72);border-radius:9px;background:linear-gradient(135deg,rgba(7,28,55,.96),rgba(8,11,34,.94) 52%,rgba(37,14,67,.92));color:#eaffff;font:800 14px/1 "Orbitron","Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-decoration:none;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);box-shadow:0 0 0 1px rgba(112,239,255,.08) inset,0 0 15px rgba(54,219,255,.22),0 0 32px rgba(108,69,255,.16);text-shadow:0 0 10px rgba(112,239,255,.7);animation:starryLoginPulse 2.2s ease-in-out infinite}
     #starryBatteryCenter .battery-value.login-ready::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 38%,rgba(130,249,255,.23) 48%,transparent 58%);transform:translateX(-130%);animation:starryLoginScan 2.4s ease-in-out infinite;pointer-events:none}
     #starryBatteryCenter .battery-value.login-ready::after{content:"◈";margin-left:8px;color:#7df9ff;text-shadow:0 0 9px #7df9ff}
@@ -50,7 +50,7 @@
     .starry-login-status.error{color:#ffb8c2}
     .starry-login-fallback{margin-top:12px;padding:7px 11px;border:0;background:transparent;color:rgba(184,222,244,.76);font:700 12px/1.4 "Noto Sans TC",sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
     .starry-login-close{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid rgba(164,224,255,.25);border-radius:50%;background:rgba(5,14,33,.74);color:#eafaff;font-size:19px;cursor:pointer}
-    @media(max-width:760px){#starryBatteryCenter{margin-top:8px;gap:3px 8px}#starryBatteryCenter .battery-value{font-size:26px}#starryBatteryCenter .battery-title{font-size:14px}#starryBatteryCenter .battery-value.login-ready{min-height:36px;padding:8px 14px 8px 16px;font-size:12px}.starry-login-sheet{padding:22px 14px 18px}.starry-login-title{font-size:18px}}
+    @media(max-width:760px){#starryBatteryCenter{margin-top:8px;gap:3px 8px}#starryBatteryCenter .battery-value{font-size:14px}#starryBatteryCenter .battery-title{font-size:14px}#starryBatteryCenter .battery-value.login-ready{min-height:36px;padding:8px 14px 8px 16px;font-size:12px}.starry-login-sheet{padding:22px 14px 18px}.starry-login-title{font-size:18px}}
   `;
   document.head.appendChild(style);
 
