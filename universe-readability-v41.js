@@ -3,6 +3,24 @@
   const style=document.createElement('style');
   style.dataset.universeReadability='v41';
   style.textContent=`
+    /* Every planet shares Earth's CSS diameter (desktop and phone). */
+    :root{--starry-earth-diameter:64px}
+    @media(max-width:760px){:root{--starry-earth-diameter:52px}}
+    .planet-wrap > .planet{
+      width:var(--starry-earth-diameter)!important;
+      height:var(--starry-earth-diameter)!important;
+    }
+    /* Saturn's total ring width is also kept under 1.2 Earth sizes. */
+    .planet-wrap .saturn .ring{
+      box-sizing:border-box!important;
+      width:calc(var(--starry-earth-diameter) * 1.10)!important;
+      height:calc(var(--starry-earth-diameter) * .36)!important;
+      border-width:4px!important;
+    }
+    .planet-wrap .jupiter > span::before{
+      width:26%!important;height:12%!important;
+      right:15%!important;top:56%!important;
+    }
     .planet-wrap em.service-label{
       min-width:min(196px,calc(100vw - 30px))!important;
       max-width:calc(100vw - 30px)!important;
@@ -24,13 +42,19 @@
       color:rgba(243,252,255,.96)!important;letter-spacing:.1em!important;
       text-shadow:0 1px 7px rgba(0,0,0,.92),0 0 12px rgba(125,249,255,.62)!important;
       margin-bottom:11px!important;padding:4px 8px!important;
-      background:rgba(3,9,24,.66);border-radius:7px;z-index:10!important;
+      background:transparent!important;border:0!important;
+      border-radius:0!important;box-shadow:none!important;
+      backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+      z-index:10!important;
     }
     .planet-wrap.p5 > .celestial-name{margin-bottom:22px!important}
     .planet-wrap.p6 > .celestial-name{margin-bottom:28px!important}
     .planet-wrap.p5 em.service-label{margin-top:26px!important}
     .planet-wrap.p6 em.service-label{margin-top:26px!important}
-    .earth-moon-companion .celestial-name{font-size:16px!important}
+    .earth-moon-companion .celestial-name{
+      font-size:16px!important;background:transparent!important;
+      border:0!important;box-shadow:none!important;
+    }
     @media(min-width:768px){
       .planet-wrap em.service-label{min-width:260px!important;padding:16px 22px 18px!important;border-radius:18px!important}
       .planet-wrap .service-name{font-size:29px!important}
