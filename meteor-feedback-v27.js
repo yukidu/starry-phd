@@ -76,8 +76,8 @@
     pending.push(item);
   }
 
-  function settleReward(amount) {
-    const item = pending.find((entry) => !entry.done && entry.el.isConnected);
+  function settleReward(amount, targetId) {
+    const item = pending.find((entry) => !entry.done && entry.el.isConnected && entry.rock?.dataset?.batteryTargetId === targetId);
     if (!item) return;
     item.done = true;
     clearTimeout(item.timeout);
@@ -103,7 +103,7 @@
       for (const node of record.addedNodes) {
         if (!(node instanceof HTMLElement) || !node.matches('.battery-reward-float')) continue;
         const match = node.textContent?.match(/\+([0-9]+(?:\.[0-9]+)?)/);
-        if (match) settleReward(Number(match[1]));
+        if (match) settleReward(Number(match[1]), node.dataset.batteryTargetId || '');
       }
     }
   }).observe(document.body, { childList:true });
