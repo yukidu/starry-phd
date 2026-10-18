@@ -106,12 +106,16 @@ jobs:
               && ! grep -F 'solar-hero__prominences' /tmp/starry.html >/dev/null \
               && ! grep -F 'solar-hero__flare--1' /tmp/starry.html >/dev/null \
               && ! grep -F 'planet-wrap p10' /tmp/starry.html >/dev/null \
-              && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-75%,0)' /tmp/starry-app.js >/dev/null \
+              && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v31' /tmp/starry-sw.js >/dev/null \
-              && grep -F 'rgba(255,233,150,.70)' /tmp/starry-app.js >/dev/null \
-              && grep -F 'radial-gradient(ellipse 1.55% 1.15% at 25% 82%' /tmp/starry-app.js >/dev/null; then
+              && grep -F 'starry-shell-v32' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'rgba(255,241,166,.88)' /tmp/starry-app.js >/dev/null \
+              && grep -F 'filter:blur(12px)' /tmp/starry-app.js >/dev/null \
+              && grep -F '已安裝繁星艦長' /tmp/starry-app.js >/dev/null \
+              && grep -F 'color:#fff4a9' /tmp/starry-app.js >/dev/null \
+              && grep -F 'return baseY-upperRaise;' /tmp/starry-app.js >/dev/null \
+              && grep -F 'content:none!important;display:none!important' /tmp/starry-app.js >/dev/null; then
               verified=1
               break
             fi
@@ -129,7 +133,7 @@ jobs:
           ! grep -F 'solar-hero__flare--1' /tmp/starry.html
           ! grep -F 'planet-wrap p10' /tmp/starry.html
           grep -F 'starrySolarParallaxX' /tmp/starry-app.js
-          grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-75%,0)' /tmp/starry-app.js
+          grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js
           ! grep -F 'starrySolarPlasma' /tmp/starry-app.js
           grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js
           ! grep -F '繁星主站' /tmp/starry.html
@@ -147,7 +151,7 @@ jobs:
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v31" /tmp/starry-sw.js
+          grep -F "starry-shell-v32" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

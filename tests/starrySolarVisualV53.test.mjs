@@ -28,7 +28,7 @@ test('solar hero remains below foreground planets, title and links',()=>{
  assert.match(css,/\.solar-hero__disc\{[\s\S]*?z-index:1/);
  assert.match(css,/\.planet-lane\{z-index:1\}/);
  assert.match(css,/\.brand-mark::before\{/);
- assert.doesNotMatch(css,/backdrop-filter|filter:blur\(/);
+ assert.doesNotMatch(css,/backdrop-filter/);
 });
 test('Earth remains central until horizontal drag',()=>{
  const js=read('app-v5.js');
@@ -52,7 +52,7 @@ test('warm solar light, title clarity and retained rewards',()=>{
  assert.match(css,/-webkit-text-fill-color:transparent!important/);
  assert.match(css,/text-shadow:none!important/);
  assert.match(css,/\.planet-wrap > \.planet:not\(\.moon\):not\(\.saturn\)/);
- assert.match(read('sw.js'),/starry-shell-v31/);
+ assert.match(read('sw.js'),/starry-shell-v32/);
  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });

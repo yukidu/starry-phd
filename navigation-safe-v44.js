@@ -51,6 +51,11 @@
     const center=high>=low?(low+high)/2:Math.max(0,vh*.5);
     const maxSpread=Math.max(0,(high-low)/2);
     const spread=Math.min(mobile?104:130,vh*(mobile?.125:.15),maxSpread);
-    return center - clamp(Number(pitch)/23,-1,1)*spread;
+    const baseY=center-clamp(Number(pitch)/23,-1,1)*spread;
+    // V57: raise only the upper lane, but never enter the fixed title/battery.
+    const upperRaise=Number(pitch)>0
+      ? Math.min(15,Math.max(0,baseY-(header+groupHeight/2+10)))
+      : 0;
+    return baseY-upperRaise;
   };
 })();
