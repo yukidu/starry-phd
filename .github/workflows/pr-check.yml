@@ -34,6 +34,9 @@ jobs:
           grep -F 'flashBattery();' dist/app-v5.js
           grep -F 'battery-charge-bolt' dist/app-v5.js
           grep -F 'battery-value:not(.login-ready)' dist/app-v5.js
+          grep -F -- '-webkit-appearance:none!important;appearance:none!important' dist/app-v5.js
+          grep -F '#starryBatteryCenter{filter:none!important}' dist/app-v5.js
+          ! grep -F '#starryBatteryCenter{filter:drop-shadow(' dist/app-v5.js
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js

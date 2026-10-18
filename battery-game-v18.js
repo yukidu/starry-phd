@@ -29,7 +29,10 @@
     #starryBatteryCenter .battery-value:disabled{opacity:1;color:#fff4a9}
     /* Signed-in balance: absolutely no background panel. Guest login stays unchanged. */
     #starryBatteryCenter{background:none!important;border:0!important;box-shadow:none!important}
-    #starryBatteryCenter .battery-value:not(.login-ready){background:none!important;border:0!important;box-shadow:none!important;clip-path:none!important}
+    /* V63: actual stock is plain text, NEVER browser-native disabled-button chrome. */
+    #starryBatteryCenter .battery-value:not(.login-ready){-webkit-appearance:none!important;appearance:none!important;display:inline!important;background:transparent!important;background-image:none!important;background-color:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:none!important;clip-path:none!important;padding:0!important;min-height:0!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}
+    #starryBatteryCenter .battery-value:not(.login-ready)::before,
+    #starryBatteryCenter .battery-value:not(.login-ready)::after{content:none!important;display:none!important}
     #starryBatteryCenter .battery-icon{position:relative;display:inline-grid;place-items:center;width:26px;height:30px;line-height:1;font-size:23px;flex:none;isolation:isolate}
     #starryBatteryCenter .battery-charge-bolt{position:absolute;left:50%;top:50%;width:62px;height:72px;pointer-events:none;opacity:0;overflow:visible;transform:translate3d(-50%,-50%,0) scale(.3);transform-origin:center;will-change:transform,opacity;z-index:2}
     #starryBatteryCenter .battery-title{display:inline-flex;align-items:center;gap:2px;overflow:visible}
