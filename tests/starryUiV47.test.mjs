@@ -80,8 +80,8 @@ test('service card shell duplicates Google login outline, gradient and top shine
 });
 test('battery count matches left label font weight, size and color',()=>{
  const css=read('battery-game-v18.js');
- assert.match(css,/#starryBatteryCenter \.battery-title\{[^\n]+color:rgba\(179,229,255,\.82\);font:700 clamp\(14px,1\.5vw,18px\)\/1\.15 "Noto Sans TC"/);
- assert.match(css,/#starryBatteryCenter \.battery-value\{[^\n]+color:rgba\(179,229,255,\.82\);font:700 clamp\(14px,1\.5vw,18px\)\/1\.15 "Noto Sans TC"/);
+ assert.match(css,/#starryBatteryCenter \.battery-title\{[^\n]+color:#fff4a9;font:700 clamp\(14px,1\.5vw,18px\)\/1\.15 "Noto Sans TC"/);
+ assert.match(css,/#starryBatteryCenter \.battery-value\{[^\n]+color:#fff4a9;font:700 clamp\(14px,1\.5vw,18px\)\/1\.15 "Noto Sans TC"/);
  assert.ok(css.includes('#starryBatteryCenter .battery-value{font-size:14px}#starryBatteryCenter .battery-title{font-size:14px}'));
  assert.match(css,/#starryBatteryCenter \.battery-value\.login-ready/);
 });

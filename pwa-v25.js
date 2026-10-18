@@ -34,6 +34,11 @@
   ensureMeta('application-name', APP_NAME);
 
   let deferredInstallPrompt = null;
+  let installedInThisSession = false;
+  addEventListener('appinstalled', () => {
+    installedInThisSession = true;
+    deferredInstallPrompt = null;
+  });
   addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
@@ -42,7 +47,7 @@
 
   window.starryPlatform = window.starryPlatform || {};
   window.starryPlatform.installPwa = async () => {
-    const installed = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const installed = installedInThisSession || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
     if (installed) return { available:false, installed:true };
     if (!deferredInstallPrompt) return { available:false, installed:false };
     deferredInstallPrompt.prompt();
@@ -51,29 +56,56 @@
     return { available:true, installed:false, outcome:choice?.outcome || 'dismissed' };
   };
   window.starryPlatform.isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  window.starryPlatform.isKnownInstalled = () => installedInThisSession || window.starryPlatform.isStandalone();
 
   function isIosLike() {
     return /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   }
 
-  function showInstallUnavailable() {
+  function showInstallStatus(text) {
     const modal = document.getElementById('portalModal');
     const message = document.getElementById('portalMessage');
-    if (message) message.textContent = '此瀏覽器目前未提供一鍵安裝，請使用瀏覽器的「安裝應用程式／加入桌面」功能。';
+    if (message) message.textContent = text;
     if (modal) {
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
     }
   }
 
+  function showInstallUnavailable() {
+    showInstallStatus('無法確認是否已安裝。若已安裝請從桌面開啟；否則可使用瀏覽器的「安裝應用程式／加入桌面」功能。');
+  }
+
   const playButton = document.querySelector('.portal-btn[data-store="Google Play"]');
-  if (playButton && !isIosLike()) {
+  if (playButton) {
     playButton.addEventListener('click', async (event) => {
       event.preventDefault();
       event.stopImmediatePropagation();
-      const result = await window.starryPlatform.installPwa();
-      if (result?.installed) return;
-      if (!result?.available) showInstallUnavailable();
+      // Standalone and appinstalled are reliable. A normal browser tab cannot
+      // always discover whether this PWA is installed elsewhere on the device.
+      if (window.starryPlatform.isKnownInstalled()) {
+        showInstallStatus('已安裝繁星艦長，可從桌面直接開啟。');
+        return;
+      }
+      if (isIosLike()) {
+        showInstallStatus('無法確認是否已安裝。iPhone/iPad 請查看主畫面；尚未安裝請使用 Safari 的「加入主畫面」。');
+        return;
+      }
+      try {
+        const result = await window.starryPlatform.installPwa();
+        if (result?.installed) {
+          showInstallStatus('已安裝繁星艦長，可從桌面直接開啟。');
+        } else if (!result?.available) {
+          showInstallUnavailable();
+        } else if (result.outcome === 'accepted') {
+          showInstallStatus('已送出安裝請求，請依瀏覽器提示完成；安裝完成後可從桌面開啟。');
+        } else {
+          showInstallStatus('尚未完成安裝。需要時可再次按下安裝按鈕。');
+        }
+      } catch (error) {
+        console.warn('Starry PWA installation:',error);
+        showInstallUnavailable();
+      }
     }, true);
   }
 

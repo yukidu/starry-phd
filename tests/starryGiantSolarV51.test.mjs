@@ -37,7 +37,7 @@ test('giant hero replaces the small tenth planet without an API or new canvas',(
 test('180vw half-hidden sun stays beneath the site header without covering links',()=>{
  const x=solar(),css=x.css;
  assert.match(css,/\.solar-hero__body\{[\s\S]*?top:0/);
- assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-75%,0\)/);
+ assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-67\.5%,0\)/);
  assert.match(css,/@media\(max-width:760px\)\{[\s\S]*?\.solar-hero__body\{width:180vw\}/);
  assert.match(css,/\.solar-hero\{[^}]*z-index:0/);
  assert.match(css,/\.planet-lane\{z-index:1\}/);
@@ -72,9 +72,9 @@ test('high flames animate only opacity; interaction pauses and low devices reduc
  assert.doesNotMatch(css,/solar-hero__arc|starrySolarPlasma|@keyframes/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/radial-gradient\(ellipse 1\.55% 1\.15% at 25% 82%/);
- assert.match(css,/-webkit-text-stroke:\.55px rgba\(255,199,134,\.63\)/);
- assert.doesNotMatch(css,/backdrop-filter|filter:blur\(/);
- assert.match(read('sw.js'),/starry-shell-v31/);
+ assert.match(css,/-webkit-text-stroke:\.95px rgba\(255,148,32,\.92\)!important/);
+ assert.doesNotMatch(css,/backdrop-filter/);
+ assert.match(read('sw.js'),/starry-shell-v32/);
  assert.match(read('.github/workflows/deploy.yml'),/solar-hero-v51\.js/);
  assert.match(read('.github/workflows/pr-check.yml'),/solar-hero-v51\.js/);
 });

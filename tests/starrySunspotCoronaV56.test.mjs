@@ -22,13 +22,13 @@ test('sunspots shrink, soften and vary in size without black holes',()=>{
 });
 test('brighter gold and wider orange corona remain static behind the planet layer',()=>{
  const css=getCss();
- assert.match(css,/\.solar-hero__corona\{\s*position:absolute;inset:-16%;z-index:0/);
- assert.match(css,/rgba\(255,233,150,\.70\)/);
- assert.match(css,/rgba\(255,203,92,\.65\)/);
- assert.match(css,/rgba\(255,148,35,\.44\)/);
- assert.match(css,/rgba\(239,69,10,\.22\)/);
- assert.match(css,/0 0 116px 54px rgba\(250,79,15,\.17\)/);
- assert.match(css,/0 0 94px 44px rgba\(247,69,12,\.16\)/);
+ assert.match(css,/\.solar-hero__corona\{\s*position:absolute;inset:-24%;z-index:0/);
+ assert.match(css,/rgba\(255,241,166,\.88\)/);
+ assert.match(css,/rgba\(255,208,86,\.79\)/);
+ assert.match(css,/rgba\(255,159,35,\.64\)/);
+ assert.match(css,/rgba\(242,66,11,\.33\)/);
+ assert.match(css,/0 0 165px 74px rgba\(252,81,12,\.30\)/);
+ assert.match(css,/0 0 128px 61px rgba\(247,76,10,\.28\)/);
  assert.match(css,/\.solar-hero\{[\s\S]*?overflow:hidden;z-index:0;pointer-events:none/);
  assert.match(css,/\.planet-lane\{z-index:1\}/);
  assert.doesNotMatch(css,/@keyframes|solar-hero__arc|solar-hero__flare|backdrop-filter/);
@@ -36,16 +36,16 @@ test('brighter gold and wider orange corona remain static behind the planet laye
 });
 test('sun diameter/height and existing parallax, heading, click effects stay unchanged',()=>{
  const css=getCss(),app=read('app-v5.js'),html=read('index.html');
- assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-75%,0\)/);
+ assert.match(css,/transform:translate3d\(calc\(-50% \+ var\(--starry-solar-x,0px\)\),-67\.5%,0\)/);
  assert.match(css,/@media\(max-width:760px\)\{\s*\.solar-hero__body\{width:180vw\}/);
- assert.match(css,/-webkit-text-stroke:\.55px rgba\(255,199,134,\.63\)/);
+ assert.match(css,/-webkit-text-stroke:\.95px rgba\(255,148,32,\.92\)!important/);
  assert.match(app,/let cameraYaw = 80, autoYaw = 0, tiltYaw = 0;/);
  assert.match(app,/function viewPitch\(\) \{ return 0; \}/);
  assert.match(html,/\.earth-moon-companion\{left:calc\(50% \+ 34px\);top:17px\}/);
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  assert.match(html,/\.click-burst\{/);
  assert.match(html,/\.click-spark\{/);
- assert.match(read('sw.js'),/starry-shell-v31/);
+ assert.match(read('sw.js'),/starry-shell-v32/);
  assert.match(read('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
 });

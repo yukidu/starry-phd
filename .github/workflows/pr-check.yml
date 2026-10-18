@@ -20,7 +20,12 @@ jobs:
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
           grep -F 'starrySolarParallaxX' dist/app-v5.js
-          grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-75%,0)' dist/app-v5.js
-          grep -F 'rgba(255,233,150,.70)' dist/app-v5.js
-          grep -F 'radial-gradient(ellipse 1.55% 1.15% at 25% 82%' dist/app-v5.js
+          grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' dist/app-v5.js
+          grep -F 'rgba(255,241,166,.88)' dist/app-v5.js
+          grep -F 'filter:blur(12px)' dist/app-v5.js
           ! grep -F 'starrySolarPlasma' dist/app-v5.js
+
+          grep -F '已安裝繁星艦長' dist/app-v5.js
+          grep -F 'color:#fff4a9' dist/app-v5.js
+          grep -F 'return baseY-upperRaise;' dist/app-v5.js
+          grep -F 'content:none!important;display:none!important' dist/app-v5.js

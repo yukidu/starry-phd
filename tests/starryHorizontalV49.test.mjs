@@ -35,8 +35,9 @@ test('planet groups stay in centered fixed vertical lanes on phone and desktop',
    assert.ok(position>=0&&position<=height,
      'planet vertically in view '+width+'x'+height);
   }
-  assert.ok(Math.abs((positions[0]+positions[2])/2-positions[1])<1e-6,
-    'symmetric lanes at '+width+'x'+height);
+  const raised=positions[1]*2-positions[0]-positions[2];
+  assert.ok(raised>=0&&raised<=15.01,
+    'upper lane raises by at most 15px at '+width+'x'+height);
  }
 });
 
@@ -61,5 +62,5 @@ test('360 degree planet order, rewards and offline updates stay intact',()=>{
  assert.deepEqual(yaw,[0,40,80,120,160,200,240,280,320]);
  assert.match(source('battery-game-v18.js'),/targetId:targetId\(rock\), sizeLevel/);
  assert.match(source('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(source('sw.js'),/starry-shell-v31/);
+ assert.match(source('sw.js'),/starry-shell-v32/);
 });
