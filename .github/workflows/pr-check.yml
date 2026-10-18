@@ -19,7 +19,10 @@ jobs:
           grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' index.html
           grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' index.html
           grep -F '.click-burst{contain:layout style;overflow:visible!important}' dist/app-v5.js
-          grep -F "const shardCount = quality === 'eco' ? 6" dist/app-v5.js
+          grep -F "const shardCount = quality === 'eco' ? 2" dist/app-v5.js
+          grep -F "if (!meteorNoiseBuffer)" dist/app-v5.js
+          grep -F "box-shadow:none!important;" dist/app-v5.js
+          grep -F "if (performance.now() - lastMeteorBlastAt < 220) return;" dist/app-v5.js
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
