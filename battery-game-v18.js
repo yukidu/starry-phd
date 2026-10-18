@@ -23,20 +23,18 @@
   style.textContent = `
     .free-look-hint{display:none!important}
     #immersiveToggle{display:none!important}
-    #starryBatteryCenter{position:relative;z-index:25;display:inline-flex;align-items:center;justify-content:center;gap:4px 10px;margin:10px auto 0;padding:0;border:0;background:transparent;text-align:center;color:#fff4a9;text-shadow:0 0 8px #ffcf54,0 0 22px rgba(255,148,39,.68);user-select:none}
+    #starryBatteryCenter{position:relative;z-index:25;display:inline-flex;align-items:center;justify-content:center;gap:4px 10px;margin:10px auto 0;padding:0;border:0;background:transparent;text-align:center;color:#fff4a9;text-shadow:none;user-select:none}
     #starryBatteryCenter .battery-title{display:inline;margin:0;color:#fff4a9;font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.06em;pointer-events:none}
-    #starryBatteryCenter .battery-value{position:relative;display:inline;margin:0;padding:0;border:0;background:none;color:#fff4a9;font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.06em;text-shadow:inherit;overflow:hidden}
+    #starryBatteryCenter .battery-value{position:relative;display:inline;margin:0;padding:0;border:0;background:none;color:#fff4a9;font:700 clamp(14px,1.5vw,18px)/1.15 "Noto Sans TC",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.06em;text-shadow:none;overflow:visible}
     #starryBatteryCenter .battery-value:disabled{opacity:1;color:#fff4a9}
     /* Signed-in balance: absolutely no background panel. Guest login stays unchanged. */
     #starryBatteryCenter{background:none!important;border:0!important;box-shadow:none!important}
     /* V63: actual stock is plain text, NEVER browser-native disabled-button chrome. */
-    #starryBatteryCenter .battery-value:not(.login-ready){-webkit-appearance:none!important;appearance:none!important;display:inline!important;background:transparent!important;background-image:none!important;background-color:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:none!important;clip-path:none!important;padding:0!important;min-height:0!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}
+    #starryBatteryCenter .battery-value:not(.login-ready){-webkit-appearance:none!important;appearance:none!important;display:inline!important;background:transparent!important;background-image:none!important;background-color:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-shadow:none!important;outline:none!important;clip-path:none!important;padding:0!important;min-height:0!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}
     #starryBatteryCenter .battery-value:not(.login-ready)::before,
     #starryBatteryCenter .battery-value:not(.login-ready)::after{content:none!important;display:none!important}
     #starryBatteryCenter .battery-icon{position:relative;display:inline-grid;place-items:center;width:26px;height:30px;line-height:1;font-size:23px;flex:none;isolation:isolate}
-    #starryBatteryCenter .battery-charge-bolt{position:absolute;left:50%;top:50%;width:62px;height:72px;pointer-events:none;opacity:0;overflow:visible;transform:translate3d(-50%,-50%,0) scale(.3);transform-origin:center;will-change:transform,opacity;z-index:2}
     #starryBatteryCenter .battery-title{display:inline-flex;align-items:center;gap:2px;overflow:visible}
-    @media(prefers-reduced-motion:reduce){#starryBatteryCenter .battery-charge-bolt{will-change:auto}}
     #starryBatteryCenter .battery-value.login-ready{pointer-events:auto;cursor:pointer;min-height:38px;padding:8px 18px 8px 20px;border:1px solid rgba(103,238,255,.72);border-radius:9px;background:linear-gradient(135deg,rgba(7,28,55,.96),rgba(8,11,34,.94) 52%,rgba(37,14,67,.92));color:#eaffff;font:800 14px/1 "Orbitron","Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-decoration:none;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);box-shadow:0 0 0 1px rgba(112,239,255,.08) inset,0 0 15px rgba(54,219,255,.22),0 0 32px rgba(108,69,255,.16);text-shadow:0 0 10px rgba(112,239,255,.7);animation:starryLoginPulse 2.2s ease-in-out infinite}
     #starryBatteryCenter .battery-value.login-ready::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 38%,rgba(130,249,255,.23) 48%,transparent 58%);transform:translateX(-130%);animation:starryLoginScan 2.4s ease-in-out infinite;pointer-events:none}
     #starryBatteryCenter .battery-value.login-ready::after{content:"◈";margin-left:8px;color:#7df9ff;text-shadow:0 0 9px #7df9ff}
@@ -100,12 +98,8 @@
   batteryIcon.className = 'battery-icon';
   batteryIcon.setAttribute('aria-hidden', 'true');
   batteryIcon.textContent = '🔋';
-  const chargeBolt = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  chargeBolt.classList.add('battery-charge-bolt');
-  chargeBolt.setAttribute('viewBox', '0 0 80 80');
-  chargeBolt.setAttribute('aria-hidden', 'true');
-  chargeBolt.innerHTML = '<path d="M46 4 18 41h17l-8 35 37-47H44l7-25Z" fill="#9dff35" stroke="#28ee91" stroke-width="4" stroke-linejoin="round"/><path d="M46 16 29 38h15L36 61l19-27H40Z" fill="#f7ffda"/>';
-  batteryIcon.appendChild(chargeBolt);
+  // Shared animation module. Rewards and ledger remain owned by this App.
+  const chargeBolt = window.StarryBatteryCharge?.mount(batteryIcon) || null;
   title.prepend(batteryIcon);
   const value = document.createElement('button');
   value.type = 'button';
@@ -251,19 +245,8 @@
   }
 
   function flashBattery() {
-    if (currentBalance === null || typeof chargeBolt.animate !== 'function') return;
-    // One GPU-composited flash. Cancel the prior flash on rapid hits.
-    const old = chargeBolt.getAnimations?.() || [];
-    old.forEach(anim => anim.cancel());
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    chargeBolt.animate(reduced
-      ? [{ opacity:0 }, { opacity:1 }, { opacity:0 }]
-      : [
-          { opacity:0, transform:'translate3d(-50%,-50%,0) scale(.3)' },
-          { opacity:1, transform:'translate3d(-50%,-50%,0) scale(1.27)', offset:.22 },
-          { opacity:.95, transform:'translate3d(-50%,-50%,0) scale(1.12)', offset:.54 },
-          { opacity:0, transform:'translate3d(-50%,-50%,0) scale(.78)' }
-        ], { duration:reduced?220:540, easing:'ease-out' });
+    if (currentBalance === null) return;
+    window.StarryBatteryCharge?.flash(chargeBolt);
   }
 
   function displayLoggedOut() {

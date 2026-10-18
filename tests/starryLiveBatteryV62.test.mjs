@@ -23,13 +23,22 @@ function harness({initial=10,reduced=false}={}){
  class Event{constructor(type,options){this.type=type;this.detail=options.detail}}
  const ctx={
    value,chargeBolt,HTMLElement:Rock,CustomEvent:Event,
-   matchMedia:()=>({matches:reduced}),window:{dispatchEvent:e=>{events.push(e);return true}},
+   matchMedia:()=>({matches:reduced}),window:{
+     dispatchEvent:e=>{events.push(e);return true},
+     matchMedia:()=>({matches:reduced})
+   },
    console:{warn(){}},Math,Array,Number,Map,
    addEventListener(){},
    api:(method,body)=>new Promise((resolve,reject)=>calls.push({method,body,resolve,reject})),
    targetId:rock=>rock.dataset.batteryTargetId,
    showReward:(x,y,amount,rock)=>rewards.push({x,y,amount,rock})
  };
+ // Real shared component runs inside the VM; the reward harness passes a
+ // mock SVG that counts animations, preserving real cancellation behavior.
+ runInNewContext(read('starry-battery-charge-v1.js'),{
+   window:ctx.window,document:{getElementById:()=>null,
+     createElement:()=>({}),head:{appendChild(){}}}
+ });
  const a=source.indexOf('  function renderBalance() {'),b=source.indexOf("  value.addEventListener('click'",a);
  const c=source.indexOf('  function failReward(rock) {'),d=source.indexOf('\n  void loadBalance();',c);
  assert.ok(a>=0&&b>a&&c>=0&&d>c);
@@ -54,9 +63,9 @@ test('signed-in battery has no background, guest login button retains its design
  assert.match(source,/#starryBatteryCenter \.battery-value:not\(\.login-ready\)\{[^\n]+background:transparent!important;[^\n]+border:0!important;[^\n]+box-shadow:none!important/);
  assert.match(source,/#starryBatteryCenter \.battery-value\.login-ready\{[^\n]*background:linear-gradient/);
  assert.match(source,/batteryIcon\.textContent = '🔋'/);
- assert.match(source,/batteryIcon\.appendChild\(chargeBolt\)/);
- assert.match(source,/stroke="#28ee91"/);
- assert.match(source,/width:62px;height:72px/);
+ assert.match(source,/window\.StarryBatteryCharge\?\.mount\(batteryIcon\)/);
+ assert.match(read('starry-battery-charge-v1.js'),/stroke="#28ee91"/);
+ assert.match(read('starry-battery-charge-v1.js'),/width:124px;height:144px/);
 });
 test('three rapid hits update instantly and POST one at a time with no double counts',async()=>{
  const h=harness(),a=h.hit('A',15);
@@ -123,8 +132,8 @@ test('100 consecutive hits add exact cents without extra requests or duplicate e
 test('lightning supports reduced motion and fails safely without WAAPI',()=>{
  const h=harness({reduced:true});h.hit('A',10);
  assert.equal(h.flashes[0].options.duration,220);
- assert.match(source,/typeof chargeBolt\.animate !== 'function'/);
- assert.match(source,/@media\(prefers-reduced-motion:reduce\)\{#starryBatteryCenter \.battery-charge-bolt\{will-change:auto\}\}/);
+ assert.match(read('starry-battery-charge-v1.js'),/typeof bolt\.animate !== 'function'/);
+ assert.match(read('starry-battery-charge-v1.js'),/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('unchanged backend, server-authoritative balance, independent PWA and galaxy',()=>{
  assert.match(source,/https:\/\/id\.starry\.phd\/api\/starry-game\/battery/);
@@ -134,6 +143,6 @@ test('unchanged backend, server-authoritative balance, independent PWA and galax
  assert.match(source,/currentBalance = number; \/\/ Always display the confirmed server ledger/);
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v38/);
+ assert.match(read('sw.js'),/starry-shell-v39/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
 });
