@@ -33,7 +33,7 @@ test('navigation soft starts and slows fast throws without extra work per frame'
  const app=read('app-v5.js');
  assert.match(app,/function updateSmoothCamera\(now\)/);
  assert.match(app,/displayedYaw = normAngle\(displayedYaw \+ normAngle\(viewYaw\(\) - displayedYaw\)/);
- assert.match(app,/yawVelocity\*=\.79/);
+ assert.match(app,/yawVelocity\*=\.84/);
  assert.match(app,/cameraPitch=clamp\(cameraPitch\+dy\*sens,-36,36\)/);
  assert.match(app,/emptyViewFrames > 90/);
  assert.match(app,/if \(!planetSizes\) \{\s*planetSizes = planets\.map/);
@@ -44,8 +44,8 @@ test('keep the same planet style while the service labels are compact',()=>{
  assert.match(style,/width:max-content!important/);
  assert.match(style,/min-width:0!important/);
  assert.match(style,/font-size:20px!important/);
- assert.match(style,/\.planet-wrap\.p5 em\.service-label\{margin-top:26px!important\}/);
- assert.match(style,/\.planet-wrap\.p6 em\.service-label\{margin-top:26px!important\}/);
+ assert.match(style,/\.planet-wrap\.p5 em\.service-label\{margin-top:32px!important\}/);
+ assert.match(style,/\.planet-wrap\.p6 em\.service-label\{margin-top:40px!important\}/);
  assert.doesNotMatch(read('app-v5.js'),/starryArrangePlanetCards/);
 });
 test('battery updates reject stale GET and prior meteor POST values',()=>{

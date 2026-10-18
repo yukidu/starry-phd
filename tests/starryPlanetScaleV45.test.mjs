@@ -39,5 +39,5 @@ test('phone tilt returns to 6 and 4 without changing swipe smoothness',()=>{
   assert.ok(js.includes('targetTiltPitch = clamp(y / 24,-1,1) * 4'));
   assert.ok(!js.includes('targetTiltYaw = clamp(filteredX / 22'));
   assert.ok(js.includes('function updateSmoothCamera(now)'));
-  assert.ok(js.includes('const sens=.19;'));
+  assert.ok(js.includes('const sens=.27;'));
 });

@@ -1,10 +1,10 @@
+// Keep every planet opaque internally, but let the projected group use its
+// real inline opacity. The previous !important override + visibility toggle
+// made otherwise visible planets pop in/out abruptly while dragging.
 (() => {
-  // v32：所有目前可見的星球都保持完全不透明；離開視野的星球仍維持隱藏。
   const style = document.createElement('style');
   style.textContent = `
-    .planet-wrap{opacity:1!important}
-    .planet-wrap[style*="opacity: 0;"]{visibility:hidden!important}
-    .planet-wrap:not([style*="opacity: 0;"]){visibility:visible!important}
+    .planet-wrap{backface-visibility:hidden}
     .planet-wrap .planet,.planet-wrap .planet>span{opacity:1!important}
   `;
   document.head.appendChild(style);

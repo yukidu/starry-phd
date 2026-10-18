@@ -44,6 +44,11 @@
     html[data-starry-quality="low"] .milky-way{filter:none!important}
     html[data-starry-quality="low"] .milky-way .galaxy-stars-a{filter:none!important;animation-duration:10s!important;opacity:.22!important}
     html[data-starry-quality="low"] .planet-wrap em.service-label{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+    /* During finger interaction, prioritize the planet camera over ambience. */
+    html[data-starry-interacting="1"] .milky-way,
+    html[data-starry-interacting="1"] .milky-way::before,
+    html[data-starry-interacting="1"] .nebula,
+    html[data-starry-interacting="1"] .planet-wrap .planet>span{animation-play-state:paused!important}
   `;
   document.head.appendChild(style);
 
@@ -171,6 +176,8 @@
     if (document.hidden) return;
     measure(now);
     renderTick += 1;
+    // One ambient starfield frame out of three while swiping or coasting.
+    if (document.documentElement.dataset.starryInteracting === '1' && renderTick % 3 !== 0) return;
     const cfg = qualityConfig();
     if (cfg.skip && renderTick % 2) return;
 

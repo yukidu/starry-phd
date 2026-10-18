@@ -23,15 +23,15 @@
   const sectors = ['ORION-09','LYRA-27','NOVA-16','VEGA-81','ASTRA-03','KEPLER-22'];
   const planetMap = [
     // Earth = 1.00x. Every planet stays between 1/1.2 and 1.2 Earth.
-    { yaw: 0, pitch: -8, size: .88 },
-    { yaw: 40, pitch: 12, size: .96 },
-    { yaw: 80, pitch: -2, size: 1 },
-    { yaw: 120, pitch: 18, size: .92 },
-    { yaw: 160, pitch: -11, size: 1.13 },
-    { yaw: 200, pitch: 7, size: 1.07 },
-    { yaw: 240, pitch: -18, size: .90 },
-    { yaw: 280, pitch: 13, size: 1.04 },
-    { yaw: 320, pitch: 2, size: .88 },
+    { yaw: 0, pitch: -23, size: .88 },
+    { yaw: 40, pitch: 0, size: .96 },
+    { yaw: 80, pitch: 23, size: 1 },
+    { yaw: 120, pitch: -23, size: .92 },
+    { yaw: 160, pitch: 0, size: 1.13 },
+    { yaw: 200, pitch: 23, size: 1.07 },
+    { yaw: 240, pitch: -23, size: .90 },
+    { yaw: 280, pitch: 0, size: 1.04 },
+    { yaw: 320, pitch: 23, size: .88 },
     { yaw: 348, pitch: 19, size: .95 }
   ];
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
@@ -53,6 +53,10 @@
   const rad = (d) => d * Math.PI / 180;
 
   planets.forEach((wrap, i) => {
+    wrap.style.left = '0';
+    wrap.style.top = '0';
+    wrap.style.right = 'auto';
+    wrap.style.bottom = 'auto';
     const span = wrap.querySelector('.planet > span');
     if (span) {
       span.style.animationDuration = `${spinDurations[i] || 14}s`;
@@ -109,13 +113,16 @@
   function resize() {
     width = innerWidth;
     height = innerHeight;
-    dpr = Math.min(devicePixelRatio || 1, 2);
+    // Keep the primary canvas lightweight on high-DPI phones.
+    dpr = Math.min(devicePixelRatio || 1, width <= 760 ? 1.35 : 2);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.max(180, Math.min(520, Math.floor(width * height / 3800)));
+    const count = width <= 760
+      ? Math.max(88, Math.min(155, Math.floor(width * height / 3400)))
+      : Math.max(180, Math.min(520, Math.floor(width * height / 3800)));
     stars = Array.from({ length: count }, makeStar);
     planetSizes = null;
   }
@@ -178,19 +185,16 @@
       const p = planetMap[i] || planetMap[0];
       const dyaw = normAngle(p.yaw - yaw);
       const dpitch = p.pitch - pitch;
-      const visible = Math.abs(dyaw) < fovX * .62 && Math.abs(dpitch) < fovY * .68;
+      // Never hard-hide a planet by pitch/heading. Offscreen planets fade
+      // continuously based on their full group bounds instead.
+      const layoutPitch = p.pitch - clamp(pitch,-20,20);
       const visual = el.querySelector('.planet');
-      if (!visible) {
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
-        return;
-      }
       const x = width * .5 + (dyaw / (fovX/2)) * width * .5;
-      // Portrait view shows about three neighboring service cards; the
-      // vertical spread is gentler to keep rows away from the top HUD.
+      // Three vertical lanes are spaced farther apart. The limited visual
+      // pitch protects the fixed heading/battery and lower store controls.
       const y = portrait
-        ? height * .50 - (dpitch / (fovY/2)) * height * .25
-        : height * .47 - (dpitch / (fovY/2)) * height * .5;
+        ? height * .56 - (layoutPitch / (fovY/2)) * height * .28
+        : height * .49 - (layoutPitch / (fovY/2)) * height * .48;
       const bounds = planetSizes[i] || {width:180,height:180};
       const safe = window.starrySafePlanetPosition
         ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height},
@@ -199,11 +203,7 @@
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
       // Uniform planet base diameter, with gentle depth scaling.
       const scale = p.size * (.95 + centerBoost * .05);
-      el.style.left = '0';
-      el.style.top = '0';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
-      const opacity = clamp((centerBoost-.5)*2.2,.22,1) * safe.fade;
+      const opacity = clamp((centerBoost-.25)*1.5,.7,1) * safe.fade;
       if (opacity > .2) visibleCount++;
       el.style.opacity = `${opacity}`;
       el.style.pointerEvents = opacity > .4 && el.dataset.url ? 'auto' : 'none';
@@ -231,6 +231,7 @@
   }
 
   function drawStarfield(now = 0) {
+    if (document.hidden) { requestAnimationFrame(drawStarfield); return; }
     ctx.clearRect(0,0,width,height);
 
     if (!reduceMotion && !dragging && !inertiaActive) {
@@ -468,6 +469,10 @@
     return target instanceof Element && !!target.closest('button,.portal-modal,a,input,textarea,select');
   }
 
+  function setInteractionMode(on) {
+    document.documentElement.dataset.starryInteracting = on ? '1' : '0';
+  }
+
   function startDrag(e) {
     if(e.button!=null&&e.button!==0)return;
     ensureAudio();
@@ -481,6 +486,7 @@
     if(isInteractive(e.target) && !dragStartedOnServiceLink)return;
     dragging=true;
     inertiaActive=false;
+    setInteractionMode(true);
     pointerId=e.pointerId;
     lastX=e.clientX;
     lastY=e.clientY;
@@ -505,7 +511,7 @@
     if (dragStartedOnServiceLink && !dragCaptured && totalMove > 14) {
       try{document.body.setPointerCapture(pointerId);dragCaptured=true}catch{}
     }
-    const sens=.19;
+    const sens=.27;
     cameraYaw=normAngle(cameraYaw-dx*sens);
     cameraPitch=clamp(cameraPitch+dy*sens,-36,36);
     yawVelocity=clamp(-dx*sens,-2,2);
@@ -514,14 +520,15 @@
 
   function runInertia() {
     inertiaActive=true;
-    yawVelocity*=.79;
-    pitchVelocity*=.78;
+    yawVelocity*=.84;
+    pitchVelocity*=.83;
     cameraYaw=normAngle(cameraYaw+yawVelocity);
     cameraPitch=clamp(cameraPitch+pitchVelocity,-36,36);
     if(Math.abs(yawVelocity)>.025||Math.abs(pitchVelocity)>.025){
       inertiaId=requestAnimationFrame(runInertia);
     }else{
       inertiaActive=false;
+      setInteractionMode(false);
     }
   }
 
@@ -533,6 +540,7 @@
     dragStartedOnServiceLink=false;
     pointerId=null;
     if(totalMove<12) {
+      setInteractionMode(false);
       clickFx(e.clientX,e.clientY);
     } else {
       suppressPlanetOpenUntil = performance.now() + 350;
