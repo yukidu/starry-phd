@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html styles.css app.js app-v5.js manifest.webmanifest sw.js icon-192.png icon-512.png icon-192.svg icon-512.svg dist/
-          cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js navigation-safe-v44.js >> dist/app-v5.js
+          cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js navigation-safe-v44.js solar-hero-v51.js >> dist/app-v5.js
 
       - name: Verify bundle
         run: |
@@ -28,6 +28,7 @@ jobs:
           grep -F 'starryMeteorRewardTier' dist/app-v5.js
           grep -F 'universe-readability-v41' dist/app-v5.js
           grep -F 'starrySafePlanetPosition' dist/app-v5.js
+          grep -F 'starrySolarParallaxX' dist/app-v5.js
           grep -F 'let cameraYaw = 80' dist/app-v5.js
           grep -F 'planetMap' dist/app-v5.js
           grep -F "starry:meteor-blasted" dist/app-v5.js
@@ -110,6 +111,9 @@ jobs:
           grep -F 'universe-readability-v41' /tmp/starry-app.js
           grep -F 'starrySafePlanetPosition' /tmp/starry-app.js
           grep -F "app-v5.js" /tmp/starry.html
+          grep -F 'id="starrySolarHero"' /tmp/starry.html
+          ! grep -F 'planet-wrap p10' /tmp/starry.html
+          grep -F 'starrySolarParallaxX' /tmp/starry-app.js
           grep -F 'planet-wrap p10' /tmp/starry.html
           ! grep -F '繁星主站' /tmp/starry.html
           grep -F 'let cameraYaw = 80' /tmp/starry-app.js
@@ -126,7 +130,7 @@ jobs:
           grep -F ".planet-wrap{filter:none!important;backface-visibility:visible!important;opacity:1!important;transition:none!important}" /tmp/starry-app.js
           ! grep -F "rewardInstantPulse" /tmp/starry-app.js
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
-          grep -F "starry-shell-v27" /tmp/starry-sw.js
+          grep -F "starry-shell-v28" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js

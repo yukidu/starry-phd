@@ -31,10 +31,9 @@
     { yaw: 200, pitch: 23, size: 1.07 },
     { yaw: 240, pitch: -23, size: .90 },
     { yaw: 280, pitch: 0, size: 1.04 },
-    { yaw: 320, pitch: 23, size: .88 },
-    { yaw: 340, pitch: 0, size: 1.2 } // Sun: halfway between Pluto and Mercury.
+    { yaw: 320, pitch: 23, size: .88 } // Sun is a separate giant background, not a planet.
   ];
-  const spinDurations = [9,14,18,12,11,16,13,15,10,17];
+  const spinDurations = [9,14,18,12,11,16,13,15,10];
 
   let width = innerWidth, height = innerHeight, dpr = 1, stars = [], frame = 0;
   // Earth (index 2, 80°) is the landing viewpoint on every new entry.
@@ -220,6 +219,8 @@
     // No hidden automatic camera recentering; all yaw sectors have planets.
     if (nebulaA) nebulaA.style.transform = `translate3d(${Math.sin(rad(yaw))*-82}px,${pitch*-1.25}px,0) scale(1.1)`;
     if (nebulaB) nebulaB.style.transform = `translate3d(${Math.sin(rad(yaw+90))*68}px,${pitch*.95}px,0) scale(1.08)`;
+    // Shared camera frame: the giant sun needs no independent render loop.
+    window.starrySolarUpdate?.(yaw,width,height);
   }
 
   function drawStarfield(now = 0) {
