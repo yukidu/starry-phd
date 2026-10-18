@@ -227,10 +227,9 @@
     if (document.hidden) { requestAnimationFrame(drawStarfield); return; }
     ctx.clearRect(0,0,width,height);
 
-    if (!reduceMotion && !dragging && !inertiaActive) {
-      autoYaw = normAngle(autoYaw + 0.013);
-      // Vertical auto motion remains disabled.
-    }
+    // Hold Earth at the landing angle until the user actually swipes.
+    // Automatic yaw was slowly moving Earth away from the center each minute.
+    // No horizontal or vertical camera drift is added when idle.
 
     tiltYaw += (targetTiltYaw - tiltYaw) * .16;
     // No vertical sensor movement.

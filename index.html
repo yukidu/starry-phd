@@ -40,10 +40,10 @@
     .service-name{display:block;color:rgba(240,249,255,.97);font:700 15px/1.25 "Noto Sans TC",system-ui,sans-serif!important;text-shadow:0 0 10px rgba(125,249,255,.32)}
     .service-host{display:block;margin-top:4px;color:rgba(147,222,255,.72);font:600 10px/1 "Orbitron",sans-serif!important;letter-spacing:.08em;text-transform:lowercase}
     .celestial-name{order:-1;position:relative;z-index:8;display:block;margin:0 0 1px;padding:2px 5px;color:rgba(221,239,255,.46);font:500 9px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.14em;text-shadow:0 0 7px rgba(125,249,255,.25);white-space:nowrap;pointer-events:none}
-    .earth-moon-companion{position:absolute;z-index:4;left:calc(50% + 66px);top:18px;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;filter:drop-shadow(0 0 12px rgba(205,222,255,.18))}
-    .earth-moon-companion .celestial-name{order:0;margin-bottom:2px;font-size:8px;color:rgba(225,238,255,.42)}
-    .moon{width:38px!important;height:38px!important;background:radial-gradient(circle at 34% 28%,#f3f2e9,#aeb0ae 52%,#4d5155 100%)!important}
-    .moon>span::before{width:9px;height:9px;left:8px;top:11px;background:#74797c;box-shadow:13px -5px 0 -2px #85898a,11px 13px 0 -2px #666b6e,-2px 15px 0 -3px #929596}
+    .earth-moon-companion{position:absolute;z-index:4;left:calc(50% + 40px);top:18px;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;filter:drop-shadow(0 0 6px rgba(205,222,255,.18))}
+    .earth-moon-companion .celestial-name{order:0;margin-bottom:1px;font-size:9px;color:rgba(225,238,255,.62)}
+    .moon{width:24px!important;height:24px!important;background:radial-gradient(circle at 34% 28%,#f3f2e9,#aeb0ae 52%,#4d5155 100%)!important}
+    .moon>span::before{width:5px;height:5px;left:5px;top:7px;background:#74797c;box-shadow:8px -3px 0 -1px #85898a,7px 8px 0 -1px #666b6e,-1px 9px 0 -1px #929596}
     #immersiveToggle{position:fixed;z-index:26;top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));min-height:38px;padding:0 13px;border:1px solid rgba(160,223,255,.22);border-radius:999px;color:rgba(229,247,255,.86);background:rgba(5,11,28,.38);box-shadow:0 8px 30px rgba(0,0,0,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 10px/1 "Noto Sans TC",system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
     #immersiveToggle.active{border-color:rgba(125,249,255,.55);color:#eaffff;box-shadow:0 0 18px rgba(75,175,255,.18)}
     .click-burst{position:fixed;z-index:60;left:0;top:0;width:16px;height:16px;pointer-events:none;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(164,244,255,.95);box-shadow:0 0 16px rgba(125,249,255,.95),0 0 42px rgba(143,94,255,.5);animation:burstRing .62s cubic-bezier(.16,1,.3,1) forwards}
@@ -58,7 +58,7 @@
     @keyframes burstCore{to{opacity:0;transform:translate(-50%,-50%) scale(3)}}
     @keyframes burstCross{to{opacity:0;transform:translate(-50%,-50%) rotate(180deg) scaleX(3)}}
     @keyframes sparkFly{0%{opacity:1;transform:rotate(var(--a)) translateY(-4px) scaleY(.4)}100%{opacity:0;transform:rotate(var(--a)) translateY(-58px) scaleY(1.2)}}
-    @media(max-width:760px){.free-look-hint{top:max(150px,calc(env(safe-area-inset-top) + 138px));font-size:9px}.store-zone{width:calc(100vw - 18px)!important;gap:7px!important;bottom:max(18px,calc(env(safe-area-inset-bottom) + 9px))!important}.store-zone .portal-btn{height:54px!important;padding:0 10px!important;gap:8px!important;border-radius:14px!important}.store-zone .portal-icon{width:30px!important;height:30px!important;flex-basis:30px!important}.store-zone .portal-copy small{display:none!important}.store-zone .portal-copy strong{font-size:11px!important;white-space:nowrap}.status-pill{bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px)!important;max-width:74vw!important}#immersiveToggle{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));min-height:34px;padding:0 10px;font-size:9px}.hero{padding-bottom:max(136px,18vh)!important}.brand-mark{top:max(58px,calc(env(safe-area-inset-top) + 48px))!important;width:92vw!important}.planet-wrap em.service-label{min-width:126px!important;padding:7px 9px 8px!important}.p5 em.service-label{margin-top:27px!important}.p6 em.service-label{margin-top:22px!important}.service-name{font-size:15px!important}.service-host{font-size:10px!important}.celestial-name{font-size:9px!important}.earth-moon-companion{left:calc(50% + 53px);top:17px}.earth-moon-companion .celestial-name{font-size:8px!important}.moon{width:32px!important;height:32px!important}}
+    @media(max-width:760px){.free-look-hint{top:max(150px,calc(env(safe-area-inset-top) + 138px));font-size:9px}.store-zone{width:calc(100vw - 18px)!important;gap:7px!important;bottom:max(18px,calc(env(safe-area-inset-bottom) + 9px))!important}.store-zone .portal-btn{height:54px!important;padding:0 10px!important;gap:8px!important;border-radius:14px!important}.store-zone .portal-icon{width:30px!important;height:30px!important;flex-basis:30px!important}.store-zone .portal-copy small{display:none!important}.store-zone .portal-copy strong{font-size:11px!important;white-space:nowrap}.status-pill{bottom:calc(max(18px,calc(env(safe-area-inset-bottom) + 9px)) + 62px)!important;max-width:74vw!important}#immersiveToggle{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));min-height:34px;padding:0 10px;font-size:9px}.hero{padding-bottom:max(136px,18vh)!important}.brand-mark{top:max(58px,calc(env(safe-area-inset-top) + 48px))!important;width:92vw!important}.planet-wrap em.service-label{min-width:126px!important;padding:7px 9px 8px!important}.p5 em.service-label{margin-top:27px!important}.p6 em.service-label{margin-top:22px!important}.service-name{font-size:15px!important}.service-host{font-size:10px!important}.celestial-name{font-size:9px!important}.earth-moon-companion{left:calc(50% + 34px);top:17px}.earth-moon-companion .celestial-name{font-size:9px!important}.moon{width:19px!important;height:19px!important}}
   </style>
 </head>
 <body>
@@ -73,15 +73,25 @@
     <div id="starrySolarHero" class="solar-hero" aria-hidden="true">
       <div class="solar-hero__body">
         <div class="solar-hero__corona"></div>
+      <svg class="solar-hero__prominences" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="starryPlasmaAmber" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#8d230c" stop-opacity="0.08"/>
+            <stop offset="0.35" stop-color="#ff771b" stop-opacity="0.83"/>
+            <stop offset="0.67" stop-color="#ffdc81" stop-opacity="0.98"/>
+            <stop offset="1" stop-color="#e64b12" stop-opacity="0.22"/>
+          </linearGradient>
+        </defs>
+        <g fill="none" stroke="url(#starryPlasmaAmber)" stroke-linecap="round" stroke-linejoin="round">
+          <path class="solar-hero__arc solar-hero__arc--1" d="M 112 826 C 136 784 166 826 167 851 S 193 890 226 872 S 272 868 282 905"/>
+          <path class="solar-hero__arc solar-hero__arc--2" d="M 220 933 C 244 880 284 920 288 953 S 337 1000 362 975"/>
+          <path class="solar-hero__arc solar-hero__arc--3" d="M 345 990 C 355 957 390 959 404 1004 S 458 1040 481 1000"/>
+          <path class="solar-hero__arc solar-hero__arc--4" d="M 515 1000 C 542 1038 583 1033 596 990 S 627 964 651 971"/>
+          <path class="solar-hero__arc solar-hero__arc--5" d="M 640 973 C 685 1000 719 952 715 929 S 739 900 774 913"/>
+          <path class="solar-hero__arc solar-hero__arc--6" d="M 760 911 C 781 877 818 883 828 847 S 863 800 892 826"/>
+        </g>
+      </svg>
         <div class="solar-hero__disc"></div>
-        <i class="solar-hero__flare solar-hero__flare--1"></i>
-        <i class="solar-hero__flare solar-hero__flare--2"></i>
-        <i class="solar-hero__flare solar-hero__flare--3"></i>
-        <i class="solar-hero__flare solar-hero__flare--4"></i>
-        <i class="solar-hero__flare solar-hero__flare--5"></i>
-        <i class="solar-hero__flare solar-hero__flare--6"></i>
-        <i class="solar-hero__flare solar-hero__flare--7"></i>
-        <i class="solar-hero__flare solar-hero__flare--8"></i>
       </div>
     </div>
     <div class="planet-lane" id="planetLane">
