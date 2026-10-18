@@ -24,14 +24,14 @@
   const planetMap = [
     // Earth = 1.00x. Every planet stays between 1/1.2 and 1.2 Earth.
     { yaw: 0, pitch: -8, size: .88 },
-    { yaw: 34, pitch: 12, size: .96 },
-    { yaw: 68, pitch: -2, size: 1 },
-    { yaw: 105, pitch: 18, size: .92 },
-    { yaw: 142, pitch: -11, size: 1.13 },
-    { yaw: 181, pitch: 7, size: 1.07 },
-    { yaw: 218, pitch: -18, size: .90 },
-    { yaw: 252, pitch: 13, size: 1.04 },
-    { yaw: 288, pitch: 25, size: .88 },
+    { yaw: 40, pitch: 12, size: .96 },
+    { yaw: 80, pitch: -2, size: 1 },
+    { yaw: 120, pitch: 18, size: .92 },
+    { yaw: 160, pitch: -11, size: 1.13 },
+    { yaw: 200, pitch: 7, size: 1.07 },
+    { yaw: 240, pitch: -18, size: .90 },
+    { yaw: 280, pitch: 13, size: 1.04 },
+    { yaw: 320, pitch: 2, size: .88 },
     { yaw: 348, pitch: 19, size: .95 }
   ];
   const spinDurations = [9,14,18,12,11,16,13,15,10,17];
@@ -44,7 +44,7 @@
   let motionAttached = false, calibration = null, motionPermissionAttempted = false;
   let targetTiltYaw = 0, targetTiltPitch = 0;
   let displayedYaw = 0, displayedPitch = 0, lastFrameAt = 0;
-  let planetSizes = null, emptyViewFrames = 0;
+  let planetSizes = null, emptyViewFrames = 0, protectedHeaderBottom = 0;
   let audioContext = null, musicGain = null, fxGain = null, musicOn = false, melodyTimer = 0, melodyStep = 0;
   let suppressPlanetOpenUntil = 0;
 
@@ -161,12 +161,18 @@
   }
 
   function renderPlanets() {
-    const fovX = 112, fovY = 82;
+    const portrait = width <= 760 && height > width;
+    const fovX = portrait ? 138 : 112, fovY = 82;
     const yaw = displayedYaw, pitch = displayedPitch;
-    // Measure once, then reuse; avoid layout reflows on every animation frame.
-    if (!planetSizes) planetSizes = planets.map(el => ({
-      width: el.offsetWidth, height: el.offsetHeight
-    }));
+    // Cache full planet+title+card dimensions AND the real header/battery
+    // height together: no per-frame DOM measurements.
+    if (!planetSizes) {
+      planetSizes = planets.map(el => ({
+        width: el.offsetWidth, height: el.offsetHeight
+      }));
+      protectedHeaderBottom = document.querySelector('.brand-mark')
+        ?.getBoundingClientRect()?.bottom || 0;
+    }
     let visibleCount = 0;
     planets.forEach((el, i) => {
       const p = planetMap[i] || planetMap[0];
@@ -180,10 +186,15 @@
         return;
       }
       const x = width * .5 + (dyaw / (fovX/2)) * width * .5;
-      const y = height * .47 - (dpitch / (fovY/2)) * height * .5;
+      // Portrait view shows about three neighboring service cards; the
+      // vertical spread is gentler to keep rows away from the top HUD.
+      const y = portrait
+        ? height * .50 - (dpitch / (fovY/2)) * height * .25
+        : height * .47 - (dpitch / (fovY/2)) * height * .5;
       const bounds = planetSizes[i] || {width:180,height:180};
       const safe = window.starrySafePlanetPosition
-        ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height}, {width,height})
+        ? window.starrySafePlanetPosition({x,y,width:bounds.width,height:bounds.height},
+            {width,height,headerBottom:protectedHeaderBottom})
         : {x,y,fade:1};
       const centerBoost = Math.max(.68, Math.cos(rad(dyaw)) * Math.cos(rad(dpitch)));
       // Uniform planet base diameter, with gentle depth scaling.
