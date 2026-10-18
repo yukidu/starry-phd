@@ -74,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           verified=0
-          for attempt in 1 2 3 4 5 6 7 8; do
+          for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
             if curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/?verify=${GITHUB_SHA}" -o /tmp/starry.html \
               && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/app-v5.js?verify=${GITHUB_SHA}" -o /tmp/starry-app.js \
               && curl -fsS --connect-timeout 10 --max-time 20 "https://starry.phd/manifest.webmanifest?verify=${GITHUB_SHA}" -o /tmp/starry-manifest.json \
@@ -100,10 +100,18 @@ jobs:
               && grep -F "navigator.serviceWorker.register('/sw.js'" /tmp/starry-app.js >/dev/null \
               && grep -F '"display": "standalone"' /tmp/starry-manifest.json >/dev/null \
               && grep -F '"src": "/icon-192.png"' /tmp/starry-manifest.json >/dev/null \
-              && grep -F '"src": "/icon-512.png"' /tmp/starry-manifest.json >/dev/null; then
+              && grep -F '"src": "/icon-512.png"' /tmp/starry-manifest.json >/dev/null \
+              && grep -F 'id="starrySolarHero"' /tmp/starry.html >/dev/null \
+              && grep -F 'solar-hero__prominences' /tmp/starry.html >/dev/null \
+              && ! grep -F 'solar-hero__flare--1' /tmp/starry.html >/dev/null \
+              && ! grep -F 'planet-wrap p10' /tmp/starry.html >/dev/null \
+              && grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
+              && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
+              && grep -F 'starry-shell-v29' /tmp/starry-sw.js >/dev/null; then
               verified=1
               break
             fi
+            echo "Waiting for matching production HTML, app and PWA version (attempt ${attempt}/12)..."
             sleep 5
           done
           test "$verified" = "1"
