@@ -257,11 +257,12 @@
     return id;
   }
 
-  function showReward(x, y, amount) {
+  function showReward(x, y, amount, rock) {
     const reward = Number(amount);
     if (!Number.isFinite(reward) || reward <= 0) return;
     const floater = document.createElement('span');
     floater.className = 'battery-reward-float';
+    floater.dataset.batteryTargetId = rock?.dataset?.batteryTargetId || '';
     floater.textContent = `+${reward.toFixed(2)} 🔋`;
     const rewardX = Math.min(Math.max(Number(x||0)+42,56),Math.max(56,innerWidth-56));
     const rewardY = Math.min(Math.max(Number(y||0)-18,30),Math.max(30,innerHeight-30));
@@ -285,7 +286,7 @@
       if (response.status===429) { window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}})); if (Number.isFinite(Number(data.balance))) displayBalance(data.balance); return; }
       if (!response.ok || !data.success) throw new Error(data?.error||'獎勵寫入失敗');
       const added = Number(data.added || 0);
-      if (!data.duplicate && added > 0) showReward(x, y, added);
+      if (!data.duplicate && added > 0) showReward(x, y, added, rock);
       else window.dispatchEvent(new CustomEvent('starry:meteor-reward-failed',{detail:{rock}}));
       displayBalance(data.balance);
     } catch (error) {
