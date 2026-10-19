@@ -95,7 +95,7 @@ test('touch-only swipe guard still blocks navigation, while other page text is u
  assert.equal(outside.prevented,false);
  assert.match(app,/dragStartedOnServiceLink = e\.pointerType === 'touch'/);
  assert.match(app,/if\(isInteractive\(e\.target\) && !dragStartedOnServiceLink\)return/);
- assert.match(read('sw.js'),/starry-shell-v40/);
+ assert.match(read('sw.js'),/starry-shell-v41/);
 });
 test('planet, solar, galaxy, battery, and nine-app layout remain on the same version',()=>{
  assert.match(app,/window\.starryAdaptivePlanetScale/);
@@ -104,5 +104,5 @@ test('planet, solar, galaxy, battery, and nine-app layout remain on the same ver
  assert.match(read('battery-game-v18.js'),/window\.StarryBatteryCharge\?\.flash\(chargeBolt\)/);
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
  assert.match(html,/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v40/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v41/);
 });
