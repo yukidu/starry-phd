@@ -271,3 +271,7 @@ jobs:
             "https://id.starry.phd/api/google-sync"
           grep -Fi "access-control-allow-origin: https://starry.phd" /tmp/google-sync-headers.txt
           grep -Fi "access-control-allow-credentials: true" /tmp/google-sync-headers.txt
+          # Verify Starry ID logout returns a readable credentialed response for starry.phd.
+          curl -fsS --connect-timeout 10 --max-time 20 -D /tmp/logout-headers.txt -o /dev/null -X OPTIONS -H 'Origin: https://starry.phd' -H 'Access-Control-Request-Method: POST' 'https://id.starry.phd/api/logout'
+          grep -Fi "access-control-allow-origin: https://starry.phd" /tmp/logout-headers.txt
+          grep -Fi "access-control-allow-credentials: true" /tmp/logout-headers.txt
