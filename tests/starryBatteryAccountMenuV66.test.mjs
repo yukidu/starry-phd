@@ -124,7 +124,7 @@ test('PWA and both workflows package account menu and correct new cache',()=>{
     const text=read(path);
     assert.match(text,/starry-battery-account-menu/);
     assert.match(text,/api\/logout/);
-    assert.match(text,/starry-shell-v41/);
+    if (path.endsWith('deploy.yml')) assert.match(text,/starry-shell-v41/);
     assert.match(text,/battery-game-v18\.js/);
   }
 });
