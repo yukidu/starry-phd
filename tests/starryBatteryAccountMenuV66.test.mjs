@@ -58,7 +58,7 @@ test('original battery row colors, sizing, icon and lightning remain unchanged',
   assert.match(source,/window\.StarryBatteryCharge\?\.mount\(batteryIcon\)/);
   assert.match(source,/window\.StarryBatteryCharge\?\.flash\(chargeBolt\)/);
   assert.match(source,/document\.body\.appendChild\(accountMenu\)/);
-  assert.match(source,/#starryBatteryCenter\[data-account-ready="1"\]\{cursor:pointer\}/);
+  assert.match(source,/#starryBatteryCenter\[data-account-ready="1"\]\{cursor:pointer;pointer-events:auto!important\}/);
   assert.match(source,/accountMenu\.setAttribute\('role', 'menu'\)/);
   for(const action of ['logout','switch','cancel']) {
     assert.ok(source.includes('data-account-action="'+action+'"'));
