@@ -145,6 +145,6 @@ test('unchanged backend, server-authoritative balance, independent PWA and galax
  assert.match(source,/currentBalance = number; \/\/ Always display the confirmed server ledger/);
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v41/);
+ assert.match(read('sw.js'),/starry-shell-v42/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
 });
