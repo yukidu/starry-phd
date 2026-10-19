@@ -167,7 +167,7 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v41' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v42' /tmp/starry-sw.js >/dev/null \
               && grep -F 'starry-battery-account-menu' /tmp/starry-app.js >/dev/null \
               && grep -F 'https://id.starry.phd/api/logout' /tmp/starry-app.js >/dev/null \
               && grep -F 'if (rewardDrainPromise) await rewardDrainPromise;' /tmp/starry-app.js >/dev/null \
@@ -248,7 +248,7 @@ jobs:
           grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
           grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js
           grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js
-          grep -F "starry-shell-v41" /tmp/starry-sw.js
+          grep -F "starry-shell-v42" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js
