@@ -65,9 +65,9 @@
     .starry-login-status.error{color:#ffb8c2}
     .starry-login-fallback{margin-top:12px;padding:7px 11px;border:0;background:transparent;color:rgba(184,222,244,.76);font:700 12px/1.4 "Noto Sans TC",sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
     .starry-login-close{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid rgba(164,224,255,.25);border-radius:50%;background:rgba(5,14,33,.74);color:#eafaff;font-size:19px;cursor:pointer}
-    #starryBatteryCenter[data-account-ready="1"]{cursor:pointer}
+    #starryBatteryCenter[data-account-ready="1"]{cursor:pointer;pointer-events:auto!important}
     #starryBatteryCenter[data-account-ready="1"]:focus-visible{outline:2px solid rgba(255,244,169,.9);outline-offset:4px;border-radius:4px}
-    .starry-battery-account-menu{position:fixed;z-index:180;width:min(260px,calc(100vw - 24px));box-sizing:border-box;padding:6px;border:1px solid rgba(255,225,135,.45);border-radius:12px;background:rgba(13,18,36,.98);box-shadow:0 12px 32px rgba(0,0,0,.55);color:#effcff;text-align:left;font:600 14px/1.4 "Noto Sans TC",system-ui,sans-serif;user-select:text;-webkit-user-select:text}
+    .starry-battery-account-menu{position:fixed;transform:translateX(-50%);z-index:180;width:min(260px,calc(100vw - 24px));box-sizing:border-box;padding:6px;border:1px solid rgba(255,225,135,.45);border-radius:12px;background:rgba(13,18,36,.98);box-shadow:0 12px 32px rgba(0,0,0,.55);color:#effcff;text-align:left;font:600 14px/1.4 "Noto Sans TC",system-ui,sans-serif;user-select:text;-webkit-user-select:text}
     .starry-battery-account-menu[hidden]{display:none!important}
     .starry-battery-account-menu button{display:block;width:100%;padding:12px;border:0;border-radius:8px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
     .starry-battery-account-menu button:hover,.starry-battery-account-menu button:focus-visible{background:rgba(255,226,136,.14);outline:none}
