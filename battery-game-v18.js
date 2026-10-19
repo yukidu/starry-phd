@@ -67,9 +67,9 @@
     .starry-login-close{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid rgba(164,224,255,.25);border-radius:50%;background:rgba(5,14,33,.74);color:#eafaff;font-size:19px;cursor:pointer}
     #starryBatteryCenter[data-account-ready="1"]{cursor:pointer;pointer-events:auto!important}
     #starryBatteryCenter[data-account-ready="1"]:focus-visible{outline:2px solid rgba(255,244,169,.9);outline-offset:4px;border-radius:4px}
-    .starry-battery-account-menu{position:fixed;transform:translateX(-50%);z-index:180;width:min(260px,calc(100vw - 24px));box-sizing:border-box;padding:6px;border:1px solid rgba(255,225,135,.45);border-radius:12px;background:rgba(13,18,36,.98);box-shadow:0 12px 32px rgba(0,0,0,.55);color:#effcff;text-align:left;font:600 14px/1.4 "Noto Sans TC",system-ui,sans-serif;user-select:text;-webkit-user-select:text}
+    .starry-battery-account-menu{position:fixed;transform:translateX(-50%);z-index:180;display:flex;flex-direction:column;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;padding:4px;border:1px solid rgba(125,249,255,.22);border-radius:10px;background:rgba(3,9,24,.82);box-shadow:0 0 18px rgba(72,153,255,.1);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#effcff;text-align:left;font:600 14px/1.4 "Noto Sans TC",system-ui,sans-serif;user-select:text;-webkit-user-select:text}
     .starry-battery-account-menu[hidden]{display:none!important}
-    .starry-battery-account-menu button{display:block;width:100%;padding:12px;border:0;border-radius:8px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+    .starry-battery-account-menu button{display:block;width:100%;min-height:44px;padding:10px 9px;border:0;border-radius:8px;background:transparent;color:inherit;text-align:left;font:inherit;white-space:nowrap;cursor:pointer}
     .starry-battery-account-menu button:hover,.starry-battery-account-menu button:focus-visible{background:rgba(255,226,136,.14);outline:none}
     .starry-battery-account-menu button:disabled{opacity:.55;cursor:wait}
     .starry-battery-account-menu .account-menu-status{padding:4px 10px 8px;color:#ffcaad;font-size:12px;line-height:1.5}
