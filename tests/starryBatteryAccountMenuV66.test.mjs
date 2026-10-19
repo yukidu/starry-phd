@@ -119,12 +119,12 @@ test('active new meteor shots and stale reads are guarded during a switch',()=>{
 });
 
 test('PWA and both workflows package account menu and correct new cache',()=>{
-  assert.match(read('sw.js'),/starry-shell-v41/);
+  assert.match(read('sw.js'),/starry-shell-v42/);
   for (const path of ['.github/workflows/pr-check.yml','.github/workflows/deploy.yml']) {
     const text=read(path);
     assert.match(text,/starry-battery-account-menu/);
     assert.match(text,/api\/logout/);
-    if (path.endsWith('deploy.yml')) assert.match(text,/starry-shell-v41/);
+    if (path.endsWith('deploy.yml')) assert.match(text,/starry-shell-v42/);
     assert.match(text,/battery-game-v18\.js/);
   }
 });
