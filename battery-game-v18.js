@@ -2,6 +2,7 @@
   // Web First：主站直接使用 Google Identity Services，會員與電池仍由中央 Starry ID 管理。
   const API = 'https://id.starry.phd/api/starry-game/battery';
   const LOGIN_API = 'https://id.starry.phd/api/google-sync';
+  const LOGOUT_API = 'https://id.starry.phd/api/logout';
   const LOGIN_FALLBACK_URL = 'https://id.starry.phd/starry-main-login';
   const LOGIN_ORIGIN = 'https://id.starry.phd';
   const GOOGLE_CLIENT_ID = '661055525630-ndcq5gtr16h7rqqprlqqkkvineea87lc.apps.googleusercontent.com';
@@ -12,6 +13,8 @@
   const optimisticAwards = new Map();
   const rewardQueue = [];
   let rewardQueueRunning = false;
+  let rewardDrainPromise = null;
+  let accountTransitioning = false;
   let balanceGeneration = 0, balanceReadSequence = 0, activeRewardRequests = 0;
   let loginSheet = null;
   let googleInitialized = false;
@@ -62,6 +65,16 @@
     .starry-login-status.error{color:#ffb8c2}
     .starry-login-fallback{margin-top:12px;padding:7px 11px;border:0;background:transparent;color:rgba(184,222,244,.76);font:700 12px/1.4 "Noto Sans TC",sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
     .starry-login-close{position:absolute;right:10px;top:10px;width:34px;height:34px;border:1px solid rgba(164,224,255,.25);border-radius:50%;background:rgba(5,14,33,.74);color:#eafaff;font-size:19px;cursor:pointer}
+    #starryBatteryCenter[data-account-ready="1"]{cursor:pointer}
+    #starryBatteryCenter[data-account-ready="1"]:focus-visible{outline:2px solid rgba(255,244,169,.9);outline-offset:4px;border-radius:4px}
+    .starry-battery-account-menu{position:fixed;z-index:180;width:min(260px,calc(100vw - 24px));box-sizing:border-box;padding:6px;border:1px solid rgba(255,225,135,.45);border-radius:12px;background:rgba(13,18,36,.98);box-shadow:0 12px 32px rgba(0,0,0,.55);color:#effcff;text-align:left;font:600 14px/1.4 "Noto Sans TC",system-ui,sans-serif;user-select:text;-webkit-user-select:text}
+    .starry-battery-account-menu[hidden]{display:none!important}
+    .starry-battery-account-menu button{display:block;width:100%;padding:12px;border:0;border-radius:8px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+    .starry-battery-account-menu button:hover,.starry-battery-account-menu button:focus-visible{background:rgba(255,226,136,.14);outline:none}
+    .starry-battery-account-menu button:disabled{opacity:.55;cursor:wait}
+    .starry-battery-account-menu .account-menu-status{padding:4px 10px 8px;color:#ffcaad;font-size:12px;line-height:1.5}
+    .starry-battery-account-menu .account-menu-status:empty{display:none}
+    .starry-battery-account-menu button[data-account-action="cancel"]{color:#b9c5db}
     @media(max-width:760px){#starryBatteryCenter{margin-top:8px;gap:3px 8px}#starryBatteryCenter .battery-value{font-size:14px}#starryBatteryCenter .battery-title{font-size:14px}#starryBatteryCenter .battery-value.login-ready{min-height:36px;padding:8px 14px 8px 16px;font-size:12px}.starry-login-sheet{padding:22px 14px 18px}.starry-login-title{font-size:18px}}
   `;
   document.head.appendChild(style);
@@ -107,6 +120,15 @@
   value.disabled = true;
   value.textContent = '--';
   badge.append(title, value);
+  // Detached from the battery row: the menu must not change its spacing or font.
+  const accountMenu = document.createElement('div');
+  accountMenu.className = 'starry-battery-account-menu';
+  accountMenu.id = 'starryBatteryAccountMenu';
+  accountMenu.setAttribute('role', 'menu');
+  accountMenu.setAttribute('aria-label', 'Starry ID 會員選單');
+  accountMenu.hidden = true;
+  accountMenu.innerHTML = '<button type="button" role="menuitem" data-account-action="logout">登出</button><button type="button" role="menuitem" data-account-action="switch">切換使用身分</button><button type="button" role="menuitem" data-account-action="cancel">取消</button><div class="account-menu-status" role="status" aria-live="polite"></div>';
+  document.body.appendChild(accountMenu);
 
   const mainTitle = document.querySelector('.brand-mark h1');
   if (mainTitle) mainTitle.insertAdjacentElement('afterend', badge);
@@ -233,6 +255,12 @@
     value.disabled = true;
     value.classList.remove('login-ready');
     value.setAttribute('aria-label', `目前電池 ${visible} 顆`);
+    badge.dataset.accountReady = '1';
+    badge.tabIndex = 0;
+    badge.setAttribute('role', 'button');
+    badge.setAttribute('aria-haspopup', 'menu');
+    badge.setAttribute('aria-expanded', accountMenu.hidden ? 'false' : 'true');
+    badge.setAttribute('aria-label', `目前電池 ${visible} 顆，開啟會員選單`);
   }
 
   function displayBalance(balance, fromReward = false) {
@@ -250,6 +278,13 @@
   }
 
   function displayLoggedOut() {
+    closeAccountMenu();
+    badge.dataset.accountReady = '0';
+    badge.removeAttribute('role');
+    badge.removeAttribute('aria-haspopup');
+    badge.removeAttribute('aria-expanded');
+    badge.removeAttribute('aria-label');
+    badge.removeAttribute('tabindex');
     currentBalance = null;
     optimisticAwards.clear();
     value.textContent = '請先登入';
@@ -258,10 +293,88 @@
     value.setAttribute('aria-label', '請先登入 Starry ID');
   }
 
+  function closeAccountMenu(restoreFocus = false) {
+    const wasOpen = !accountMenu.hidden;
+    accountMenu.hidden = true;
+    badge.setAttribute('aria-expanded', 'false');
+    if (wasOpen && restoreFocus && badge.dataset.accountReady === '1') badge.focus();
+  }
+
+  function openAccountMenu() {
+    if (accountTransitioning || badge.dataset.accountReady !== '1') return;
+    accountMenu.querySelector('.account-menu-status').textContent = '';
+    accountMenu.hidden = false;
+    badge.setAttribute('aria-expanded', 'true');
+    const bounds = badge.getBoundingClientRect();
+    const halfWidth = accountMenu.offsetWidth / 2;
+    accountMenu.style.left = `${Math.min(Math.max(bounds.left + bounds.width / 2, halfWidth + 12), window.innerWidth - halfWidth - 12)}px`;
+    accountMenu.style.top = `${Math.max(8, bounds.bottom + 8)}px`;
+    accountMenu.querySelector('[data-account-action="logout"]').focus();
+  }
+
+  async function performAccountExit(switchIdentity) {
+    if (accountTransitioning || badge.dataset.accountReady !== '1') return;
+    if (!switchIdentity && !window.confirm('確定要登出 Starry ID 嗎？其他繁星 App 可能也需要重新登入。')) return;
+    accountTransitioning = true;
+    const status = accountMenu.querySelector('.account-menu-status');
+    const actions = accountMenu.querySelectorAll('button');
+    actions.forEach(button => { button.disabled = true; });
+    status.textContent = '正在確認舊帳號的電池獎勵…';
+    try {
+      // No new meteor credits can enter the queue during an identity transition.
+      if (rewardDrainPromise) await rewardDrainPromise;
+      if (rewardQueueRunning || rewardQueue.length || activeRewardRequests !== 0) {
+        throw new Error('電池獎勵尚未完成，請稍後再試。');
+      }
+      status.textContent = '正在安全登出…';
+      const response = await fetch(LOGOUT_API, { method:'POST', mode:'cors', credentials:'include', cache:'no-store' });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success !== true) throw new Error('無法確認登出成功，請重試。');
+      // Invalidate any earlier GET reply before presenting the next account.
+      balanceGeneration++;
+      balanceReadSequence++;
+      optimisticAwards.clear();
+      displayLoggedOut();
+      try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (_) {}
+      if (switchIdentity) void openLogin();
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : '登出失敗，請重試。';
+    } finally {
+      accountTransitioning = false;
+      actions.forEach(button => { button.disabled = false; });
+    }
+  }
+
+  badge.addEventListener('click', () => {
+    if (badge.dataset.accountReady !== '1' || accountTransitioning) return;
+    if (accountMenu.hidden) openAccountMenu();
+    else closeAccountMenu();
+  });
+  badge.addEventListener('keydown', (event) => {
+    if (event.target !== badge || badge.dataset.accountReady !== '1') return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (accountMenu.hidden) openAccountMenu();
+      else closeAccountMenu();
+    }
+  });
+  accountMenu.addEventListener('click', (event) => {
+    const action = event.target.closest('[data-account-action]')?.dataset.accountAction;
+    if (action === 'cancel') closeAccountMenu(true);
+    else if (action === 'logout') void performAccountExit(false);
+    else if (action === 'switch') void performAccountExit(true);
+  });
+  document.addEventListener('pointerdown', event => {
+    if (!accountMenu.hidden && !accountTransitioning && !accountMenu.contains(event.target) && !badge.contains(event.target)) closeAccountMenu();
+  });
+  addEventListener('scroll', () => { if (!accountTransitioning) closeAccountMenu(); }, { passive:true });
+  addEventListener('resize', () => { if (!accountTransitioning) closeAccountMenu(); }, { passive:true });
   value.addEventListener('click', () => {
     if (value.classList.contains('login-ready')) void openLogin();
   });
-  addEventListener('keydown', (event) => { if (event.key === 'Escape') closeLogin(); });
+  addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') { closeLogin(); if (!accountTransitioning) closeAccountMenu(true); }
+  });
   addEventListener('message', (event) => {
     if (event.origin !== LOGIN_ORIGIN || event.data?.type !== 'starry-id-login-success') return;
     closeLogin();
@@ -279,6 +392,7 @@
   }
 
   async function loadBalance() {
+    if (accountTransitioning) return;
     const generation = balanceGeneration;
     const sequence = ++balanceReadSequence;
     try {
@@ -371,14 +485,18 @@
   }
 
   function rewardMeteor(rock, x, y) {
-    if (!(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
+    if (accountTransitioning || !(rock instanceof HTMLElement) || rock.dataset.batteryRewardSent === '1') return;
     rock.dataset.batteryRewardSent = '1';
     const id = targetId(rock);
     balanceGeneration++; // Invalidate in-flight GET before showing the estimate.
     activeRewardRequests++;
     predictReward(rock, id);
     rewardQueue.push({ rock, x, y, id });
-    void drainRewardQueue();
+    rewardDrainPromise = drainRewardQueue();
+    const settling = rewardDrainPromise;
+    void settling.then(() => {
+      if (rewardDrainPromise === settling && !rewardQueueRunning && !rewardQueue.length) rewardDrainPromise = null;
+    });
   }
 
   addEventListener('starry:meteor-blasted',(event)=>{

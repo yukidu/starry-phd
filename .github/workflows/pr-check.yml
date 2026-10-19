@@ -16,6 +16,10 @@ jobs:
           cat meteor-reward-bands-v41.js meteor-v14.js visual-v15.js interaction-v16.js starry-battery-charge-v1.js battery-game-v18.js site-meta-v24.js pwa-v25.js meteor-feedback-v27.js meteor-density-v28.js rapid-tap-guard-v30.js solid-planets-v32.js universe-readability-v41.js navigation-safe-v44.js solar-hero-v51.js >> dist/app-v5.js
           node --check dist/app-v5.js
           node --test tests/*.test.mjs
+          # Starry ID must allow signed-in cross-subdomain logout before the main app ships.
+          curl -fsS --connect-timeout 10 --max-time 20 -D /tmp/starry-logout-cors.txt -o /dev/null -X OPTIONS -H 'Origin: https://starry.phd' -H 'Access-Control-Request-Method: POST' 'https://id.starry.phd/api/logout'
+          grep -Fi 'access-control-allow-origin: https://starry.phd' /tmp/starry-logout-cors.txt
+          grep -Fi 'access-control-allow-credentials: true' /tmp/starry-logout-cors.txt
           grep -F '.universe > #meteorLayer{position:absolute;inset:0;z-index:1' index.html
           grep -F '.universe > .planet-lane{z-index:2;pointer-events:none}' index.html
           grep -F '.universe,.universe .planet-lane,.universe .planet-wrap,.universe .planet-wrap *{-webkit-user-select:none!important;user-select:none!important}' index.html
@@ -34,6 +38,10 @@ jobs:
           grep -F 'html[data-starry-quality="eco"] .milky-way{filter:none!important;animation:none!important' dist/app-v5.js
           ! grep -F 'html[data-starry-interacting="1"] .milky-way' dist/app-v5.js
           grep -F '.click-spark{display:none!important}' index.html
+          grep -F 'starry-battery-account-menu' dist/app-v5.js
+          grep -F 'https://id.starry.phd/api/logout' dist/app-v5.js
+          grep -F 'if (rewardDrainPromise) await rewardDrainPromise;' dist/app-v5.js
+          grep -F 'disableAutoSelect' dist/app-v5.js
           grep -F 'const optimisticAwards = new Map();' dist/app-v5.js
           grep -F 'rewardQueue.push({ rock, x, y, id });' dist/app-v5.js
           grep -F 'currentBalance = number; // Always display the confirmed server ledger.' dist/app-v5.js

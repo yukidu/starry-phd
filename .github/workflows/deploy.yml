@@ -77,6 +77,10 @@ jobs:
           grep -F "data-starry-quality" dist/app-v5.js
           grep -F "navigator.serviceWorker.register('/sw.js'" dist/app-v5.js
           grep -F "繁星生態系 Starry.phd" dist/app-v5.js
+          grep -F 'starry-battery-account-menu' dist/app-v5.js
+          grep -F 'https://id.starry.phd/api/logout' dist/app-v5.js
+          grep -F 'if (rewardDrainPromise) await rewardDrainPromise;' dist/app-v5.js
+          grep -F 'disableAutoSelect' dist/app-v5.js
           grep -F 'const optimisticAwards = new Map();' dist/app-v5.js
           grep -F 'rewardQueue.push({ rock, x, y, id });' dist/app-v5.js
           grep -F 'currentBalance = number; // Always display the confirmed server ledger.' dist/app-v5.js
@@ -163,7 +167,10 @@ jobs:
               && grep -F 'translate3d(calc(-50% + var(--starry-solar-x,0px)),-67.5%,0)' /tmp/starry-app.js >/dev/null \
               && ! grep -F 'starrySolarPlasma' /tmp/starry-app.js >/dev/null \
               && grep -F 'Hold Earth at the landing angle' /tmp/starry-app.js >/dev/null \
-              && grep -F 'starry-shell-v40' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-shell-v41' /tmp/starry-sw.js >/dev/null \
+              && grep -F 'starry-battery-account-menu' /tmp/starry-app.js >/dev/null \
+              && grep -F 'https://id.starry.phd/api/logout' /tmp/starry-app.js >/dev/null \
+              && grep -F 'if (rewardDrainPromise) await rewardDrainPromise;' /tmp/starry-app.js >/dev/null \
               && grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js >/dev/null \
               && grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js >/dev/null \
               && grep -F 'currentBalance = number; // Always display the confirmed server ledger.' /tmp/starry-app.js >/dev/null \
@@ -232,6 +239,8 @@ jobs:
           grep -F "繁星生態系 Starry.phd" /tmp/starry-app.js
           grep -F 'const optimisticAwards = new Map();' /tmp/starry-app.js
           grep -F 'rewardQueue.push({ rock, x, y, id });' /tmp/starry-app.js
+          grep -F 'starry-battery-account-menu' /tmp/starry-app.js
+          grep -F 'https://id.starry.phd/api/logout' /tmp/starry-app.js
           grep -F 'starry-battery-charge-bolt' /tmp/starry-app.js
           grep -F 'width:124px;height:144px' /tmp/starry-app.js
           grep -F 'starryAdaptivePlanetScale' /tmp/starry-app.js
@@ -239,7 +248,7 @@ jobs:
           grep -F 'battery-value:not(.login-ready)' /tmp/starry-app.js
           grep -F -- '-webkit-appearance:none!important;appearance:none!important' /tmp/starry-app.js
           grep -F '#starryBatteryCenter{filter:none!important}' /tmp/starry-app.js
-          grep -F "starry-shell-v40" /tmp/starry-sw.js
+          grep -F "starry-shell-v41" /tmp/starry-sw.js
           test -s /tmp/starry-icon-192.png
           test -s /tmp/starry-icon-512.png
           ! grep -F "starry-login-frame" /tmp/starry-app.js
@@ -262,3 +271,7 @@ jobs:
             "https://id.starry.phd/api/google-sync"
           grep -Fi "access-control-allow-origin: https://starry.phd" /tmp/google-sync-headers.txt
           grep -Fi "access-control-allow-credentials: true" /tmp/google-sync-headers.txt
+          # Verify Starry ID logout returns a readable credentialed response for starry.phd.
+          curl -fsS --connect-timeout 10 --max-time 20 -D /tmp/logout-headers.txt -o /dev/null -X OPTIONS -H 'Origin: https://starry.phd' -H 'Access-Control-Request-Method: POST' 'https://id.starry.phd/api/logout'
+          grep -Fi "access-control-allow-origin: https://starry.phd" /tmp/logout-headers.txt
+          grep -Fi "access-control-allow-credentials: true" /tmp/logout-headers.txt

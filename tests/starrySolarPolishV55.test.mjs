@@ -66,8 +66,8 @@ test('nine planets, Earth/Moon position, all apps, battery and PWA remain intact
  assert.match(html,/\.moon\{width:19px!important;height:19px!important\}/);
  assert.match(read('battery-game-v18.js'),/targetId:id, sizeLevel/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v40/);
- assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v40/);
+ assert.match(read('sw.js'),/starry-shell-v41/);
+ assert.match(read('.github/workflows/deploy.yml'),/starry-shell-v41/);
 });
 test('existing 40% seamless solar parallax is preserved without extra animation',()=>{
  const x=solar(),p=x.window.starrySolarParallaxX;

@@ -23,6 +23,8 @@ function harness({initial=10,reduced=false}={}){
  class Event{constructor(type,options){this.type=type;this.detail=options.detail}}
  const ctx={
    value,chargeBolt,HTMLElement:Rock,CustomEvent:Event,
+   badge:{dataset:{},setAttribute(){},removeAttribute(){},tabIndex:0},
+   accountMenu:{hidden:true},closeAccountMenu(){},
    matchMedia:()=>({matches:reduced}),window:{
      dispatchEvent:e=>{events.push(e);return true},
      matchMedia:()=>({matches:reduced})
@@ -39,12 +41,12 @@ function harness({initial=10,reduced=false}={}){
    window:ctx.window,document:{getElementById:()=>null,
      createElement:()=>({}),head:{appendChild(){}}}
  });
- const a=source.indexOf('  function renderBalance() {'),b=source.indexOf("  value.addEventListener('click'",a);
+ const a=source.indexOf('  function renderBalance() {'),b=source.indexOf('  function closeAccountMenu(',a);
  const c=source.indexOf('  function failReward(rock) {'),d=source.indexOf('\n  void loadBalance();',c);
  assert.ok(a>=0&&b>a&&c>=0&&d>c);
  const script='let currentBalance='+initial+';'+
   'const optimisticAwards=new Map(),rewardQueue=[];'+
-  'let rewardQueueRunning=false,balanceGeneration=0,balanceReadSequence=0,activeRewardRequests=0;'+
+  'let rewardQueueRunning=false,rewardDrainPromise=null,accountTransitioning=false,balanceGeneration=0,balanceReadSequence=0,activeRewardRequests=0;'+
   source.slice(a,b)+source.slice(c,d)+
   'this.methods={hit:rewardMeteor,render:renderBalance,state:()=>({currentBalance,pending:optimisticAwards.size,queue:rewardQueue.length,activeRewardRequests,balanceGeneration})};';
  runInNewContext(script,ctx);
@@ -143,6 +145,6 @@ test('unchanged backend, server-authoritative balance, independent PWA and galax
  assert.match(source,/currentBalance = number; \/\/ Always display the confirmed server ledger/);
  assert.match(read('meteor-v14.js'),/starry:meteor-blasted/);
  assert.match(read('meteor-reward-bands-v41.js'),/hundredths/);
- assert.match(read('sw.js'),/starry-shell-v40/);
+ assert.match(read('sw.js'),/starry-shell-v41/);
  assert.match(read('visual-v15.js'),/html\[data-starry-quality="eco"\] \.milky-way\{filter:none!important;animation:none!important/);
 });
