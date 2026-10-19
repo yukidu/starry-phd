@@ -56,6 +56,31 @@ function smoke() {
         if (menu.hidden) throw Error(name + ' click did not open the menu');
         const labels = Array.from(menu.querySelectorAll('button')).map(x => x.textContent.trim());
         if (labels.join('|') !== '登出|切換使用身分|取消') throw Error('menu options changed');
+        // Compare computed styles with the actual orbit card rather than
+        // duplicating colors and effects in the test.
+        const planetCard = document.querySelector('.planet-wrap em.service-label');
+        if (!planetCard) throw Error('planet card unavailable');
+        const menuStyle = getComputedStyle(menu);
+        const planetStyle = getComputedStyle(planetCard);
+        for (const property of ['borderTopColor','borderTopWidth','borderTopStyle','borderTopLeftRadius',
+          'backgroundColor','boxShadow','backdropFilter','webkitBackdropFilter']) {
+          if (menuStyle[property] !== planetStyle[property]) {
+            throw Error(property + ' differs from planet card: '+menuStyle[property]+' / '+planetStyle[property]);
+          }
+        }
+        const menuRectCheck = menu.getBoundingClientRect();
+        const widestText = Math.max(...Array.from(menu.querySelectorAll('button'), button => {
+          const range = document.createRange();
+          range.selectNodeContents(button);
+          return range.getBoundingClientRect().width;
+        }));
+        if (menuRectCheck.width - widestText > 40 || menuRectCheck.width - widestText < 20) {
+          throw Error('menu does not fit text tightly: '+menuRectCheck.width+' vs '+widestText);
+        }
+        if (menuRectCheck.width >= 180) throw Error('menu too wide');
+        if (Array.from(menu.querySelectorAll('button')).some(button => button.getBoundingClientRect().height < 44)) {
+          throw Error('menu buttons too short to tap');
+        }
         const menuRect = menu.getBoundingClientRect();
         if (menuRect.left < -1 || menuRect.right > innerWidth + 1) throw Error('menu clipped');
         menu.querySelector('[data-account-action="cancel"]').click();
