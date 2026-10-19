@@ -493,6 +493,10 @@
     predictReward(rock, id);
     rewardQueue.push({ rock, x, y, id });
     rewardDrainPromise = drainRewardQueue();
+    const settling = rewardDrainPromise;
+    void settling.then(() => {
+      if (rewardDrainPromise === settling && !rewardQueueRunning && !rewardQueue.length) rewardDrainPromise = null;
+    });
   }
 
   addEventListener('starry:meteor-blasted',(event)=>{
