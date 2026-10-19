@@ -94,5 +94,5 @@ test('meteor blast avoids generic twelve-spark click while ordinary clicks remai
  assert.match(app,/currentClickRing=ring;/);
  assert.match(read('index.html'),/\.universe > #meteorLayer\{position:absolute;inset:0;z-index:1;overflow:visible;pointer-events:none\}/);
  assert.match(read('index.html'),/\.universe > \.planet-lane\{z-index:2;pointer-events:none\}/);
- assert.match(read('sw.js'),/starry-shell-v40/);
+ assert.match(read('sw.js'),/starry-shell-v41/);
 });
