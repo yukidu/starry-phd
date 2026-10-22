@@ -1,0 +1,12 @@
+import {readFile,writeFile} from "node:fs/promises";
+import path from "node:path";
+import {fileURLToPath} from "node:url";
+const project=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const pkg=JSON.parse(await readFile(path.join(project,"package.json"),"utf8"));
+const mapping=[["/","src/index.html"],["/app.js","src/app.js"],["/style.css","src/style.css"],["/icon.svg","src/icon.svg"],["/manifest.webmanifest","src/manifest.webmanifest"],["/sw.js","src/sw.js"]];
+const routes={};
+for(const [url,file] of mapping) routes[url]=await readFile(path.join(project,file),"utf8");
+const runtime=await readFile(path.join(project,"src/worker-runtime.js"),"utf8");
+const content="const VERSION="+JSON.stringify(pkg.deployVersion)+";const routes="+JSON.stringify(routes)+";"+runtime;
+await writeFile(path.join(project,"worker.js"),content);
+console.log("Built "+pkg.deployVersion+" ("+content.length+" characters)");
