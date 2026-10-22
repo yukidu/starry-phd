@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "gratitude-starry",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": ["/api/*", "/auth/callback"] },
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "gratitude-starry-db", "database_id": "6188f205-5185-4597-9986-018cefeafc9b", "migrations_dir": "./migrations" },
+    { "binding": "STARRY_ID_DB", "database_name": "starry_id_db", "database_id": "01195c92-555e-4816-bddc-5b8cb2e795db" }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "gratitude-starry-media" }],
+  "routes": [{ "pattern": "gratitude.starry.phd", "custom_domain": true }]
+}
