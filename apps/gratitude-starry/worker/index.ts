@@ -106,6 +106,129 @@ function jpegDimensions(bytes: Uint8Array): {width:number;height:number}|null {
   return null;
 }
 
+/** Verify encoded video container metadata on the server instead of trusting browser headers.
+ * WebM derives timing from Info.Duration or cluster block timestamps; MP4 requires
+ * moov movie timing plus a video track's dimensions. Malformed/fragmented input
+ * fails closed. This is metadata validation, NOT a replacement for a video
+ * transcoding service before real-money premium video is enabled.
+ */
+function inspectVideo(bytes: Uint8Array, mime: string): {width:number;height:number;duration:number}|null {
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const u8 = (pos:number) => bytes[pos];
+  const u16 = (pos:number) => dv.getUint16(pos);
+  const u32 = (pos:number) => dv.getUint32(pos);
+  const fourcc = (pos:number) => String.fromCharCode(...bytes.subarray(pos,pos+4));
+  if (mime === 'video/mp4') {
+    if(bytes.length<24 || fourcc(4)!=='ftyp') return null;
+    type Box = {name:string;start:number;end:number};
+    function boxes(start:number,end:number):Box[]|null {
+      const result:Box[]=[];let pos=start;
+      while(pos+8<=end){
+        const size=u32(pos),name=fourcc(pos+4);let begin=pos+8,boxEnd=pos+size;
+        if(size===1){
+          if(pos+16>end) return null;
+          const high=u32(pos+8),low=u32(pos+12);
+          const total=high*4294967296+low;
+          if(!Number.isSafeInteger(total)) return null;
+          begin=pos+16;boxEnd=pos+total;
+        } else if(size===0)boxEnd=end;
+        if(boxEnd<begin||boxEnd>end)return null;
+        result.push({name,start:begin,end:boxEnd});pos=boxEnd;
+      }
+      return pos===end?result:null;
+    }
+    const top=boxes(0,bytes.length);if(!top)return null;
+    const moov=top.find(b=>b.name==='moov');if(!moov)return null;
+    const moovBoxes=boxes(moov.start,moov.end);if(!moovBoxes)return null;
+    const mvhd=moovBoxes.find(b=>b.name==='mvhd');if(!mvhd)return null;
+    const version=u8(mvhd.start);
+    if(version!==0&&version!==1)return null;
+    const timeOffset=version===0?12:20;
+    const durationOffset=version===0?16:24;
+    if(mvhd.end<mvhd.start+durationOffset+(version===0?4:8))return null;
+    const timescale=u32(mvhd.start+timeOffset);
+    const durationTicks=version===0?u32(mvhd.start+durationOffset):u32(mvhd.start+durationOffset)*4294967296+u32(mvhd.start+durationOffset+4);
+    const duration=durationTicks/timescale;
+    if(!Number.isFinite(duration)||duration<=0)return null;
+    let width=0,height=0;
+    for(const trak of moovBoxes.filter(b=>b.name==='trak')){
+      const trakBoxes=boxes(trak.start,trak.end);if(!trakBoxes) return null;
+      const mdia=trakBoxes.find(b=>b.name==='mdia');
+      if(!mdia)continue;
+      const mdiaBoxes=boxes(mdia.start,mdia.end);if(!mdiaBoxes)return null;
+      const hdlr=mdiaBoxes.find(b=>b.name==='hdlr');
+      if(!hdlr||hdlr.start+12>hdlr.end||fourcc(hdlr.start+8)!=='vide')continue;
+      const tkhd=trakBoxes.find(b=>b.name==='tkhd');if(!tkhd)return null;
+      const tkVersion=u8(tkhd.start);if(tkVersion!==0&&tkVersion!==1)return null;
+      const wOffset=tkVersion===0?76:88;
+      if(tkhd.start+wOffset+8>tkhd.end)return null;
+      const w=u32(tkhd.start+wOffset)/65536,h=u32(tkhd.start+wOffset+4)/65536;
+      if(!Number.isInteger(w)||!Number.isInteger(h)||w<1||h<1)return null;
+      width=Math.max(width,w);height=Math.max(height,h);
+    }
+    return width>0&&height>0?{width,height,duration}:null;
+  }
+  if(mime!=='video/webm'||bytes.length<12||u32(0)!==0x1a45dfa3)return null;
+  // EBML variable-length integer: IDs retain the leading length bit,
+  // whereas sizes discard it. The all-ones size denotes an unknown Segment length.
+  function vint(pos:number,sizeMode:boolean):{value:number,length:number,unknown:boolean}|null{
+    if(pos>=bytes.length)return null;
+    const first=bytes[pos];if(!first)return null;
+    let count=1;while(count<=8&&(first&(0x80>>(count-1)))===0)count++;
+    if(count>8||pos+count>bytes.length)return null;
+    let val=sizeMode?(first&((1<<(8-count))-1)):first;
+    for(let i=1;i<count;i++)val=val*256+bytes[pos+i];
+    const unknown=sizeMode && (first&((1<<(8-count))-1))===((1<<(8-count))-1) && bytes.subarray(pos+1,pos+count).every(x=>x===0xff);
+    return unknown?{value:0,length:count,unknown:true}:Number.isSafeInteger(val)?{value:val,length:count,unknown:false}:null;
+  }
+  const segmentId=0x18538067, infoId=0x1549a966, tracksId=0x1654ae6b,
+    entryId=0xae,videoId=0xe0,clusterId=0x1f43b675,groupId=0xa0;
+  const nested=new Set([segmentId,infoId,tracksId,entryId,videoId,clusterId,groupId]);
+  let duration=0,scale=1_000_000,videoWidth=0,videoHeight=0,lastTicks=0,clusterTicks=0,trackType=0;
+  let widthSeen=0,heightSeen=0,hasSegment=false,videoEntries=0;
+  let nodes=0;
+  function uint(pos:number,len:number){if(len<1||len>6)return NaN;let v=0;for(let i=0;i<len;i++)v=v*256+bytes[pos+i];return v}
+  function walk(start:number,end:number,depth:number):boolean{
+    if(depth>9)return false;
+    let pos=start;
+    while(pos<end){
+      if(++nodes>150000)return false;
+      const id=vint(pos,false);if(!id)return false;
+      const size=vint(pos+id.length,true);if(!size)return false;
+      const dataStart=pos+id.length+size.length;
+      const dataEnd=size.unknown?end:dataStart+size.value;
+      if(dataEnd>end||dataEnd<dataStart)return false;
+      const n=dataEnd-dataStart;
+      if(id.value===segmentId)hasSegment=true;
+      if(id.value===0x2ad7b1){const v=uint(dataStart,n);if(!Number.isFinite(v)||v<=0)return false;scale=v}
+      if(id.value===0x4489){if(n===4)duration=dv.getFloat32(dataStart);else if(n===8)duration=dv.getFloat64(dataStart);else return false}
+      if(id.value===0x83)trackType=uint(dataStart,n);
+      if(id.value===0xb0)widthSeen=uint(dataStart,n);
+      if(id.value===0xba)heightSeen=uint(dataStart,n);
+      if(id.value===0xe7)clusterTicks=uint(dataStart,n);
+      if(id.value===0xa3||id.value===0xa1){
+        const track=vint(dataStart,true);
+        if(track&&n>=track.length+3){
+          const rel=dv.getInt16(dataStart+track.length);
+          lastTicks=Math.max(lastTicks,clusterTicks+rel);
+        }
+      }
+      if(id.value===entryId){trackType=0;widthSeen=0;heightSeen=0}
+      if(nested.has(id.value)&&!walk(dataStart,dataEnd,depth+1))return false;
+      if(id.value===entryId&&trackType===1){
+        if(!Number.isSafeInteger(widthSeen)||!Number.isSafeInteger(heightSeen)||widthSeen<1||heightSeen<1)return false;
+        videoEntries++;
+        videoWidth=Math.max(videoWidth,widthSeen);videoHeight=Math.max(videoHeight,heightSeen);
+      }
+      pos=dataEnd;
+    }
+    return pos===end;
+  }
+  if(!walk(0,bytes.length,0)||!hasSegment||videoEntries===0)return null;
+  const measured=Math.max(duration,lastTicks+2)*scale/1_000_000_000;
+  return Number.isFinite(measured)&&measured>0?{width:videoWidth,height:videoHeight,duration:measured}:null;
+}
+
 /** Read upload streams within an explicit bound. Browsers may omit Content-Length. */
 async function boundedBytes(req:Request,maxBytes:number):Promise<Uint8Array>{
   if(!req.body)throw Error('empty_media');
@@ -177,8 +300,13 @@ async function putMedia(req:Request,env:Env,user:Identity,day:string,slot:number
     const decoded=jpegDimensions(bytes);
     if(!decoded||decoded.width!==width||decoded.height!==height)return deny(400,'照片的實際尺寸與申報不符');
   }
-  // Video duration/geometry headers are not yet cryptographic evidence. The
-  // production video pipeline must inspect/transcode media server-side before launch.
+  if(kind==='video'){
+    const examined=inspectVideo(bytes,mime);
+    if(!examined||examined.width!==width||examined.height!==height||examined.duration>policy.seconds+0.25||Math.abs(examined.duration-duration)>1.25)
+      return deny(400,'影片實際尺寸或長度不符合會員方案');
+  }
+  // Before enabling real-money subscriptions, video may require full provider-
+  // side transcoding; client-side MediaRecorder is not a billing trust boundary.
   const used=await env.DB.prepare('SELECT COALESCE(SUM(bytes),0) AS total FROM media WHERE user_id=?').bind(user.id).first<{total:number}>();
   const old=await env.DB.prepare('SELECT id,storage_key,bytes FROM media WHERE user_id=? AND day=? AND slot=?').bind(user.id,day,slot).first<{id:string,storage_key:string,bytes:number}>();
   if(Number(used?.total||0)-(old?.bytes||0)+bytes.length>policy.total)return deny(413,'個人儲存空間已滿');
