@@ -1,11 +1,29 @@
-# 星格宇宙 Starry Persona · 公開體驗版
+# 星格宇宙 Starry Persona
 
-- 網址：https://persona.starry.phd/
-- Cloudflare Worker：starry-persona
-- 版本：persona-20261023-01
-- 類型：16 顆星球、4 大星域
-- 問卷：原創 60 題、5 級選項，分組加總。非官方 MBTI 或 PersonalityKey 題庫，不是專業診斷。
-- 儲存：僅 localStorage。本版本不提供會員登入或後端儲存。
-- 內容：星球卡及六章故事預覽，完整 96 章與插圖待審核。
-- 風險：獨立 GitHub Repository 建立介面暫不可用，先存放在 starry-phd 的隔離目錄與 feature branch，未修改既有站點程式。
-- 後續：移至獨立 repo、導入正式登入、測試 CI、自動化 Cloudflare 發版與還原紀錄。
+正式網址：https://persona.starry.phd/
+
+## 目前正式發行
+- **代碼**：`SP-20261023-02`（Cloudflare 版本 `742545fa-41c3-40f8-ac39-f41f1e1de120`）
+- **Worker**：`starry-persona`，與其餘繁星網站獨立部署
+- **範圍**：原創 60 題、5 級回答、16 顆星球與四星域圖鑑、手機介面與 PWA
+- **資料保存**：僅瀏覽器本機，沒有後端或會員登入；不可宣稱可跨裝置同步。
+- **免責**：自我探索用，非官方 MBTI® 或 PersonalityKey、非心理診斷。
+
+## 原始碼
+`src/` 是可維護的來源，`worker.js` 是打包生成的部署檔，**勿直接編輯**。
+
+```bash
+cd apps/starry-persona
+npm test
+npm run build
+```
+
+每次修改必須同步提交更新後的 `worker.js`；PR 的專用 GitHub Actions 將檢查題庫、計分邏輯和打包一致性。
+
+## 發布與安全
+以 GitHub branch → PR → 自動測試 → 合併 main → Cloudflare Production → 正式網址驗證進行。
+目前 Cloudflare 正式發布透過已連線的 API，**尚未設定 GitHub 到 Cloudflare 的自動發布金鑰**。未驗證 production 前不可稱正式上線。
+查看 `DEPLOYMENTS.md` 保留的版本與還原紀錄。
+
+## 待開發
+Google/Apple/Starry ID 登入、跨裝置同步、完整且人工審核的 96 章故事及原創插圖、獨立 GitHub Repository（目前位於既有 repo 的獨立專案子目錄）、持續部署金鑰配置。
