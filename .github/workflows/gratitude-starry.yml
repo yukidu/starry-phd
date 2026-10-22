@@ -53,6 +53,20 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: apps/gratitude-starry
+      - name: Verify Starry ID sign-in destination before first production release
+        shell: bash
+        run: |
+          set -euo pipefail
+          verified=0
+          for attempt in $(seq 1 8); do
+            if curl -fsS --connect-timeout 10 --max-time 20 https://id.starry.phd/auth/gratitude -o /tmp/gratitude-auth.html \
+               && grep -F '繁星感恩日記' /tmp/gratitude-auth.html >/dev/null; then
+              verified=1
+              break
+            fi
+            sleep 8
+          done
+          test "$verified" = "1"
       - name: Deploy only gratitude-starry Worker
         uses: cloudflare/wrangler-action@v3
         with:
