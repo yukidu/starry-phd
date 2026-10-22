@@ -1,0 +1,10 @@
+{
+  "name": "starry-persona",
+  "private": true,
+  "type": "module",
+  "deployVersion": "persona-20261023-02",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build.mjs"
+  }
+}
