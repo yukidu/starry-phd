@@ -26,7 +26,7 @@ test("all sixteen planet results can be produced",()=>{
   questions.forEach((q,i)=>scores[q.d]+=(values[i]-3)*q.r);
   outcomes.add(scores.map((s,i)=>s>=0?["E","N","T","J"][i]:["I","S","F","P"][i]).join(""));
  }
- assert.deepEqual([...outcomes].sort(),definitions.map(d=>d[0]).sort());
+ assert.deepEqual([...outcomes].sort(),Array.from(definitions,d=>d[0]).sort());
 });
 test("answers stay in browser and official status is not overstated",()=>{
  assert.ok(app.includes("localStorage"));
