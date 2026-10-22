@@ -3,6 +3,10 @@ name: Deploy Starry.phd
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'apps/gratitude-starry/**'
+      - '.github/workflows/gratitude-starry.yml'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:

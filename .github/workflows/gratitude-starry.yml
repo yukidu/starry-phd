@@ -1,0 +1,65 @@
+name: Gratitude Starry - CI and independent deployment
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/gratitude-starry/**'
+      - '.github/workflows/gratitude-starry.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/gratitude-starry/**'
+      - '.github/workflows/gratitude-starry.yml'
+permissions:
+  contents: read
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/gratitude-starry
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install application dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run back-end regression tests
+        run: npm test
+      - name: Build frontend
+        run: npm run build
+      - name: Typecheck Cloudflare Worker
+        run: npx tsc --project tsconfig.worker.json
+      - name: Validate Worker deployment bundle
+        run: npx wrangler deploy --dry-run
+  deploy:
+    needs: test-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install application dependencies
+        run: npm install --no-audit --no-fund
+        working-directory: apps/gratitude-starry
+      - name: Build frontend
+        run: npm run build
+        working-directory: apps/gratitude-starry
+      - name: Deploy only gratitude-starry Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/gratitude-starry
+          wranglerVersion: "4.151.0"
+          command: deploy
+      - name: Verify custom-domain production site
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if curl -fsS --connect-timeout 10 --max-time 20 https://gratitude.starry.phd/api/health | grep -F '"service":"gratitude-starry"'               && curl -fsS --connect-timeout 10 --max-time 20 https://gratitude.starry.phd/ | grep -F '繁星感恩日記'; then
+              echo 'Verified gratitude.starry.phd production.'
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Production URL verification failed.'
+          exit 1
