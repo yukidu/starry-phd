@@ -81,7 +81,18 @@ jobs:
           set -euo pipefail
           for attempt in $(seq 1 12); do
             if curl -fsS --connect-timeout 10 --max-time 20 https://gratitude.starry.phd/api/health | grep -F '"service":"gratitude-starry"'               && curl -fsS --connect-timeout 10 --max-time 20 https://gratitude.starry.phd/ | grep -F '繁星感恩日記'; then
-              echo 'Verified gratitude.starry.phd production.'
+              # A public browser must never see a private diary, media or an authenticated session.
+              curl -fsS --connect-timeout 10 --max-time 20 -D /tmp/gratitude-session-headers.txt \
+                https://gratitude.starry.phd/api/session -o /tmp/gratitude-anonymous-session.json
+              grep -F '"authenticated":false' /tmp/gratitude-anonymous-session.json
+              grep -Fi 'cache-control: no-store' /tmp/gratitude-session-headers.txt
+              entry_status=$(curl -sS --connect-timeout 10 --max-time 20 -o /tmp/gratitude-private-entry.txt -w '%{http_code}' \
+                'https://gratitude.starry.phd/api/entries?day=2026-10-23')
+              media_status=$(curl -sS --connect-timeout 10 --max-time 20 -o /tmp/gratitude-private-media.txt -w '%{http_code}' \
+                'https://gratitude.starry.phd/api/media/00000000-0000-0000-0000-000000000001')
+              test "$entry_status" = '401'
+              test "$media_status" = '401'
+              echo 'Verified production website, anonymous session and diary privacy.'
               exit 0
             fi
             sleep 10

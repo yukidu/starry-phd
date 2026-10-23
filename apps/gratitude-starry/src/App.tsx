@@ -2,6 +2,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {api,type Session,type SavedMedia} from './api';
 import {compressImage,compressVideo,type Tier} from './media';
 import {makeCard} from './card';
+import {createSerialSaver} from './serialSave';
 
 type Draft = {text:string,media:SavedMedia|null,localURL:string|null,localKind:'image'|'video'|null};
 const empty=():Draft=>({text:'',media:null,localURL:null,localKind:null});
@@ -18,6 +19,7 @@ export default function App(){
   const[day,setDay]=useState(localDate());
   const[session,setSession]=useState<Session|null>(null);
   const[items,setItems]=useState<Draft[]>(()=>readDraft(localDate()));
+  const[loadedDay,setLoadedDay]=useState<string|null>(localDate());
   const[status,setStatus]=useState('正在確認繁星會員…');
   const[history,setHistory]=useState<{day:string,filled:number}[]>([]);
   const[busy,setBusy]=useState<number|null>(null);
@@ -25,6 +27,10 @@ export default function App(){
   const[showLogin,setShowLogin]=useState(false);
   const[activeTab,setActiveTab]=useState<'today'|'history'>('today');
   const timers=useRef<(ReturnType<typeof setTimeout>|null)[]>([null,null,null]);
+  const pendingText=useRef<({day:string;slot:number;body:string}|null)[]>([null,null,null]);
+  const dayRef=useRef(day);dayRef.current=day;
+  const saver=useRef<ReturnType<typeof createSerialSaver>|null>(null);
+  if(!saver.current)saver.current=createSerialSaver((date,slot,body)=>api.save(date,slot,body));
   const speech=useRef<{stop:()=>void}|null>(null);
   const mediaURLs=useRef<string[]>([]);
   const tier:Tier=session?.tier||'free';
@@ -51,39 +57,63 @@ export default function App(){
   },[refresh]);
   useEffect(()=>{
     let cancelled=false;
-    if(!authed){setItems(readDraft(day));return}
+    if(!authed){setItems(readDraft(day));setLoadedDay(day);return}
+    setLoadedDay(null);
     setStatus('讀取當日感恩日記…');
     void api.day(day).then(data=>{
       if(cancelled)return;
       const next=Array.from({length:3},(_,i)=>{
         const slot=i+1,found=data.entries.find(e=>e.slot===slot),media=data.media.find(m=>m.slot===slot);
         return {...empty(),text:found?.body||'',media:media||null};
-      });setItems(next);setStatus('');
+      });setItems(next);setLoadedDay(day);setStatus('');
     }).catch(e=>{if(!cancelled)setStatus('讀取失敗：'+errorText(e))});
     return()=>{cancelled=true};
   },[day,authed]);
   useEffect(()=>{
-    if(!authed){try{localStorage.setItem(draftKey(day),JSON.stringify(items.map(x=>x.text)))}catch{setStatus('本機空間不足，請複製日記內容保存')}}
-  },[items,authed,day]);
-  useEffect(()=>()=>{speech.current?.stop();timers.current.forEach(t=>t&&clearTimeout(t));mediaURLs.current.forEach(URL.revokeObjectURL)},[]);
+    // Never copy one day's rendered draft over a different date's stored draft.
+    if(!authed&&loadedDay===day){try{localStorage.setItem(draftKey(day),JSON.stringify(items.map(x=>x.text)))}catch{setStatus('本機空間不足，請複製日記內容保存')}}
+  },[items,authed,day,loadedDay]);
+  function flushOne(index:number):Promise<void>|null{
+    if(timers.current[index])clearTimeout(timers.current[index]!);
+    timers.current[index]=null;
+    const edit=pendingText.current[index];pendingText.current[index]=null;
+    if(!edit)return null;
+    const saving=saver.current!.queue(edit.day,edit.slot,edit.body);
+    void saving.then(
+      ()=>{if(dayRef.current===edit.day)setStatus('已自動儲存')},
+      e=>setStatus(`儲存 ${edit.day} 失敗：`+errorText(e))
+    );
+    return saving;
+  }
+  function flushPendingAll():Promise<void>[]{
+    const operations:Promise<void>[]=[];
+    for(let i=0;i<3;i++){const pending=flushOne(i);if(pending)operations.push(pending)}
+    return operations;
+  }
+  useEffect(()=>()=>{speech.current?.stop();void Promise.allSettled(flushPendingAll());mediaURLs.current.forEach(URL.revokeObjectURL)},[]);
 
   function change(index:number,text:string){
-    setItems(old=>old.map((x,i)=>i===index?{...x,text:text.slice(0,1500)}:x));
-    if(authed){if(timers.current[index])clearTimeout(timers.current[index]!);
-      timers.current[index]=setTimeout(()=>{void api.save(day,index+1,text.slice(0,1500)).then(()=>setStatus('已自動儲存')).catch(e=>setStatus('儲存失敗：'+errorText(e)))},750);
+    if(loadedDay!==day)return;
+    const body=text.slice(0,1500);
+    setItems(old=>old.map((x,i)=>i===index?{...x,text:body}:x));
+    if(authed){
+      if(timers.current[index])clearTimeout(timers.current[index]!);
+      pendingText.current[index]={day,slot:index+1,body};
+      timers.current[index]=setTimeout(()=>{void flushOne(index)},750);
     }
   }
   function saveNow(index:number){
-    if(!authed)return;
-    if(timers.current[index])clearTimeout(timers.current[index]!);
-    void api.save(day,index+1,items[index].text).then(()=>setStatus('已自動儲存')).catch(e=>setStatus('儲存失敗：'+errorText(e)));
+    if(!authed||loadedDay!==day)return;
+    void flushOne(index);
   }
   function voice(index:number){
     const BrowserSpeech=(window as Window & {SpeechRecognition?:new()=>any;webkitSpeechRecognition?:new()=>any}).SpeechRecognition||(window as any).webkitSpeechRecognition;
     if(!BrowserSpeech){setStatus('此瀏覽器沒有提供語音輸入。可使用手機鍵盤的麥克風功能。');return}
     speech.current?.stop();
+    const startedDay=day;
     const rec=new BrowserSpeech();rec.lang='zh-TW';rec.interimResults=false;rec.continuous=false;
     rec.onresult=(e:{results:ArrayLike<ArrayLike<{transcript:string}>>})=>{
+      if(dayRef.current!==startedDay)return;
       const t=e.results[0]?.[0]?.transcript||'';change(index,[items[index].text,t].filter(Boolean).join('，'));
     };
     rec.onerror=()=>setStatus('語音輸入失敗，請再試一次');rec.onend=()=>{speech.current=null};
@@ -92,25 +122,32 @@ export default function App(){
   async function selectMedia(index:number,file?:File){
     if(!file)return;
     if(!authed){setStatus('目前僅儲存文字草稿。請先登入，才能安全上傳照片或影片。');setShowLogin(true);return}
+    if(loadedDay!==day)return;
+    const mediaDay=day;
     setBusy(index);setPercent(0);setStatus('正在壓縮影像，請保持畫面開啟…');
     try{
       const media=file.type.startsWith('image/')?await compressImage(file,tier):await compressVideo(file,tier,setPercent);
-      const saved=await api.upload(day,index+1,media);
-      const url=URL.createObjectURL(media.file);mediaURLs.current.push(url);
-      setItems(old=>old.map((item,i)=>i===index?{...item,media:saved,localURL:url,localKind:saved.kind}:item));
+      const saved=await api.upload(mediaDay,index+1,media);
+      if(dayRef.current===mediaDay){
+        const url=URL.createObjectURL(media.file);mediaURLs.current.push(url);
+        setItems(old=>old.map((item,i)=>i===index?{...item,media:saved,localURL:url,localKind:saved.kind}:item));
+      }
       setStatus('影像已壓縮並安全儲存');
     }catch(e){setStatus('影像未上傳：'+errorText(e))}
     finally{setBusy(null);setPercent(0)}
   }
   async function removeMedia(index:number){
+    if(loadedDay!==day)return;
+    const mediaDay=day;
     const id=items[index].media?.id;if(!id)return;
     if(!confirm('確定移除此件感恩的照片或影片嗎？'))return;
-    try{await api.deleteMedia(id);setItems(old=>old.map((x,i)=>i===index?{...x,media:null,localURL:null,localKind:null}:x));setStatus('附件已移除')}
+    try{await api.deleteMedia(id);if(dayRef.current===mediaDay)setItems(old=>old.map((x,i)=>i===index?{...x,media:null,localURL:null,localKind:null}:x));setStatus('附件已移除')}
     catch(e){setStatus('移除失敗：'+errorText(e))}
   }
   async function exportCard(){
     try{
       setStatus('正在產生宇宙感恩卡片…');
+      if(loadedDay!==day)return;
       const blob=await makeCard(day,items.map(x=>({text:x.text,kind:x.media?.kind||null,src:x.media?(x.localURL||`/api/media/${x.media.id}`):undefined})));
       const file=new File([blob],`繁星感恩日記-${day}.png`,{type:'image/png'});
       if(navigator.canShare?.({files:[file]})&&navigator.share){await navigator.share({files:[file],title:'我的三件感恩'});setStatus('已開啟分享')}
@@ -122,14 +159,24 @@ export default function App(){
     window.location.assign('https://id.starry.phd/auth/gratitude');
   }
   async function logout(){
-    await api.logout().catch(()=>undefined);setSession({authenticated:false,tier:'free'});setItems(readDraft(day));setShowLogin(false);setStatus('已登出，本機文字草稿與會員資料分開保存')
+    try{await Promise.all(flushPendingAll());await saver.current!.waitAll()}
+    catch(e){setStatus('儲存未完成，請保持登入並重試：'+errorText(e));return}
+    try{await api.logout()}catch(e){setStatus('登出失敗，請檢查網路後重試：'+errorText(e));return}
+    setSession({authenticated:false,tier:'free'});setItems(readDraft(day));setLoadedDay(day);setShowLogin(false);setStatus('已登出，本機文字草稿與會員資料分開保存')
   }
   async function chooseHistory(){
     setActiveTab('history');if(!authed)return;
     try{const result=await api.history();setHistory(result.history)}catch(e){setStatus(errorText(e))}
   }
-  function nextDay(diff:number){const d=new Date(day+'T12:00:00');d.setDate(d.getDate()+diff);setDay(localDate(d));setActiveTab('today')}
-  const completed=items.filter(x=>x.text.trim().length>0).length;
+  function goToDay(target:string){
+    if(busy!==null||target===day)return;
+    void Promise.allSettled(flushPendingAll());
+    if(!authed&&loadedDay===day){try{localStorage.setItem(draftKey(day),JSON.stringify(items.map(x=>x.text)))}catch{setStatus('本機草稿儲存失敗，請先複製內容');return}}
+    speech.current?.stop();dayRef.current=target;setLoadedDay(null);setDay(target);setActiveTab('today');
+  }
+  function nextDay(diff:number){const d=new Date(day+'T12:00:00');d.setDate(d.getDate()+diff);goToDay(localDate(d))}
+  const shownItems=loadedDay===day?items:Array.from({length:3},empty);
+  const completed=shownItems.filter(x=>x.text.trim().length>0).length;
   return <div className="app">
     <header className="topbar"><div className="logo">✦</div><div className="branding"><b>繁星感恩日記</b><small>GRATITUDE STARRY</small></div><button className="account" onClick={()=>authed?void logout():setShowLogin(true)}>{authed?'登出':'會員登入'}</button></header>
     <main>
@@ -139,12 +186,12 @@ export default function App(){
       <div className="tabs"><button className={activeTab==='today'?'active':''} onClick={()=>setActiveTab('today')}>今日感恩</button><button className={activeTab==='history'?'active':''} onClick={()=>void chooseHistory()}>歷史日記</button></div>
       <div className="session-note"><span>{authed?'🔒 私密雲端日記 · 只有你能查看':'🔐 本機文字草稿 · 登入後才能同步與上傳影像'}</span><span>{tier==='pro'?'1080p 尊榮會員':'免費會員 480p'}</span></div>
       {activeTab==='today'?<>
-        <div className="day-nav"><button aria-label="前一天" onClick={()=>nextDay(-1)}>‹</button><label>✨ {day} ✨</label><button aria-label="後一天" disabled={day>=localDate()} onClick={()=>nextDay(1)}>›</button></div>
+        <div className="day-nav"><button aria-label="前一天" disabled={busy!==null} onClick={()=>nextDay(-1)}>‹</button><label>✨ {day} ✨</label><button aria-label="後一天" disabled={day>=localDate()||busy!==null} onClick={()=>nextDay(1)}>›</button></div>
         <div className="entries">
-        {items.map((item,i)=><article className="entry" key={i}>
+        {shownItems.map((item,i)=><article className="entry" key={i}>
           <div className="entry-heading"><span className="entry-num">0{i+1}</span><div><h2>{labels[i]}</h2><p>{['一個值得感謝的人','一件讓你微笑的事','一樣值得珍惜的物'][i]}</p></div><span className="entry-star">✦</span></div>
-          <textarea maxLength={1500} value={item.text} onChange={e=>change(i,e.target.value)} onBlur={()=>saveNow(i)} placeholder={hints[i]} rows={3} aria-label={labels[i]+'感恩內容'}/>
-          <div className="entry-actions"><button onClick={()=>voice(i)} title="使用語音輸入">🎙️ 語音輸入</button><label className="filepick">📷 附加照片<input type="file" accept="image/jpeg,image/png,image/webp,image/*" onChange={e=>{void selectMedia(i,e.target.files?.[0]);e.target.value=''}} disabled={busy!==null}/></label><label className="filepick">🎞️ 附加影片<input type="file" accept="video/mp4,video/webm,video/*" onChange={e=>{void selectMedia(i,e.target.files?.[0]);e.target.value=''}} disabled={busy!==null}/></label></div>
+          <textarea disabled={loadedDay!==day} maxLength={1500} value={loadedDay===day?item.text:''} onChange={e=>change(i,e.target.value)} onBlur={()=>saveNow(i)} placeholder={hints[i]} rows={3} aria-label={labels[i]+'感恩內容'}/>
+          <div className="entry-actions"><button onClick={()=>voice(i)} title="使用語音輸入">🎙️ 語音輸入</button><label className="filepick">📷 附加照片<input type="file" accept="image/jpeg,image/png,image/webp,image/*" onChange={e=>{void selectMedia(i,e.target.files?.[0]);e.target.value=''}} disabled={busy!==null||loadedDay!==day}/></label><label className="filepick">🎞️ 附加影片<input type="file" accept="video/mp4,video/webm,video/*" onChange={e=>{void selectMedia(i,e.target.files?.[0]);e.target.value=''}} disabled={busy!==null||loadedDay!==day}/></label></div>
           {busy===i&&<div className="compress-progress" role="status">影像處理中 {percent}%<progress value={percent} max={100}/></div>}
           {item.media&&<div className="media-preview"><div>{item.media.kind==='image'?<img src={item.localURL||`/api/media/${item.media.id}`} alt="個人感恩照片"/>:<video controls playsInline preload="metadata" src={item.localURL||`/api/media/${item.media.id}`}/>}</div><button className="remove" onClick={()=>void removeMedia(i)}>移除此附件</button></div>}
           <small className="count">{item.text.length} / 1500 字</small>
@@ -152,7 +199,7 @@ export default function App(){
         </div>
         <button className="generate" onClick={()=>void exportCard()} disabled={completed===0}>✦ 產生銀河感恩卡片 ✦</button>
         <p className="hint">感恩卡片可存成圖片分享。你的私人日記和附件不會自動公開；分享圖片不包含原影片。</p>
-      </>:<section className="history"><h2>🌌 我的感恩銀河</h2>{!authed?<p>登入後即可跨裝置查看歷史日記；本機草稿只能在此裝置使用。</p>:history.length?history.map(h=><button key={h.day} onClick={()=>{setDay(h.day);setActiveTab('today')}}><span>✦ {h.day}</span><span>{h.filled} 件感恩 →</span></button>):<p>尚無歷史記錄。寫下今天的第一件感恩吧！</p>}</section>}
+      </>:<section className="history"><h2>🌌 我的感恩銀河</h2>{!authed?<p>登入後即可跨裝置查看歷史日記；本機草稿只能在此裝置使用。</p>:history.length?history.map(h=><button key={h.day} onClick={()=>goToDay(h.day)}><span>✦ {h.day}</span><span>{h.filled} 件感恩 →</span></button>):<p>尚無歷史記錄。寫下今天的第一件感恩吧！</p>}</section>}
       <div className="status" role="status" aria-live="polite">{status}</div>
       <footer>✦ STARRY.PHD ✦<div>你的感謝，值得被宇宙溫柔收藏</div></footer>
     </main>
