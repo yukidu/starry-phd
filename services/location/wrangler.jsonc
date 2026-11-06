@@ -2,6 +2,7 @@
   // REVIEW-ONLY: no production routes and no secrets in GitHub.
   "name": "starry-location-service",
   "main": "src/worker.mjs",
+  "preview_urls": false,
   "compatibility_date": "2026-10-28",
   "durable_objects": {"bindings": [{"name": "LOCATION_COORDINATOR", "class_name": "LocationCoordinator"}]},
   "migrations": [{"tag": "v1", "new_sqlite_classes": ["LocationCoordinator"]}],
@@ -9,7 +10,7 @@
     "STARRY_ID_BASE": "https://id.starry.phd",
     "STARRY_ISSUER": "starry-id:production",
     "ALLOWED_APP_IDS": "recordnote",
-    "GEOAPIFY_ENABLED": "false",
+    "GEOAPIFY_ENABLED": "true",
     "ALLOWED_ORIGINS": "https://recordnote.starry.phd"
   },
   "observability": {"enabled": false}
