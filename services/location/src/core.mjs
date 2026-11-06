@@ -62,8 +62,8 @@ export function parseGeoapify(payload,fix,now=Date.now(),cfg=SETTINGS){
  const top=/[縣市]$/.test(county)?county:/[縣市]$/.test(state)?state:(county||state||city),parts=[];
  for(const part of [top,city,village])if(part&&!parts.includes(part))parts.push(part);
  const local=locality||((type==='amenity'||type==='building')&&(dist===null||dist<=200)?landmark:'');
- if(local&&!parts.includes(local))parts.push(`${local}附近`);
- const label=parts.join('・');
+ // Traditional settlement/landmark is displayed separately, never fabricated.
+ const label=parts.join('')+(local?'・'+local+'附近':'');
  if(!label)return null;
  const level=precisionLevel(type,{locality,hamlet:clean(p.hamlet),village,suburb:village,name:local});
  const providerDistance=dist===null?null:Math.max(0,dist);

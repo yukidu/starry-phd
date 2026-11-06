@@ -53,7 +53,7 @@
 
 - [x] 14 項本地模擬測試：單次請求、20 次同地點（模擬從 20 次降至 1 次，**95% 理論節省**）、2 App 快取、12 個同位置同時請求去重、rolling 24h 2,500 上限、逾額時快取持續可用、429 後阻擋、離線客戶端跨重啟資料留存、GPS 精度拒絕、行政與聚落重用距離、負面快取、來源署名、未授權請求拒絕。
 - [ ] 實際 Cloudflare DO/staging 請求、Starry ID 真實 token / Service Binding 驗證。
-- [ ] Geoapify **真實**反查 `24.59939,120.77734`；不能把 mock 的「苗栗縣・後龍鎮・龍坑里・十班坑附近」當作供應商實證。
+- [ ] Geoapify **真實**反查 `24.59939,120.77734`；不能把 mock 的「苗栗縣後龍鎮龍坑里・十班坑附近」當作供應商實證。
 - [ ] 真實 GPS 漂移、村里邊界、建築物、Android/iOS、RecordNote 過程不觸發 API 的真機檢驗。
 - [ ] 比較真實 Geoapify credits／Cloudflare Workers、Durable Objects 成本與原本 RecordNote 實際外部查詢量；**目前沒有真實流量節省數據**。
 - [ ] 傳統／簡體地名的一致性與實際 datasource 署名；跨全 App 共享 key 的來源盤點。

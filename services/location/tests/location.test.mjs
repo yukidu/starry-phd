@@ -24,11 +24,11 @@ async function withMockFetch(fake,fn){const original=globalThis.fetch;globalThis
 
 test('only returned source data forms location label; no fabricated street or village',()=>{
  const parsed=parseGeoapify(providerResult,fix());
- assert.equal(parsed.label,'苗栗縣・後龍鎮・龍坑里・十班坑附近');
+ assert.equal(parsed.label,'苗栗縣後龍鎮龍坑里・十班坑附近');
  assert.equal(parsed.level,'locality');
  assert.equal(parsed.components.locality,'十班坑');
  const empty=parseGeoapify({results:[{state:'苗栗縣',city:'後龍鎮'}]},fix());
- assert.equal(empty.label,'苗栗縣・後龍鎮');
+ assert.equal(empty.label,'苗栗縣後龍鎮');
  assert.equal(empty.components.village,'');
 });
 test('Haversine measures meters; fine locality does not blind-reuse 100m',()=>{
