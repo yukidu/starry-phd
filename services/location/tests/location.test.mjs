@@ -184,3 +184,38 @@ test('coarse and precise central requests stay distinct while repeated coarse Wi
  });
  assert.equal(count,2);
 });
+
+test('one Geoapify reverse request can return multiple candidates; select nearest evidence-backed hamlet',()=>{
+ const payload={results:[
+  {state:'苗栗縣',city:'後龍鎮',result_type:'city',distance:3},
+  {state:'苗栗縣',city:'後龍鎮',suburb:'龍坑里',locality:'十班坑',result_type:'suburb',distance:8},
+  {state:'苗栗縣',city:'後龍鎮',name:'不相關地標',result_type:'amenity',distance:240},
+ ]};
+ const selected=parseGeoapify(payload,fix());
+ assert.equal(selected.label,'苗栗縣後龍鎮龍坑里・十班坑附近');
+ assert.equal(selected.components.village,'龍坑里');
+ assert.equal(selected.level,'locality');
+});
+test('township and village suffix fields are interpreted conservatively and no district gets invented',()=>{
+ const a=parseGeoapify({results:[{state:'臺灣省',city:'苗栗縣',town:'後龍鎮',
+  neighbourhood:'龍坑里',hamlet:'十班坑',result_type:'suburb',distance:1}]},fix());
+ assert.equal(a.label,'苗栗縣後龍鎮龍坑里・十班坑附近');
+ const b=parseGeoapify({results:[{county:'苗栗縣',city:'後龍鎮',result_type:'city'}]},fix());
+ assert.equal(b.label,'苗栗縣後龍鎮');
+ assert.equal(b.level,'administrative');
+});
+test('far Geoapify landmark is never chosen as location merely for more granular name',()=>{
+ const f=fix();
+ const distant={results:[
+  {county:'苗栗縣',city:'後龍鎮',result_type:'city',distance:4},
+  {county:'苗栗縣',city:'後龍鎮',name:'離此地很遠的商店',result_type:'amenity',distance:390}
+ ]};
+ assert.equal(parseGeoapify(distant,f).label,'苗栗縣後龍鎮');
+});
+test('Geoapify URL asks for five results in a single reverse call, not a secondary API',async()=>{
+ const {providerUrl}=await import('../src/core.mjs');
+ const u=new URL(providerUrl(fix(),'dummy'));
+ assert.equal(u.searchParams.get('limit'),'5');
+ assert.equal(u.searchParams.get('lang'),'zh');
+ assert.equal(u.searchParams.get('format'),'json');
+});

@@ -1,6 +1,6 @@
 /** Starry Location: no identity, media, or user history is stored in shared cache. */
 export const SETTINGS=Object.freeze({
- version:1, language:'zh', maxCreditsRolling24h:2500, reverseCredits:1,
+ version:2, language:'zh', maxCreditsRolling24h:2500, reverseCredits:1,
  reuseMeters:100, villageReuseMeters:20, fineReuseMeters:15,
  minAccuracyMeters:0, maxAccuracyMeters:100, maxApproxAccuracyMeters:30000,
  approximateReuseMeters:75, approximateTtlMs:7*86400000, gridScale:1000,
@@ -70,36 +70,70 @@ export function applicable(entry,fix,now=Date.now(),cfg=SETTINGS,{allowStale=fal
  return true;
 }
 const clean=v=>typeof v==='string'?v.trim().slice(0,120):'';
-export function parseGeoapify(payload,fix,now=Date.now(),cfg=SETTINGS){
- const p=payload?.results?.[0]||payload?.features?.[0]?.properties;
- if(!p)return null;
- // Use only fields returned by Geoapify: never synthesize a village or traditional hamlet.
- const state=clean(p.state),county=clean(p.county),city=clean(p.city)||clean(p.town)||clean(p.municipality),
-   village=clean(p.suburb)||clean(p.village)||clean(p.neighbourhood),
-   locality=clean(p.locality)||clean(p.hamlet),landmark=clean(p.name),
-   type=clean(p.result_type),dist=finite(p.distance)?p.distance:null;
- const top=/[縣市]$/.test(county)?county:/[縣市]$/.test(state)?state:(county||state||city),parts=[];
- for(const part of [top,city,village])if(part&&!parts.includes(part))parts.push(part);
- const local=locality||((type==='amenity'||type==='building')&&(dist===null||dist<=200)?landmark:'');
- // Traditional settlement/landmark is displayed separately, never fabricated.
+// Build the most detailed evidence-backed place label without inventing administrative divisions.
+function parseCandidate(p,fix,now,cfg){
+ if(!p||typeof p!=='object')return null;
+ const get=k=>clean(p[k]);
+ const options=(...keys)=>keys.map(get).filter(Boolean);
+ const admin=[...new Set(options('county','state','city','town','municipality'))];
+ // Geoapify countries differ in where counties, cities and townships are placed.
+ // Check actual Chinese suffix rather than assuming 'city' means township.
+ const county=admin.find(x=>/[縣市]$/.test(x))||get('county')||get('state');
+ const township=options('town','municipality','city','district','suburb','county')
+  .find(x=>x!==county&&/[鄉鎮區市]$/.test(x))||(!get('town')&&get('city')!==county?get('city'):'');
+ const village=options('village','suburb','neighbourhood','quarter','district','hamlet')
+  .find(x=>/[里村]$/.test(x))||'';
+ const known=new Set([county,township,village].filter(Boolean));
+ const fine=options('locality','hamlet','neighbourhood','quarter','suburb','name')
+  .find(x=>!known.has(x)&&!/[縣市鄉鎮區]$/.test(x)&&!/[里村]$/.test(x))||'';
+ const type=get('result_type'),distance=finite(p.distance)&&p.distance>=0?p.distance:null;
+ const amenityName=['amenity','building'].includes(type)?get('name'):'';
+ const road=['street','building','amenity'].includes(type)?get('street'):'';
+ const door=road&&get('housenumber')?road+get('housenumber')+'號':'';
+ const nearbyName=distance!==null&&distance>80?'':fine||((amenityName&&!known.has(amenityName))?amenityName:'')||door||road;
  const approximate=fix.position_mode==='approximate';
- const label=approximate
-  ?[top,city].filter((part,i,list)=>part&&list.indexOf(part)===i).join('')+'附近（大略位置）'
-  :parts.join('')+(local?'・'+local+'附近':'');
- if(!label||label==='附近（大略位置）')return null;
- const level=approximate?'administrative':precisionLevel(type,{locality,hamlet:clean(p.hamlet),village,suburb:village,name:local});
- const providerDistance=dist===null?null:Math.max(0,dist);
- return {version:cfg.version,label,level,position_mode:fix.position_mode||'precise',
-  approximate,components:{state,county,city,village:approximate?'':village,locality:approximate?'':locality,landmark:approximate?'':local},
-  reference:{lat:fix.lat,lon:fix.lon,accuracy_m:fix.accuracy_m},provider_distance_m:providerDistance,
+ const parts=[county,township,...(approximate?[]:[village])].filter((x,i,a)=>x&&a.indexOf(x)===i);
+ const base=parts.join('');
+ const label=approximate?base?base+'附近（大略位置）':'':base+(nearbyName&&!approximate?'・'+nearbyName+'附近':'');
+ if(!label)return null;
+ const level=approximate?'administrative':nearbyName?(road&&nearbyName===road||nearbyName===door?'fine':'locality'):village?'village':'administrative';
+ const candidate={
+  version:cfg.version,label,level,position_mode:fix.position_mode||'precise',
+  approximate,components:{state:get('state'),county,city:township,village:approximate?'':village,
+   locality:approximate?'':nearbyName,landmark:approximate?'':amenityName},
+  reference:{lat:fix.lat,lon:fix.lon,accuracy_m:fix.accuracy_m},provider_distance_m:distance,
   source:'geoapify',attribution:{...ATTRIBUTION,datasource:clean(p.datasource?.attribution),
-   datasource_url:typeof p.datasource?.url==='string'&&p.datasource.url.startsWith('https://')?p.datasource.url.slice(0,200):''},queried_at_ms:now,
-  expires_at_ms:now+(approximate?cfg.approximateTtlMs:(level==='fine'||level==='locality'?cfg.fineTtlMs:cfg.administrativeTtlMs))};
+   datasource_url:typeof p.datasource?.url==='string'&&p.datasource.url.startsWith('https://')?p.datasource.url.slice(0,200):''},
+  queried_at_ms:now,
+  expires_at_ms:now+(approximate?cfg.approximateTtlMs:(level==='fine'||level==='locality'?cfg.fineTtlMs:cfg.administrativeTtlMs))
+ };
+ // Never prefer a faraway business just because its name is long.
+ const specificity=level==='fine'?3:level==='locality'?4:level==='village'?2:1;
+ return {candidate,specificity,distance,hasFine:Boolean(nearbyName),hasVillage:Boolean(village)};
+}
+export function parseGeoapify(payload,fix,now=Date.now(),cfg=SETTINGS){
+ const raw=Array.isArray(payload?.results)?payload.results:
+  Array.isArray(payload?.features)?payload.features.map(f=>f?.properties):[];
+ if(!raw.length)return null;
+ let best=null,bestScore=-Infinity;
+ for(let i=0;i<Math.min(raw.length,5);i++){
+  const p=raw[i],parsed=parseCandidate(p,fix,now,cfg);
+  if(!parsed)continue;
+  // Additional candidate names must be actually near the GPS point.
+  // Geoapify's 'distance' takes priority; point coordinates are a safe fallback.
+  let d=parsed.distance;
+  if(d===null&&typeof p?.lat==='number'&&typeof p?.lon==='number')
+   d=haversineMeters(fix,{lat:p.lat,lon:p.lon});
+  if(i>0&&(d===null||d>Math.max(65,Math.min(100,fix.accuracy_m*2))))continue;
+  const score=parsed.specificity*100+(parsed.hasVillage?15:0)+(i===0?10:0)-(d===null?0:Math.min(d,100));
+  if(score>bestScore){best=parsed.candidate;bestScore=score;}
+ }
+ return best;
 }
 export function providerUrl(fix,key){
  const url=new URL('https://api.geoapify.com/v1/geocode/reverse');
  url.searchParams.set('lat',String(fix.lat));url.searchParams.set('lon',String(fix.lon));
- url.searchParams.set('lang','zh');url.searchParams.set('limit','1');url.searchParams.set('format','json');
+ url.searchParams.set('lang','zh');url.searchParams.set('limit','5');url.searchParams.set('format','json');
  url.searchParams.set('apiKey',key);return url.toString();
 }
 export function quotaUsed(rows,now=Date.now()){return rows.reduce((n,x)=>x.ts>now-86400000&&x.ts<=now?n+x.cost:n,0);}
