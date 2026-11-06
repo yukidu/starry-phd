@@ -1,0 +1,25 @@
+name: Starry Location (isolated tests)
+on:
+  pull_request:
+    paths:
+      - 'services/location/**'
+      - '.github/workflows/location-service-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: location-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  location-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run check
+        working-directory: services/location
+      - run: npm test
+        working-directory: services/location
