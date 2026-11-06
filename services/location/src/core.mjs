@@ -84,9 +84,10 @@ function parseCandidate(p,fix,now,cfg){
  const village=options('village','suburb','neighbourhood','quarter','district','hamlet')
   .find(x=>/[里村]$/.test(x))||'';
  const known=new Set([county,township,village].filter(Boolean));
- const fine=options('locality','hamlet','neighbourhood','quarter','suburb','name')
-  .find(x=>!known.has(x)&&!/[縣市鄉鎮區]$/.test(x)&&!/[里村]$/.test(x))||'';
  const type=get('result_type'),distance=finite(p.distance)&&p.distance>=0?p.distance:null;
+ const namedPlace=(['suburb','district'].includes(type)||(['amenity','building'].includes(type)&&distance!==null&&distance<=80))?get('name'):'';
+ const fine=[...options('locality','hamlet','neighbourhood','quarter','suburb'),namedPlace]
+  .find(x=>x&&!known.has(x)&&!/[縣市鄉鎮區]$/.test(x)&&!/[里村]$/.test(x))||'';
  const amenityName=['amenity','building'].includes(type)?get('name'):'';
  const road=['street','building','amenity'].includes(type)?get('street'):'';
  const door=road&&get('housenumber')?road+get('housenumber')+'號':'';
