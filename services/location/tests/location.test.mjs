@@ -127,3 +127,19 @@ test('consent=false never invokes outgoing API and keeps previous local name acc
  assert.equal((await c.resolve(fix(),{consent:false})).code,'CONSENT_REQUIRED');
  assert.equal(calls,0);
 });
+test('temporary network failure enters 60-second backoff and does not retry other points immediately',async()=>{
+ const {c,ctx,lookup}=mockCoord();await ctx.ready;let calls=0;
+ await withMockFetch(async()=>{calls++;throw Error('offline')},async()=>{
+  assert.equal((await lookup(fix())).code,'LOCATION_PROVIDER_UNAVAILABLE');
+  assert.equal((await lookup(fix({lat:24.604}))).code,'LOCATION_PROVIDER_BACKOFF');
+ });
+ assert.equal(calls,1);
+});
+test('manual provider block reset is independent of the global emergency stop',async()=>{
+ const {c,ctx,lookup}=mockCoord();await ctx.ready;
+ c.sql('INSERT INTO state(key,value) VALUES(?,?)','provider_blocked','429');
+ c.sql('INSERT INTO state(key,value) VALUES(?,?)','stopped','true');
+ await c.fetch(new Request('https://internal.invalid/admin/provider-reset',{method:'POST',body:JSON.stringify({})}));
+ assert.equal(c.summary(now()).providerBlocked,false);
+ assert.equal(c.summary(now()).stopped,true);
+});

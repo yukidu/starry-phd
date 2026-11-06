@@ -71,7 +71,8 @@ export default {
   if(admin&&!isAdmin(principal.subject,env))return json({ok:false,code:'ADMIN_DENIED'},403,headers);
   if(!admin&&!(path==='/v1/location/reverse'&&request.method==='POST'))return error('NOT_FOUND',404);
   if(admin&&!((path==='/v1/location/admin/status'&&request.method==='GET')||
-    (path==='/v1/location/admin/stop'&&request.method==='PUT')) )return error('NOT_FOUND',404);
+    (path==='/v1/location/admin/stop'&&request.method==='PUT')||
+    (path==='/v1/location/admin/provider-reset'&&request.method==='PUT')) )return error('NOT_FOUND',404);
   let body=null;
   if(request.method==='POST'||request.method==='PUT'){
    if(Number(request.headers.get('content-length')||0)>2048)return error('PAYLOAD_TOO_LARGE',413);
@@ -84,19 +85,21 @@ export default {
    catch{return json({ok:false,code:'LOCATION_INVALID_OR_STALE'},422,headers)}
   } else if(path.endsWith('/stop')){
    if(typeof body?.stopped!=='boolean'||body?.confirm!=='STOP_GEOAPIFY')return error('ADMIN_CONFIRM_REQUIRED',422);
+  } else if(path.endsWith('/provider-reset')&&body?.confirm!=='RESET_GEOAPIFY_BLOCK'){
+   return error('ADMIN_CONFIRM_REQUIRED',422);
   }
   // Durable Object is accessible only through the binding. No raw GPS or auth token stored in D1/DO logs.
   const coordinator=env.LOCATION_COORDINATOR;
   if(!coordinator)return json({ok:false,code:'COORDINATOR_UNAVAILABLE'},503,headers);
   const stub=coordinator.get(coordinator.idFromName('starry-location-global-v1'));
-  const target=admin?(path.endsWith('/stop')?'/admin/stop':'/admin/status'):'/lookup';
+  const target=admin?(path.endsWith('/stop')?'/admin/stop':path.endsWith('/provider-reset')?'/admin/provider-reset':'/admin/status'):'/lookup';
   try{
    const result=await stub.fetch(new Request(`https://internal.invalid${target}`,{
     method:target==='/admin/status'?'GET':'POST',
     headers:{'content-type':'application/json'},
     body:target==='/admin/status'?undefined:JSON.stringify({
       ...(!admin?{lat:body.lat,lon:body.lon,accuracy_m:body.accuracy_m,captured_at_ms:body.captured_at_ms,
-       force:body.force===true}:{stopped:body.stopped}),appId:principal.appId})}));
+       force:body.force===true}:target==='/admin/stop'?{stopped:body.stopped}:{}),appId:principal.appId})}));
    return new Response(result.body,{status:result.status,headers:{...Object.fromEntries(result.headers),...headers,'cache-control':'private, no-store'}});
   }catch{return json({ok:false,code:'COORDINATOR_UNAVAILABLE'},503,headers)}
  }
@@ -143,6 +146,10 @@ export class LocationCoordinator {
   const url=new URL(request.url),now=Date.now();
   if(url.pathname==='/admin/status')return json(this.summary(now));
   let data;try{data=await request.json()}catch{return error('INVALID_JSON',400)}
+  if(url.pathname==='/admin/provider-reset'){
+   this.sql('DELETE FROM state WHERE key IN (?,?)','provider_blocked','retry_at');
+   return json({ok:true,providerBlocked:false});
+  }
   if(url.pathname==='/admin/stop'){
    if(typeof data.stopped!=='boolean')return error('INVALID_STOP',422);
    this.sql('INSERT INTO state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value','stopped',String(data.stopped));
@@ -156,8 +163,9 @@ export class LocationCoordinator {
   if(decision.status==='hit'&&data.force!==true){this.count(app,'central_hit');return json({ok:true,status:'fresh',cache:'central',...decision.entry});}
   const stale=decision.entry||null;
   if(decision.status==='negative'&&data.force!==true){this.count(app,'negative_hit');return json({ok:false,code:'LOCATION_UNAVAILABLE',cache:'negative'},404)}
-  const blocked=this.state('stopped')==='true'||this.state('provider_blocked')||this.env.GEOAPIFY_ENABLED!=='true'||!this.env.GEOAPIFY_API_KEY;
-  if(blocked){this.count(app,'blocked');return stale?json({ok:true,status:'stale',cache:'central',...stale}):json({ok:false,code:'LOCATION_PROVIDER_DISABLED',cache:'miss'},503)}
+  const temporarilyBlocked=Number(this.state('retry_at')||0)>now;
+  const blocked=this.state('stopped')==='true'||this.state('provider_blocked')||temporarilyBlocked||this.env.GEOAPIFY_ENABLED!=='true'||!this.env.GEOAPIFY_API_KEY;
+  if(blocked){this.count(app,'blocked');return stale?json({ok:true,status:'stale',cache:'central',...stale}):json({ok:false,code:temporarilyBlocked?'LOCATION_PROVIDER_BACKOFF':'LOCATION_PROVIDER_DISABLED',cache:'miss'},503)}
   const key=`${fix.lat.toFixed(6)}:${fix.lon.toFixed(6)}:zh`;
   if(this.pending.has(key)){
    this.count(app,'deduplicated');const result=await this.pending.get(key);
@@ -186,12 +194,16 @@ export class LocationCoordinator {
   let response;
   try{response=await fetch(providerUrl(fix,this.env.GEOAPIFY_API_KEY),{
    signal:AbortSignal.timeout(SETTINGS.providerTimeoutMs),headers:{accept:'application/json'}})}
-  catch{return {status:503,body:stale?{ok:true,status:'stale',cache:'central',...stale}:{ok:false,code:'LOCATION_PROVIDER_UNAVAILABLE'}}}
+  catch{this.sql('INSERT INTO state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value','retry_at',String(now+60000));
+   return {status:503,body:stale?{ok:true,status:'stale',cache:'central',...stale}:{ok:false,code:'LOCATION_PROVIDER_UNAVAILABLE'}}}
   if(response.status===429||response.status===401||response.status===403){
    this.sql('INSERT INTO state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value','provider_blocked',String(response.status));
    return {status:503,body:stale?{ok:true,status:'stale',cache:'central',...stale}:{ok:false,code:'LOCATION_PROVIDER_BLOCKED'}};
   }
-  if(!response.ok)return {status:503,body:stale?{ok:true,status:'stale',cache:'central',...stale}:{ok:false,code:'LOCATION_PROVIDER_ERROR'}};
+  if(!response.ok){
+   this.sql('INSERT INTO state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value','retry_at',String(now+60000));
+   return {status:503,body:stale?{ok:true,status:'stale',cache:'central',...stale}:{ok:false,code:'LOCATION_PROVIDER_ERROR'}};
+  }
   let data;try{data=await response.json()}catch{return {status:503,body:{ok:false,code:'LOCATION_PROVIDER_INVALID_RESPONSE'}}}
   const parsed=parseGeoapify(data,fix,now);
   const cell=gridCell(fix);

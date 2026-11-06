@@ -62,3 +62,7 @@
 ## 不可移除的發布限制
 
 不得自動部署／切換 DNS、不得修改 Starry ID D1、RecordNote 正式資料、舊音檔或原 R2，未完成真平台驗證不可宣稱已上線。保持本功能 PR 為 Draft，需核對 GitHub CI、Cloudflare 版本與回退點及業主核准。
+
+### 失敗防抖修訂
+
+若 Geoapify 網路斷線或 5xx，本服務進入 60 秒短期後退期間，避免多個地點立即重複外呼。401／403／429 仍為持續阻擋；只有受認證管理員確認供應商狀態後，才能以 `PUT /v1/location/admin/provider-reset` 搭配 `{ "confirm": "RESET_GEOAPIFY_BLOCK" }` 清除供應商停用。此操作**不會**取消緊急 STOP 開關，也不會清除 24h credit 已預留數字。
