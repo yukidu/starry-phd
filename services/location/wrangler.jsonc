@@ -7,7 +7,7 @@
   "migrations": [{"tag": "v1", "new_sqlite_classes": ["LocationCoordinator"]}],
   "vars": {
     "STARRY_ID_BASE": "https://id.starry.phd",
-    "STARRY_ISSUER": "https://id.starry.phd",
+    "STARRY_ISSUER": "starry-id:production",
     "ALLOWED_APP_IDS": "recordnote",
     "GEOAPIFY_ENABLED": "false",
     "ALLOWED_ORIGINS": "https://recordnote.starry.phd"
