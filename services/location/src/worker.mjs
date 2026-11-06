@@ -49,7 +49,7 @@ async function verifyStarryToken(request,env){
  if(!me.ok)throw Error('CENTRAL_SESSION_INVALID');
  const account=await me.json();
  const id=account.user_id??account.user?.user_id??account.user?.id;
- if(id!==claims.sub||account.user?.status&&account.user.status!=='active')throw Error('ACCOUNT_NOT_ACTIVE');
+ if(id!==claims.sub||account.status!=='active')throw Error('ACCOUNT_NOT_ACTIVE');
  return {appId:claims.app_id,subject:claims.sub};
 }
 const isAdmin=(subject,env)=>Boolean(subject)&&(env.LOCATION_ADMIN_IDS||'').split(',').map(x=>x.trim()).filter(Boolean).includes(subject);
