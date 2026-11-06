@@ -99,7 +99,7 @@ export default {
     headers:{'content-type':'application/json'},
     body:target==='/admin/status'?undefined:JSON.stringify({
       ...(!admin?{lat:body.lat,lon:body.lon,accuracy_m:body.accuracy_m,captured_at_ms:body.captured_at_ms,
-       force:body.force===true}:target==='/admin/stop'?{stopped:body.stopped}:{}),appId:principal.appId})}));
+       force:body.force===true,position_mode:body.position_mode||'precise'}:target==='/admin/stop'?{stopped:body.stopped}:{}),appId:principal.appId})}));
    return new Response(result.body,{status:result.status,headers:{...Object.fromEntries(result.headers),...headers,'cache-control':'private, no-store'}});
   }catch{return json({ok:false,code:'COORDINATOR_UNAVAILABLE'},503,headers)}
  }
@@ -166,7 +166,7 @@ export class LocationCoordinator {
   const temporarilyBlocked=Number(this.state('retry_at')||0)>now;
   const blocked=this.state('stopped')==='true'||this.state('provider_blocked')||temporarilyBlocked||this.env.GEOAPIFY_ENABLED!=='true'||!this.env.GEOAPIFY_API_KEY;
   if(blocked){this.count(app,'blocked');return stale?json({ok:true,status:'stale',cache:'central',...stale}):json({ok:false,code:temporarilyBlocked?'LOCATION_PROVIDER_BACKOFF':'LOCATION_PROVIDER_DISABLED',cache:'miss'},503)}
-  const key=`${fix.lat.toFixed(6)}:${fix.lon.toFixed(6)}:zh`;
+  const key=`${fix.lat.toFixed(6)}:${fix.lon.toFixed(6)}:${fix.position_mode}:zh`;
   if(this.pending.has(key)){
    this.count(app,'deduplicated');const result=await this.pending.get(key);
    return json({...result.body,cache:result.body.cache==='provider'?'deduplicated':result.body.cache},result.status);

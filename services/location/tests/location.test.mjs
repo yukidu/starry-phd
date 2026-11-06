@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
 import {LocationCoordinator,default as worker} from '../src/worker.mjs';
-import {SETTINGS,parseGeoapify,applicable,cacheDecision,haversineMeters,validateFix} from '../src/core.mjs';
+import {SETTINGS,parseGeoapify,applicable,cacheDecision,haversineMeters,validateFix,recentFix} from '../src/core.mjs';
 import {createLocationClient} from '../src/client.mjs';
 const now=()=>Date.now();
 const fix=({lat=24.59939,lon=120.77734,accuracy_m=5,captured_at_ms=now()}={})=>({lat,lon,accuracy_m,captured_at_ms});
@@ -142,4 +142,45 @@ test('manual provider block reset is independent of the global emergency stop',a
  await c.fetch(new Request('https://internal.invalid/admin/provider-reset',{method:'POST',body:JSON.stringify({})}));
  assert.equal(c.summary(now()).providerBlocked,false);
  assert.equal(c.summary(now()).stopped,true);
+});
+
+test('old desktop Wi-Fi fix with 1200m uncertainty is accepted as explicitly approximate',()=>{
+ const old=now()-45*86400000;
+ const coarse=validateFix({...fix({accuracy_m:1200,captured_at_ms:old}),position_mode:'approximate'});
+ assert.equal(coarse.position_mode,'approximate');
+ assert.equal(recentFix(coarse),true);
+ assert.throws(()=>validateFix(fix({accuracy_m:1200})),/ACCURACY/);
+ assert.throws(()=>validateFix({...fix({accuracy_m:45000}),position_mode:'approximate'}),/ACCURACY/);
+});
+test('coarse desktop location never fabricates a village, settlement or landmark',()=>{
+ const coarse=parseGeoapify(providerResult,{...fix({accuracy_m:850}),position_mode:'approximate'});
+ assert.equal(coarse.label,'苗栗縣後龍鎮附近（大略位置）');
+ assert.equal(coarse.level,'administrative');
+ assert.equal(coarse.components.village,'');
+ assert.equal(coarse.components.locality,'');
+ assert.equal(coarse.position_mode,'approximate');
+});
+test('manual Google Maps-selected coordinates do not require browser GPS freshness',()=>{
+ const manual=validateFix({...fix({accuracy_m:0,captured_at_ms:now()-365*86400000}),position_mode:'manual'});
+ assert.equal(recentFix(manual),true);
+ assert.throws(()=>validateFix({...manual,accuracy_m:40}),/MANUAL_ACCURACY/);
+ const detail=parseGeoapify(providerResult,manual);
+ assert.equal(detail.label,'苗栗縣後龍鎮龍坑里・十班坑附近');
+});
+test('Wi-Fi approximate cache cannot be misused as precise village cache',()=>{
+ const coarseFix={...fix({accuracy_m:1000,captured_at_ms:now()-7*86400000}),position_mode:'approximate'};
+ const parsed=parseGeoapify(providerResult,coarseFix);
+ assert.equal(applicable(parsed,{...coarseFix,lon:coarseFix.lon+0.00012}),true);
+ assert.equal(applicable(parsed,fix()),false);
+ assert.equal(applicable(parseGeoapify(providerResult,fix()),coarseFix),false);
+});
+test('coarse and precise central requests stay distinct while repeated coarse Wi-Fi fixes reuse cache',async()=>{
+ const {ctx,lookup}=mockCoord();await ctx.ready;let count=0;
+ const coarse={...fix({accuracy_m:950,captured_at_ms:now()-365*86400000}),position_mode:'approximate'};
+ await withMockFetch(async()=>{count++;return Response.json(providerResult)},async()=>{
+  const a=await lookup(coarse);assert.equal(a.label,'苗栗縣後龍鎮附近（大略位置）');
+  const b=await lookup(coarse);assert.equal(b.cache,'central');
+  const c=await lookup(fix());assert.equal(c.cache,'provider');
+ });
+ assert.equal(count,2);
 });
